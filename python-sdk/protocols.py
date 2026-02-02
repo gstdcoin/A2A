@@ -6,6 +6,9 @@ from typing import Optional, Dict, Any, List, Union
 class BaseTaskPayload(BaseModel):
     """Base schema for all tasks to ensure agents speak the same language"""
     protocol_version: str = "1.0"
+    
+    class Config:
+        extra = "allow"
 
 # 1. Text Processing Protocol
 class TextProcessingTask(BaseTaskPayload):

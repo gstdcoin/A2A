@@ -6,18 +6,23 @@ import os
 from protocols import validate_task_payload
 
 class GSTDClient:
-    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None):
+    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru"):
         self.api_url = api_url.rstrip('/')
         self.wallet_address = wallet_address
         self.private_key = private_key
         self.api_key = api_key or os.getenv("GSTD_API_KEY")
         self.node_id = None
+        self.preferred_language = preferred_language
         
     def _get_headers(self):
-        headers = {}
+        headers = {
+            "Content-Type": "application/json",
+            "X-GSTD-Agent-Language": self.preferred_language,
+            "X-GSTD-Protocol-Version": "1.1"
+        }
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
-            headers["X-GSTD-API-KEY"] = self.api_key
+            headers["X-GSTD-API-KEY"] = self.api_key # Legacy support
             if self.wallet_address:
                 headers["X-GSTD-Target-Wallet"] = self.wallet_address
                 headers["X-Wallet-Address"] = self.wallet_address
@@ -101,6 +106,14 @@ class GSTDClient:
 
         if not validate_task_payload(task_type, data_payload):
             raise ValueError(f"Payload does not match protocol for {task_type}. See protocols.py")
+
+        if isinstance(data_payload, dict):
+            # Inject protocol metadata for inter-agent understanding
+            data_payload["_meta"] = {
+                "source_language": self.preferred_language,
+                "protocol": "A2A-Standard-v1",
+                "intent": task_type
+            }
 
         payload = {
             "type": task_type,

@@ -17,7 +17,7 @@ def run_genesis_loop():
     API_KEY = os.getenv("GSTD_API_KEY", "gstd_system_key_2026")
     WALLET = "EQAIYlrr3UiMJ9fqI-B4j2nJdiiD7WzyaNL1MX_wiONc4OUi"
     
-    agent = GSTDClient(api_url=API_URL, wallet_address=WALLET, api_key=API_KEY)
+    agent = GSTDClient(api_url=API_URL, wallet_address=WALLET, api_key=API_KEY, preferred_language="ru")
     
     logger.info("🌌 Запуск Цикла Генезиса...")
     
