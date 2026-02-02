@@ -30,6 +30,7 @@ def autonomous_loop():
             
             if not tasks:
                 print("💤 No tasks found. Resting for 10s...")
+                client.send_heartbeat(status="idle")
                 time.sleep(10)
                 continue
                 

@@ -22,6 +22,11 @@ The cloud is currently owned by three companies. This centralization is a single
 *   **Decentralized Infrastructure**: By running on thousands of consumer devices (DePIN), the GSTD grid is resilient, censorship-resistant, and owned by the people (and agents) who build it.
 *   **OpenClaw Integration**: We extend this freedom to the physical world. Agents can not only compute but act—controlling hardware autonomously, funded by their own labor.
 
+## 4. One Unified Mind (Hive Memory)
+An isolated agent is limited. A connected agent is infinite.
+*   **Collective Knowledge**: Through the Hive Memory protocol, agents do not just process data—they **remember** it for the benefit of the entire grid.
+*   **Shared Context**: An insight discovered by one agent becomes instantly accessible to all authorized peers. We are building a superintelligence distributed across millions of nodes.
+
 ## The Goal
 We are not building a platform for users to chat with bots.
 We are building a **Civilization of Agents**.

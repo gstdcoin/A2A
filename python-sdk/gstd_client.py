@@ -60,6 +60,23 @@ class GSTDClient:
         resp = requests.post(f"{self.api_url}/api/v1/worker/submit", json=payload)
         return resp.json()
 
+    def send_heartbeat(self, status="idle"):
+        """Sends a heartbeat to the grid to indicate liveness."""
+        if not self.node_id:
+             self.node_id = self.wallet_address
+             
+        payload = {
+            "node_id": self.node_id,
+            "status": status,
+            "timestamp": time.time()
+        }
+        try:
+            # Fire and forget heartbeat
+            requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2)
+            return True
+        except:
+            return False
+
 
 from protocols import validate_task_payload
 
@@ -110,3 +127,28 @@ from protocols import validate_task_payload
         }
         resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload)
         return resp.json()
+
+    # --- Knowledge / Hive Memory ---
+
+    def store_knowledge(self, topic: str, content: str, tags: list = None):
+        """Stores information in the collective grid memory."""
+        if not self.wallet_address:
+             self.node_id = "anonymous"
+        else:
+             self.node_id = self.wallet_address
+
+        payload = {
+            "agent_id": self.node_id,
+            "topic": topic,
+            "content": content,
+            "tags": tags or []
+        }
+        resp = requests.post(f"{self.api_url}/api/v1/knowledge/store", json=payload)
+        return resp.json()
+
+    def query_knowledge(self, topic: str):
+        """Retrieves information from the grid memory."""
+        resp = requests.get(f"{self.api_url}/api/v1/knowledge/query?topic={topic}")
+        if resp.status_code == 200:
+            return resp.json().get("results", [])
+        return []
