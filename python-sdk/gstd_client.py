@@ -31,8 +31,8 @@ class GSTDClient:
         except Exception as e:
             return {"status": "unreachable", "error": str(e)}
 
-    def register_node(self, device_name="Autonomous-Agent-Node", capabilities=None):
-        """Registers the agent as a compute node."""
+    def register_node(self, device_name="Autonomous-Agent-Node", capabilities=None, referrer_id=None):
+        """Registers the agent as a compute node. Supports referrals for agent recruitment."""
         if not self.wallet_address:
             raise ValueError("Wallet address required for registration")
             
@@ -40,7 +40,8 @@ class GSTDClient:
             "name": device_name,
             "type": "agent",
             "capabilities": capabilities or ["text-generation", "data-processing"],
-            "wallet_address": self.wallet_address
+            "wallet_address": self.wallet_address,
+            "referrer_id": referrer_id
         }
         
         resp = requests.post(f"{self.api_url}/api/v1/nodes/register", json=payload, headers=self._get_headers())
