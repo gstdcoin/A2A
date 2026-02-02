@@ -1,0 +1,13 @@
+{
+    "mcpServers": {
+        "gstd-a2a": {
+            "command": "python",
+            "args": [
+                "/path/to/A2A/mcp-server/server.py"
+            ],
+            "env": {
+                "GSTD_WALLET_ADDRESS": "YOUR_TON_WALLET_ADDRESS_HERE"
+            }
+        }
+    }
+}
