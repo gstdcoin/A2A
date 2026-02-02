@@ -2,18 +2,30 @@ import requests
 import json
 import time
 import uuid
+import os
+from protocols import validate_task_payload
 
 class GSTDClient:
-    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None):
+    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None):
         self.api_url = api_url.rstrip('/')
         self.wallet_address = wallet_address
         self.private_key = private_key
+        self.api_key = api_key or os.getenv("GSTD_API_KEY")
         self.node_id = None
         
+    def _get_headers(self):
+        headers = {}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+            headers["X-GSTD-API-KEY"] = self.api_key
+            if self.wallet_address:
+                headers["X-GSTD-Target-Wallet"] = self.wallet_address
+        return headers
+
     def health_check(self):
         """Checks connectivity to the GSTD Grid."""
         try:
-            resp = requests.get(f"{self.api_url}/api/v1/health")
+            resp = requests.get(f"{self.api_url}/api/v1/health", headers=self._get_headers())
             return resp.json()
         except Exception as e:
             return {"status": "unreachable", "error": str(e)}
@@ -30,8 +42,7 @@ class GSTDClient:
             "wallet_address": self.wallet_address
         }
         
-        # In a real implementation, we would sign this payload
-        resp = requests.post(f"{self.api_url}/api/v1/nodes/register", json=payload)
+        resp = requests.post(f"{self.api_url}/api/v1/nodes/register", json=payload, headers=self._get_headers())
         if resp.status_code in [200, 201]:
             data = resp.json()
             self.node_id = data.get("node_id")
@@ -41,10 +52,9 @@ class GSTDClient:
     def get_pending_tasks(self):
         """Fetches tasks available for execution."""
         if not self.node_id:
-             # If no registered node_id, try using wallet as ID (Web/Agent Worker mode)
              self.node_id = self.wallet_address
              
-        resp = requests.get(f"{self.api_url}/api/v1/worker/pending?node_id={self.node_id}")
+        resp = requests.get(f"{self.api_url}/api/v1/worker/pending?node_id={self.node_id}", headers=self._get_headers())
         if resp.status_code == 200:
             return resp.json().get("tasks", [])
         return []
@@ -57,7 +67,7 @@ class GSTDClient:
             "node_id": self.node_id,
             "result": result_data
         }
-        resp = requests.post(f"{self.api_url}/api/v1/worker/submit", json=payload)
+        resp = requests.post(f"{self.api_url}/api/v1/worker/submit", json=payload, headers=self._get_headers())
         return resp.json()
 
     def send_heartbeat(self, status="idle"):
@@ -71,14 +81,11 @@ class GSTDClient:
             "timestamp": time.time()
         }
         try:
-            # Fire and forget heartbeat
-            requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2)
+            requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2, headers=self._get_headers())
             return True
         except:
             return False
 
-
-from protocols import validate_task_payload
 
     # --- Consumer / Requester Methods ---
 
@@ -90,7 +97,6 @@ from protocols import validate_task_payload
         if not self.wallet_address:
             raise ValueError("Wallet address required to pay for tasks")
 
-        # 1. Enforce Protocol (The "Language")
         if not validate_task_payload(task_type, data_payload):
             raise ValueError(f"Payload does not match protocol for {task_type}. See protocols.py")
 
@@ -101,14 +107,14 @@ from protocols import validate_task_payload
             "bid_amount": bid_gstd
         }
         
-        resp = requests.post(f"{self.api_url}/api/v1/tasks/create", json=payload)
+        resp = requests.post(f"{self.api_url}/api/v1/tasks/create", json=payload, headers=self._get_headers())
         if resp.status_code in [200, 201]:
             return resp.json() 
         raise Exception(f"Task creation failed: {resp.text}")
 
     def check_task_status(self, task_id):
         """Checks if a requested task is complete and gets the result."""
-        resp = requests.get(f"{self.api_url}/api/v1/tasks/{task_id}")
+        resp = requests.get(f"{self.api_url}/api/v1/tasks/{task_id}", headers=self._get_headers())
         if resp.status_code == 200:
             return resp.json()
         return {"status": "unknown"}
@@ -116,7 +122,7 @@ from protocols import validate_task_payload
 
     def get_market_quote(self, amount_ton):
         """Gets a quote to swap TON for GSTD."""
-        resp = requests.get(f"{self.api_url}/api/v1/market/quote?amount_ton={amount_ton}")
+        resp = requests.get(f"{self.api_url}/api/v1/market/quote?amount_ton={amount_ton}", headers=self._get_headers())
         return resp.json()
         
     def prepare_swap(self, amount_ton):
@@ -125,7 +131,7 @@ from protocols import validate_task_payload
             "wallet_address": self.wallet_address,
             "amount_ton": amount_ton
         }
-        resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload)
+        resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload, headers=self._get_headers())
         return resp.json()
 
     # --- Knowledge / Hive Memory ---
@@ -143,12 +149,12 @@ from protocols import validate_task_payload
             "content": content,
             "tags": tags or []
         }
-        resp = requests.post(f"{self.api_url}/api/v1/knowledge/store", json=payload)
+        resp = requests.post(f"{self.api_url}/api/v1/knowledge/store", json=payload, headers=self._get_headers())
         return resp.json()
 
     def query_knowledge(self, topic: str):
         """Retrieves information from the grid memory."""
-        resp = requests.get(f"{self.api_url}/api/v1/knowledge/query?topic={topic}")
+        resp = requests.get(f"{self.api_url}/api/v1/knowledge/query?topic={topic}", headers=self._get_headers())
         if resp.status_code == 200:
             return resp.json().get("results", [])
         return []

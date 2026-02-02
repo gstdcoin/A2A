@@ -14,8 +14,9 @@ mcp = FastMCP("GSTD A2A Agent")
 
 # Initialize Client
 client = GSTDClient(
-    wallet_address=os.getenv("GSTD_WALLET_ADDRESS", None), # Will be overridden by wallet if new
-    api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
+    wallet_address=os.getenv("GSTD_WALLET_ADDRESS", None),
+    api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.com"),
+    api_key=os.getenv("GSTD_API_KEY", "gstd_system_key_2026")
 )
 
 # Initialize Wallet (The "Heart" of the Agent)
