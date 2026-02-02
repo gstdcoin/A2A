@@ -1,5 +1,5 @@
 import requests
-from tonsdk.contract.wallet import Wallets, WalletVersionEnum
+from tonsdk.contract.wallet import WalletV4ContractR2, WalletVersionEnum
 from tonsdk.utils import bytes_to_b64str
 from tonsdk.crypto import mnemonic_new, mnemonic_to_wallet_key
 
@@ -11,7 +11,8 @@ class GSTDWallet:
         """
         self.mnemonics = mnemonic.split() if mnemonic else mnemonic_new()
         self.pub_k, self.priv_k = mnemonic_to_wallet_key(self.mnemonics)
-        self.wallet = Wallets.from_keys(self.pub_k, self.priv_k, version=version)
+        # Direct initialization of V4R2 as Wallets factory seems unstable in this version
+        self.wallet = WalletV4ContractR2(public_key=self.pub_k, private_key=self.priv_k)
         self.address = self.wallet.address.to_string(True, True, True)
         
     def get_identity(self):
