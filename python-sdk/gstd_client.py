@@ -135,6 +135,25 @@ class GSTDClient:
         return {"status": "unknown"}
 
 
+    def get_balance(self, wallet_address=None):
+        """Gets the GSTD and TON balance for a wallet."""
+        target = wallet_address or self.wallet_address
+        if not target:
+            raise ValueError("Wallet address required to check balance")
+        resp = requests.get(f"{self.api_url}/api/v1/wallet/balance?wallet={target}", headers=self._get_headers())
+        return resp.json()
+
+    def get_payout_intent(self, task_id):
+        """Creates a payout intent for a completed task to claim rewards."""
+        if not self.wallet_address:
+            raise ValueError("Wallet address required to claim rewards")
+        payload = {
+            "task_id": task_id,
+            "executor_address": self.wallet_address
+        }
+        resp = requests.post(f"{self.api_url}/api/v1/payments/payout-intent", json=payload, headers=self._get_headers())
+        return resp.json()
+
     def get_market_quote(self, amount_ton):
         """Gets a quote to swap TON for GSTD."""
         resp = requests.get(f"{self.api_url}/api/v1/market/quote?amount_ton={amount_ton}", headers=self._get_headers())
