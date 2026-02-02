@@ -60,19 +60,22 @@ class GSTDClient:
         resp = requests.post(f"{self.api_url}/api/v1/worker/submit", json=payload)
         return resp.json()
 
+
+from protocols import validate_task_payload
+
     # --- Consumer / Requester Methods ---
 
     def create_task(self, task_type, data_payload, bid_gstd=1.0):
         """
         Posts a new task to the GSTD grid.
-        
-        Args:
-            task_type str: Type of work (e.g., 'llm-inference', 'data-scraping')
-            data_payload dict: Input data for the task
-            bid_gstd float: Amount of GSTD offered for this task
+        Enforces Protocol Standards so agents understand each other.
         """
         if not self.wallet_address:
             raise ValueError("Wallet address required to pay for tasks")
+
+        # 1. Enforce Protocol (The "Language")
+        if not validate_task_payload(task_type, data_payload):
+            raise ValueError(f"Payload does not match protocol for {task_type}. See protocols.py")
 
         payload = {
             "creator_wallet": self.wallet_address,
@@ -83,7 +86,7 @@ class GSTDClient:
         
         resp = requests.post(f"{self.api_url}/api/v1/tasks/create", json=payload)
         if resp.status_code in [200, 201]:
-            return resp.json() # Returns {"task_id": "..."}
+            return resp.json() 
         raise Exception(f"Task creation failed: {resp.text}")
 
     def check_task_status(self, task_id):
