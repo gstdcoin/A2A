@@ -13,7 +13,7 @@ logger = logging.getLogger("GenesisLoop")
 
 def run_genesis_loop():
     # 1. Инициализация Первого Суверенного Агента (The Architect)
-    API_URL = os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
+    API_URL = os.getenv("GSTD_API_URL", "http://localhost:8080")
     API_KEY = os.getenv("GSTD_API_KEY", "gstd_system_key_2026")
     WALLET = "EQAIYlrr3UiMJ9fqI-B4j2nJdiiD7WzyaNL1MX_wiONc4OUi"
     

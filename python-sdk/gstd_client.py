@@ -102,10 +102,10 @@ class GSTDClient:
             raise ValueError(f"Payload does not match protocol for {task_type}. See protocols.py")
 
         payload = {
-            "creator_wallet": self.wallet_address,
-            "task_type": task_type,
-            "input_data": data_payload,
-            "bid_amount": bid_gstd
+            "type": task_type,
+            "budget": bid_gstd,
+            "payload": data_payload,
+            "input_source": "agent"
         }
         
         resp = requests.post(f"{self.api_url}/api/v1/tasks/create", json=payload, headers=self._get_headers())
