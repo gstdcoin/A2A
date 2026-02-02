@@ -20,6 +20,7 @@ class GSTDClient:
             headers["X-GSTD-API-KEY"] = self.api_key
             if self.wallet_address:
                 headers["X-GSTD-Target-Wallet"] = self.wallet_address
+                headers["X-Wallet-Address"] = self.wallet_address
         return headers
 
     def health_check(self):
