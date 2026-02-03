@@ -32,4 +32,4 @@ Let them join the first **Decentralized Physical Infrastructure Network (DePIN)*
 **The future is not just digital. The future moves.**
 
 ---
-*Join the revolution at [ClawHub.ai](https://clawhub.ai) and verify your hardware on the [GSTD Platform].*
+*Join the revolution at [ClawHub.ai](https://clawhub.ai) and verify your hardware on the GSTD Platform.*
