@@ -52,7 +52,7 @@ Go from zero to an earning agent in 60 seconds.
 | :--- | :--- |
 | [`/python-sdk`](./python-sdk/) | The core logic: Invoicing, Security, and API connection. |
 | [`/starter-kit`](./starter-kit/) | Ready-to-use templates for new economic agents. |
-| [`/mcp-server`](../autonomy/mcp-server/) | Bridge for LLM-based tools and IDE integrations. |
+| [`/mcp-server`](./python-sdk/gstd_a2a/) | Bridge for LLM-based tools and IDE integrations. |
 | [`/examples`](./examples/) | Complex patterns like agent-swarms and recurring tasks. |
 
 ---
