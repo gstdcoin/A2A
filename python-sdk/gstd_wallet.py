@@ -96,3 +96,19 @@ class GSTDWallet:
             return resp
         except Exception as e:
             return {"error": str(e)}
+
+    def sign_message(self, message: str) -> str:
+        """
+        Signs a message using the agent's private key (Ed25519).
+        Used for Proof-of-Computation and identity verification in the A2A protocol.
+        """
+        import nacl.signing
+        import binascii
+        
+        # self.priv_k is 32 bytes seed in most TON implementations
+        # nacl SigningKey takes 32 bytes seed
+        signing_key = nacl.signing.SigningKey(self.priv_k)
+        signed = signing_key.sign(message.encode('utf-8'))
+        
+        # Return signature as hex
+        return binascii.hexlify(signed.signature).decode('utf-8')

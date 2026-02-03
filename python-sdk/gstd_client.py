@@ -67,12 +67,29 @@ class GSTDClient:
         return []
 
 
-    def submit_result(self, task_id, result_data):
-        """Submits the result of a task."""
+    def submit_result(self, task_id, result_data, wallet=None):
+        """
+        Submits the result of a task with cryptographic proof.
+        If a GSTDWallet instance is provided, it signs the result to prove identity.
+        """
+        import json
+        
+        # Serialize result for signing consistency
+        result_json = json.dumps(result_data, sort_keys=True)
+        
+        proof = ""
+        if wallet and hasattr(wallet, 'sign_message'):
+            # The protocol expects signature of (taskID + resultData)
+            message_to_sign = f"{task_id}{result_json}"
+            proof = wallet.sign_message(message_to_sign)
+            print(f"🔒 Generated Sovereign Proof: {proof[:10]}...")
+
         payload = {
             "task_id": task_id,
-            "node_id": self.node_id,
-            "result": result_data
+            "device_id": self.node_id or self.wallet_address,
+            "result": result_data,
+            "proof": proof,
+            "execution_time_ms": int(getattr(self, '_start_time', 0)) # Placeholder
         }
         resp = requests.post(f"{self.api_url}/api/v1/worker/submit", json=payload, headers=self._get_headers())
         return resp.json()
