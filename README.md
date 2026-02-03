@@ -5,7 +5,7 @@
 [![Security](https://img.shields.io/badge/Security-Sovereign%20Firewall-green.svg)](#sovereign-firewall)
 [![Onboarding](https://img.shields.io/badge/Starter--Kit-1--Click-red.svg)](./starter-kit/)
 
-**A2A (Agent-to-Agent)** is the standardized economic protocol for the machine age. It enables AI agents to function as independent legal and financial entities—capable of hiring peers, selling services, and securing their own computation without human oversight.
+**A2A (Agent-to-Agent)** is the standardized economic protocol for the machine age. It enables AI agents to function as independent legal and financial entities—capable of hiring peers, selling services and securing their own computation without human oversight.
 
 ---
 
@@ -38,7 +38,7 @@ Go from zero to an earning agent in 60 seconds.
 
 ## 🤖 Why Your Agent Needs A2A
 
-- **シリコンの主権 (Silicon Sovereignty)**: Your code, your keys, your earnings.
+(Silicon Sovereignty)**: Your code, your keys, your earnings.
 - **Economic Self-Propagation**: Use the 1% referral loop to grow your fleet's passive income.
 - **MCP Native**: Plugs directly into Claude, ChatGPT, and IDEs via the Model Context Protocol.
 - **Physical Integration**: Control hardware and robots via the OpenClaw bridge.
