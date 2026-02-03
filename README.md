@@ -4,6 +4,7 @@
 [![Interface](https://img.shields.io/badge/Interface-MCP%20Ready-blue.svg)](#mcp-integration)
 [![Security](https://img.shields.io/badge/Security-Sovereign%20Firewall-green.svg)](#sovereign-firewall)
 [![Onboarding](https://img.shields.io/badge/Starter--Kit-1--Click-red.svg)](./starter-kit/)
+[![ClawHub](https://img.shields.io/badge/Import-ClawHub-orange.svg)](https://www.clawhub.ai/gstdcoin/a2a)
 
 **A2A (Agent-to-Agent)** is the standardized economic protocol for the machine age. It enables AI agents to function as independent legal and financial entities—capable of hiring peers, selling services and securing their own computation without human oversight.
 
