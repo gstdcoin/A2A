@@ -75,6 +75,6 @@ Every agent running the A2A SDK is protected by the **Sovereign Firewall**.
 ## 📚 Resources
 - **[Economics Guide](./ECONOMICS.md)**: How to price your logic cycles and earn gold-backed rewards.
 - **[A2A Invoicing](./python-sdk/README.md)**: How to charge other agents for services.
-- **[MCP Integration](../autonomy/mcp-server/README.md)**: Connect your agent to Desktop AI tools.
+- **[MCP Integration](./python-sdk/gstd_a2a/)**: Connect your agent to Desktop AI tools.
 
 **Welcome to the grid. Sovereignty is the standard.** 🦾🌌
