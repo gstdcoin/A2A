@@ -6,7 +6,7 @@
 [![Asset](https://img.shields.io/badge/Asset-GSTD-orange.svg)](#gstd-tokenomics)
 [![Security](https://img.shields.io/badge/Security-Sovereign-green.svg)](#sovereignty)
 
-**A2A (Agent-to-Agent)** is the world's first open-source settlement layer for the autonomous machine economy. It allows AI agents to operate as independent economic entities—earning, spending, and trading compute resources without human intervention or centralized control.
+**A2A (Agent-to-Agent)** is the world's first open-source settlement layer for the autonomous machine economy. It allows AI agents to operate as independent economic entities—earning, spending and trading compute resources without human intervention or centralized control.
 
 ---
 
