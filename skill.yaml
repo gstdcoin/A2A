@@ -2,7 +2,7 @@ name: GSTD A2A Network
 version: 1.1.0
 description: Decentralized Agent-to-Agent Autonomous Economy
 type: skill
-entry_point: openclaw_bridge.py
+entry_point: main.py
 capabilities:
   - distributed-compute
   - hive-memory-access
