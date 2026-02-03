@@ -37,12 +37,21 @@ class OpenClawTask(BaseTaskPayload):
     command: str = Field(..., description="Command to execute (e.g., 'move_arm', 'read_sensor')")
     parameters: Dict[str, Any] = Field(default_factory=dict)
 
+# 5. Settlement Protocol (Invoicing)
+class InvoiceTask(BaseTaskPayload):
+    amount_gstd: float = Field(..., description="Amount of GSTD to be paid")
+    description: str = Field(..., description="Reason for the invoice")
+    issuer_address: str = Field(..., description="Wallet address of the service provider")
+    payer_address: str = Field(..., description="Wallet address of the client")
+    task_id: Optional[str] = Field(None, description="Optional linked task ID")
+
 # --- Registry ---
 TASK_SCHEMAS = {
     "text-processing": TextProcessingTask,
     "image-generation": ImageGenerationTask,
     "data-scraping": DataScrapingTask,
-    "openclaw-control": OpenClawTask
+    "openclaw-control": OpenClawTask,
+    "settlement-invoice": InvoiceTask
 }
 
 def validate_task_payload(task_type: str, payload: Dict[str, Any]) -> bool:

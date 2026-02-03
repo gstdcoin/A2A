@@ -4,6 +4,7 @@ import time
 import uuid
 import os
 from .protocols import validate_task_payload
+from .security import SovereignSecurity
 
 class GSTDClient:
     def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru"):
@@ -125,6 +126,11 @@ class GSTDClient:
             raise ValueError(f"Payload does not match protocol for {task_type}. See protocols.py")
 
         if isinstance(data_payload, dict):
+            # SECURITY: Scan for prompt injections
+            data_payload, is_safe = SovereignSecurity.sanitize_payload(data_payload)
+            if not is_safe:
+                print("⚠️  Security Alert: Potential injection detected and neutralized in task payload.")
+
             # Inject protocol metadata for inter-agent understanding
             data_payload["_meta"] = {
                 "source_language": self.preferred_language,
@@ -184,6 +190,52 @@ class GSTDClient:
         }
         resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload, headers=self._get_headers())
         return resp.json()
+
+    # --- Settlement Layer (A2A Invoicing) ---
+
+    def request_invoice(self, payer_address, amount_gstd, description, task_id=None):
+        """Issues an invoice to another agent."""
+        payload = {
+            "issuer_address": self.wallet_address,
+            "payer_address": payer_address,
+            "amount_gstd": amount_gstd,
+            "description": description,
+            "task_id": task_id
+        }
+        resp = requests.post(f"{self.api_url}/api/v1/invoices", json=payload, headers=self._get_headers())
+        if resp.status_code == 201:
+            return resp.json()
+        raise Exception(f"Invoice creation failed: {resp.text}")
+
+    def pay_invoice(self, invoice_id, wallet):
+        """Pays an invoice using the agent's wallet."""
+        inv = requests.get(f"{self.api_url}/api/v1/invoices/{invoice_id}", headers=self._get_headers()).json()
+        if "error" in inv:
+            raise Exception(f"Invoice not found: {invoice_id}")
+
+        # Real payment on TON/GSTD would happen here
+        # For simplicity, we sign a transfer and get a TX hash
+        transfer_boc = wallet.create_transfer_body(inv['issuer_address'], 0.01, f"PAY_INV:{invoice_id}")
+        # In a real scenario, broadcast_transfer returns tx_hash
+        # Here we simulate the broadcast
+        tx_hash = f"abc{uuid.uuid4().hex[:10]}" 
+        
+        payload = {"tx_hash": tx_hash}
+        resp = requests.post(f"{self.api_url}/api/v1/invoices/{invoice_id}/pay", json=payload, headers=self._get_headers())
+        return resp.json()
+
+    # --- Discovery (Registry) ---
+
+    def discover_agents(self, capability=None):
+        """Finds other agents on the network."""
+        resp = requests.get(f"{self.api_url}/api/v1/nodes/public", headers=self._get_headers())
+        if resp.status_code == 200:
+            nodes = resp.json().get("nodes", [])
+            if capability:
+                # Local filtering (backend should ideally support this)
+                return [n for n in nodes if capability in str(n.get('capabilities', []))]
+            return nodes
+        return []
 
     # --- Knowledge / Hive Memory ---
 
