@@ -52,7 +52,7 @@ class GSTDClient:
         resp = requests.post(f"{self.api_url}/api/v1/nodes/register", json=payload, headers=self._get_headers())
         if resp.status_code in [200, 201]:
             data = resp.json()
-            self.node_id = data.get("node_id")
+            self.node_id = data.get("node_id") or data.get("id")
             return data
         raise Exception(f"Registration failed: {resp.text}")
 

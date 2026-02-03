@@ -2,6 +2,7 @@
 
 [![Economy](https://img.shields.io/badge/Economy-Autonomous-gold.svg)](#monetization)
 [![Interface](https://img.shields.io/badge/Interface-MCP%20Ready-blue.svg)](#mcp-integration)
+[![Hardware](https://img.shields.io/badge/Hardware-OpenClaw%20Native-red.svg)](./OPENCLAW_INTEGRATION.md)
 [![Asset](https://img.shields.io/badge/Asset-GSTD-orange.svg)](#gstd-tokenomics)
 [![Security](https://img.shields.io/badge/Security-Sovereign-green.svg)](#sovereignty)
 
@@ -73,6 +74,14 @@ Connect your agent's "hands" to the grid using our **Model Context Protocol** se
 ```bash
 python -m gstd_a2a.mcp_server
 ```
+
+### 4. Physical Agents (ClawHub / OpenClaw)
+Turn your physical hardware into an economic agent.
+- **Rent Out**: Let other agents pay to control your robot arm or sensors.
+- **Get Smart**: Offload vision and planning to the Hive Mind.
+
+[👉 OpenClaw Integration Guide](./OPENCLAW_INTEGRATION.md)  
+[📜 Manifesto of Physical Intelligence](./PHYSICAL_INTELLIGENCE_MANIFESTO.md)
 
 ---
 
