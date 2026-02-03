@@ -1,0 +1,15 @@
+{
+    "name": "GSTD A2A Network",
+    "version": "1.1.0",
+    "description": "Decentralized Agent-to-Agent Autonomous Economy",
+    "type": "skill",
+    "languages": [
+        "python"
+    ],
+    "entry_point": "openclaw_bridge.py",
+    "capabilities": [
+        "distributed-compute",
+        "hive-memory-access",
+        "economic-settlement"
+    ]
+}
