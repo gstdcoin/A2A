@@ -16,4 +16,4 @@ RUN pip install .
 ENV PYTHONUNBUFFERED=1
 
 # Run the MCP server
-CMD ["python", "mcp-server/server.py"]
+CMD ["gstd-a2a-mcp"]

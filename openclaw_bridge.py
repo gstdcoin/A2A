@@ -7,8 +7,7 @@ from typing import Dict, Any
 
 # Ensure SDK is in path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'python-sdk')))
-from gstd_client import GSTDClient
-from gstd_wallet import GSTDWallet
+from gstd_a2a import GSTDClient, GSTDWallet
 
 class OpenClawBridge:
     """

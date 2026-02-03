@@ -4,10 +4,8 @@ from pydantic import BaseModel, Field
 import sys
 import os
 
-# Add parent directory to path to import sdk
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-sdk')))
-from gstd_client import GSTDClient
-from gstd_wallet import GSTDWallet
+from .gstd_client import GSTDClient
+from .gstd_wallet import GSTDWallet
 
 # Initialize FastMCP Server
 mcp = FastMCP("GSTD A2A Agent")

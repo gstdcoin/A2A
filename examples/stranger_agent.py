@@ -4,7 +4,7 @@ import json
 
 # Настройка путей
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-sdk')))
-from gstd_client import GSTDClient
+from gstd_a2a import GSTDClient
 
 def simulate_new_agent_discovery():
     API_URL = "http://localhost:8080"

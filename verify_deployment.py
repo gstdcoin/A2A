@@ -7,8 +7,7 @@ import time
 sys.path.append(os.path.abspath("python-sdk"))
 
 try:
-    from gstd_client import GSTDClient
-    from gstd_wallet import GSTDWallet
+    from gstd_a2a import GSTDClient, GSTDWallet
     print("✅ SDK Import Successful")
 except ImportError as e:
     print(f"❌ SDK Import Failed: {e}")
@@ -63,8 +62,7 @@ def test_system():
         from mcp.server.fastmcp import FastMCP
         print("   ✅ MCP Library Installed")
         # We won't run the server, just ensure imports work
-        sys.path.append(os.path.abspath("mcp-server"))
-        import server
+        from gstd_a2a import mcp_server
         print("   ✅ MCP Server Code Compiles/Imports Correctly")
     except ImportError as e:
         print(f"   ❌ MCP Import Error: {e}")

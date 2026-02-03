@@ -3,7 +3,7 @@ import json
 import time
 import uuid
 import os
-from protocols import validate_task_payload
+from .protocols import validate_task_payload
 
 class GSTDClient:
     def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru"):

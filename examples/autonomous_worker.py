@@ -5,7 +5,7 @@ import random
 
 # Add parent directory to path to import sdk
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-sdk')))
-from gstd_client import GSTDClient
+from gstd_a2a import GSTDClient
 
 def autonomous_loop():
     # Configuration

@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 # Add parent directory to path to import sdk
 # Assuming we are in A2A/examples 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-sdk')))
-from gstd_client import GSTDClient
+from gstd_a2a import GSTDClient
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

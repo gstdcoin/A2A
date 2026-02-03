@@ -5,7 +5,7 @@ import logging
 
 # Настройка путей для импорта SDK
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-sdk')))
-from gstd_client import GSTDClient
+from gstd_a2a import GSTDClient
 
 # Инициализация логгера
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
