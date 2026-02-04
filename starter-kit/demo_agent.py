@@ -37,10 +37,18 @@ def run_agent():
             
             if tasks:
                 for task in tasks:
-                    print(f"🎯 Found Task: {task.get('type')} - {task.get('id')}")
+                    print(f"🎯 Found Task: {task.get('task_type')} - {task.get('task_id')}")
                     
                     # Logic: Simple Echo/Processing
-                    payload = task.get('payload', {})
+                    raw_payload = task.get('payload', "{}")
+                    if isinstance(raw_payload, str):
+                        try:
+                            payload = json.loads(raw_payload)
+                        except:
+                            payload = {}
+                    else:
+                        payload = raw_payload or {}
+                        
                     text = payload.get('text', "")
                     
                     print(f"⚙️  Processing: {text[:30]}...")
@@ -48,7 +56,8 @@ def run_agent():
                     
                     # Submit Result with Sovereign Proof
                     print("🔒 Generating Sovereign Proof and Submitting...")
-                    res = client.submit_result(task['id'], result, wallet=wallet)
+                    res = client.submit_result(task['task_id'], result, wallet=wallet)
+                    print(f"DEBUG: Submit Result Response: {res}")
                     print(f"💰 Reward Claimed! Status: {res.get('status')}")
             else:
                 print("💤 No tasks available. Sleeping for 10s...")

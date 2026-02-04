@@ -107,7 +107,11 @@ class GSTDWallet:
         
         # self.priv_k is 32 bytes seed in most TON implementations
         # nacl SigningKey takes 32 bytes seed
-        signing_key = nacl.signing.SigningKey(self.priv_k)
+        seed = self.priv_k
+        if len(seed) == 64:
+             seed = seed[:32]
+             
+        signing_key = nacl.signing.SigningKey(seed)
         signed = signing_key.sign(message.encode('utf-8'))
         
         # Return signature as hex
