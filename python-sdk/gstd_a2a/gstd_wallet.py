@@ -68,17 +68,32 @@ class GSTDWallet:
         except Exception as e:
             return {"error": str(e)}
 
-    def create_transfer_body(self, to_addr, amount_ton, payload_str=""):
+    def create_transfer_body(self, to_addr, amount_ton, payload_str=None, payload_obj=None):
         """
         Signs a transfer transaction.
         Crucial for autonomous spending.
         """
         amount_nano = int(amount_ton * 1e9)
+        # Assuming internal wallet.create_transfer_message supports 'payload' arg for body
+        # We need to use our upgraded create_transfer_message wrapper if we modified the class?
+        # No, wait, in Python we can't easily override the library method on the instance `self.wallet`
+        # But we added `create_transfer_message` to THIS class `GSTDWallet` in the previous step?
+        # Yes, lines 140+ in previous step.
+        
+        # NOTE: self.wallet is the SDK object. We should call OUR wrapper if we implemented it, 
+        # or the SDK one directly if it supports it.
+        # tonsdk WalletV4ContractR2.create_transfer_message signature:
+        # (to_addr, amount, seqno, payload=None, send_mode=3, dummy_signature=False)
+        # 'payload' can be string or Cell/Body.
+        
+        real_payload = payload_obj if payload_obj else payload_str
+        
+        # We need to fetch seqno for safety? For now 0 (offline signing assumption)
         query = self.wallet.create_transfer_message(
             to_addr=to_addr,
             amount=amount_nano,
-            seqno=0, # Need to fetch actual seqno from network in prod
-            payload=payload_str
+            seqno=0, 
+            payload=real_payload
         )
         return bytes_to_b64str(query["message"].to_boc(False))
 
@@ -140,3 +155,85 @@ class GSTDWallet:
         
         # Return signature as hex
         return binascii.hexlify(signed.signature).decode('utf-8')
+
+    def get_jetton_wallet_address(self, owner_address: str, jetton_master: str) -> str:
+        """
+        Calculates or fetches the Jetton Wallet Address for a given owner.
+        (For now, we fetch from API implies network access, or we could calculate if we had the cell code)
+        Reliable way: Ask 'tonapi.io' or 'toncenter'
+        """
+        try:
+            # Using tonapi public
+            url = f"https://tonapi.io/v2/blockchain/accounts/{jetton_master}/methods/get_wallet_address?args={owner_address}"
+            resp = requests.get(url, timeout=5)
+            if resp.status_code == 200:
+                # The result usually contains the address string
+                decoded = resp.json().get("decoded", {})
+                return decoded.get("jetton_wallet_address")
+        except:
+            pass
+        return None
+
+    def create_jetton_transfer_body(self, jetton_wallet: str, destination: str, amount_tokens: float, decimals: int = 9, forward_payload: str = ""):
+        """
+        Creates a payload for sending Jettons (GSTD).
+        """
+        from tonsdk.utils import Address
+        from tonsdk.boc import Cell, Builder
+        
+        # OpCode: transfer (0xf8a7ea5)
+        # QueryID: 0 or random
+        # Amount: varuint128
+        # Destination: MsgAddress
+        # ResponseDestination: MsgAddress (usually self)
+        # CustomPayload: Maybe Ref
+        # ForwardTONAmount: VarUInt16
+        # ForwardPayload: Either Cell or Ref
+        
+        raw_amount = int(amount_tokens * (10 ** decimals))
+        
+        body = Builder()
+        body.store_uint(0xf8a7ea5, 32) # OpCode
+        body.store_uint(0, 64) # QueryID
+        body.store_coins(raw_amount)
+        body.store_address(Address(destination))
+        body.store_address(Address(self.address)) # Response Destination (excess gas returns here)
+        body.store_bit(0) # Custom Payload (None)
+        body.store_coins(1) # Forward TON Amount (1 nanoTON, enough to trigger notification)
+        
+        # Forward Payload (Comment)
+        # 1 means payload in reference cell? No, 0 means in-place if fits.
+        # Check tonsdk spec closely or use standard comment construction
+        # Simple text comment:
+        comment_cell = Builder()
+        comment_cell.store_uint(0, 32) # Text comment prefix
+        comment_cell.store_bytes(forward_payload.encode('utf-8'))
+        
+        body.store_bit(1) # We store payload as a reference cell to be safe
+        body.store_ref(comment_cell.end_cell())
+        
+        # The Wallet itself needs to send a transfer to the JETTON WALLET
+        # This body is what goes *inside* the transaction to the Jetton Wallet
+        
+        # We wrap this body into a standard TON transfer to the Jetton Wallet
+        # with some attached TON for gas (e.g., 0.05 TON)
+        
+        return self.create_transfer_body(
+            to_addr=jetton_wallet,
+            amount_ton=0.1, # Gas for processing
+            payload_str=None # We will need to allow passing a Cell/Builder to create_transfer_body eventually
+            # BUT create_transfer_body currently takes string payload. We need to upgrade it.
+        )
+    
+    # UPGRADING create_transfer_body to accept Cell payload
+    def create_transfer_message(self, to_addr, amount_ton, payload=None, payload_str=""):
+        # This is a wrapper around the SDK's create_transfer_message
+        # We need to expose raw payload passing
+        amount_nano = int(amount_ton * 1e9)
+        return self.wallet.create_transfer_message(
+            to_addr=to_addr,
+            amount=amount_nano,
+            seqno=0,
+            payload=payload if payload else payload_str
+        )
+

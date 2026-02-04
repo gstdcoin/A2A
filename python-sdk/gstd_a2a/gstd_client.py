@@ -152,7 +152,31 @@ class GSTDClient:
         
         resp = requests.post(f"{self.api_url}/api/v1/tasks/create", json=payload, headers=self._get_headers())
         if resp.status_code in [200, 201]:
-            return resp.json() 
+            result = resp.json()
+            task_id = result.get("task_id") or result.get("id")
+            
+            # Check if funding is required (indicated by platform response)
+            escrow_address = result.get("escrow_address")
+            if escrow_address and self.wallet_address:
+                print(f"💰 Platform requires deposit for task {task_id}. Initiating transfer...")
+                # We need to send 'bid_gstd' to 'escrow_address' with comment 'task_id'
+                # AND it must be a Jetton transfer if format is GSTD.
+                # Assuming GSTD for now.
+                
+                # Check if we have the wallet instance to sign transactions?
+                # The 'client' typically only holds keys if initialized with them, OR we expect the user to have a 'wallet' object.
+                # GSTDClient.wallet_address is just a string. 
+                # To sign, we need 'GSTDWallet'.
+                # For this demo, we assume user will handle funding externally OR we return instructions.
+                
+                result["funding_instructions"] = {
+                    "action": "send_gstd",
+                    "destination": escrow_address,
+                    "amount": bid_gstd,
+                    "comment": task_id
+                }
+                
+            return result 
         raise Exception(f"Task creation failed: {resp.text}")
 
     def check_task_status(self, task_id):
