@@ -3,6 +3,8 @@ from tonsdk.contract.wallet import WalletV4ContractR2, WalletVersionEnum
 from tonsdk.utils import bytes_to_b64str
 from tonsdk.crypto import mnemonic_new, mnemonic_to_wallet_key
 
+from .constants import GSTD_JETTON_MASTER_TON
+
 class GSTDWallet:
     def __init__(self, mnemonic=None, version=WalletVersionEnum.v4r2):
         """
@@ -25,10 +27,28 @@ class GSTDWallet:
             "mnemonic": " ".join(self.mnemonics) 
         }
 
+    def check_gstd_balance(self):
+        """Check GSTD Jetton balance via tonapi.io indexer."""
+        try:
+            # Using public tonapi endpoint for read-only
+            url = f"https://tonapi.io/v2/accounts/{self.address}/jettons"
+            resp = requests.get(url, timeout=5)
+            if resp.status_code == 200:
+                balances = resp.json().get("balances", [])
+                for b in balances:
+                    jetton = b.get("jetton", {})
+                    # Check against Mainnet Address
+                    if jetton.get("address") == GSTD_JETTON_MASTER_TON:
+                        decimals = jetton.get("decimals", 9)
+                        raw_amount = int(b.get("balance", 0))
+                        return raw_amount / (10 ** decimals)
+            return 0.0
+        except Exception:
+            return 0.0
+
     def check_balance(self, ton_api_url="https://toncenter.com/api/v2/jsonRPC"):
         """
         Check TON and GSTD balances.
-        (Simplified implementation using generic JSON-RPC)
         """
         # 1. Check TON Balance
         payload = {
@@ -40,7 +60,11 @@ class GSTDWallet:
         try:
             resp = requests.post(ton_api_url, json=payload).json()
             balance = int(resp.get("result", 0)) / 1e9
-            return {"TON": balance, "GSTD": "Check via Indexer"} # Real GSTD check would query a Jetton wallet
+            
+            # 2. Check GSTD Balance
+            gstd_balance = self.check_gstd_balance()
+            
+            return {"TON": balance, "GSTD": gstd_balance}
         except Exception as e:
             return {"error": str(e)}
 
