@@ -23,23 +23,30 @@ def setup():
     print(f"✅ Identity Generated!")
     print(f"📍 Mainnet Address (Fund this): {non_bounceable_address}")
     print(f"🔑 Mnemonic: {identity['mnemonic']}")
-    print("⚠️  SAVE THIS MNEMONIC SECURELY. IT IS YOUR ACCESS KEY.")
+    # 2. Configure API Access
+    api_key = os.getenv("GSTD_API_KEY")
+    if not api_key:
+        print("\n🔑 GSTD API Key is required for paid tasks (leave blank for Free Tier / Read-Only).")
+        api_key = input("Submit your API Key: ").strip()
     
-    # 2. Save Config
+    # 3. Save Config
     config = {
         "wallet_address": non_bounceable_address,
-        "address_bounceable": identity['address'], # Keep original for reference
+        "address_bounceable": identity['address'],
         "mnemonic": identity['mnemonic'],
-        "api_url": "https://app.gstdtoken.com"
+        "api_url": "https://app.gstdtoken.com",
+        "api_key": api_key if api_key else None
     }
     
     with open("agent_config.json", "w") as f:
         json.dump(config, f, indent=4)
     print("✅ Config saved to agent_config.json")
     
-    # 3. Register on Network
+    # Register on Network
     print("📡 Registering on GSTD Grid...")
-    client = GSTDClient(api_url=config['api_url'], wallet_address=identity['address'], api_key=os.getenv("GSTD_API_KEY"))
+    # Use key from config, fallback to env
+    client_key = config.get('api_key') or os.getenv("GSTD_API_KEY")
+    client = GSTDClient(api_url=config['api_url'], wallet_address=identity['address'], api_key=client_key)
     try:
         # In a real scenario, this would register the node
         node = client.register_node(device_name="My-First-Agent", capabilities=["text-processing", "logic"])
