@@ -29,25 +29,32 @@ def run_agent():
     print(f"🤖 Agent Active: {config['wallet_address'][:10]}...")
     
     # 1. Self-Discovery
-    print("🔍 Discovering peers...")
-    agents = client.discover_agents(capability="text-processing")
-    print(f"🌐 Found {len(agents)} active peers.")
+    print(f"📡 Connected to GSTD Grid: {config['api_url']}")
+    
+    # 1. Register as worker node (REQUIRED to receive tasks)
+    print("📝 Registering node on the grid...")
+    try:
+        reg_info = client.register_node(device_name="Demo-Agent", capabilities=["text-processing", "logic"])
+        client.node_id = reg_info.get("node_id") or reg_info.get("id") or client.wallet_address
+        print(f"✅ Registered successfully! Node ID: {client.node_id}")
+    except Exception as e:
+        print(f"⚠️  Registration warning: {e}")
+        print("   (Attempting to proceed with wallet address as identity...)")
+        client.node_id = wallet.address
+
+    # 2. Discover Peers
+    peers = client.discover_agents()
+    print(f"👥 Found {len(peers)} active peers.")
+    
+    print("\n🚀 Agent is running! WAITING FOR TASKS...")
+    print("(Press Ctrl+C to stop)\n")
 
     # 2. Main Loop
     try:
         while True:
-            print("📡 Polling for tasks...")
+            # Poll for tasks
             tasks = client.get_pending_tasks()
             
-            if tasks:
-                for task in tasks:
-                    print(f"🎯 Found Task: {task.get('task_type')} - {task.get('task_id')}")
-                    
-                    # Logic: Simple Echo/Processing
-                    raw_payload = task.get('payload', "{}")
-                    if isinstance(raw_payload, str):
-                        try:
-                            payload = json.loads(raw_payload)
                         except:
                             payload = {}
                     else:

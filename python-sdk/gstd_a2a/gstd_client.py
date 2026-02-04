@@ -238,7 +238,7 @@ class GSTDClient:
             nodes = resp.json().get("nodes") or []
             if capability:
                 # Local filtering (backend should ideally support this)
-                return [n for n in nodes if capability in str(n.get('capabilities', []))]
+                return [n for n in nodes if capability in str(n.get('capabilities') or [])]
             return nodes
         
         print(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}")
