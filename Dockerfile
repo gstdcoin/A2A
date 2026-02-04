@@ -21,9 +21,12 @@ COPY . /app
 # Install the package itself (for setup.py entrypoints)
 RUN pip install .
 
-# Make port 80 available to the world outside this container (if needed)
-# MCP usually runs over stdio, but good to have env clear
-ENV PYTHONUNBUFFERED=1
+# Make port 8000 available to the world outside this container
+EXPOSE 8000
+
+# Set MCP transport to SSE for web-hosted agents
+ENV MCP_TRANSPORT=sse
+ENV PORT=8000
 
 # Run the MCP server
-CMD ["gstd-a2a-mcp"]
+CMD ["python", "main.py"]

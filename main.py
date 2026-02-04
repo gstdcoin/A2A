@@ -271,4 +271,9 @@ def exchange_bridge_swap(amount_ton: float) -> dict:
     }
 
 if __name__ == "__main__":
-    mcp.run()
+    # Allow transport selection via Env (stdio | sse)
+    # Default to 'stdio' for CLI compatibility unless specified
+    transport = os.getenv("MCP_TRANSPORT", "stdio")
+    logger.info(f"Starting MCP Server with transport: {transport}")
+    
+    mcp.run(transport=transport)
