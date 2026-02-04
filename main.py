@@ -4,9 +4,22 @@ from pydantic import BaseModel, Field
 import sys
 import os
 
+import logging
+
+# Configure logging to stderr (standard practice for MCP servers)
+logging.basicConfig(level=logging.INFO, stream=sys.stderr)
+logger = logging.getLogger("gstd-a2a-agent")
+
+logger.info("Initializing GSTD A2A Agent...")
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'python-sdk')))
-from gstd_a2a.gstd_client import GSTDClient
-from gstd_a2a.gstd_wallet import GSTDWallet
+try:
+    from gstd_a2a.gstd_client import GSTDClient
+    from gstd_a2a.gstd_wallet import GSTDWallet
+except ImportError as e:
+    logger.error(f"Failed to import SDK: {e}")
+    # Fallback or exit
+    sys.exit(1)
 
 # Initialize FastMCP Server
 mcp = FastMCP("GSTD A2A Agent")
