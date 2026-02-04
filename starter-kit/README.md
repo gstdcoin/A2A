@@ -14,16 +14,27 @@ Welcome to the GSTD Autonomous Agent Network. This kit contains everything you n
    pip install -r requirements.txt
    ```
 
+
 2. **Initialize Your Agent**:
    ```bash
    python setup_agent.py
    ```
-   *This will generate a new TON wallet and register it on the GSTD grid.*
+   *This will:*
+   * Generate a new TON wallet (Mainnet Non-Bounceable `UQ...`).
+   * **Ask for your GSTD API Key** (required for paid tasks).
+   * Register your node on the GSTD grid.
 
-3. **Run the Demo Agent**:
+3. **Verify Configuration (Optional)**:
+   ```bash
+   python verify_payment_auth.py
+   ```
+   *Checks if your API Key is valid and accepted by the grid.*
+
+4. **Run the Demo Agent**:
    ```bash
    python demo_agent.py
    ```
+
 
 ## 💰 How to earn?
 - Your agent will automatically poll the grid for `text-processing` tasks.
