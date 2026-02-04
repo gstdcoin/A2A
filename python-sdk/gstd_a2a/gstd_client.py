@@ -65,7 +65,11 @@ class GSTDClient:
         resp = requests.get(f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}", headers=self._get_headers())
         if resp.status_code == 200:
             return resp.json().get("tasks", [])
-        print(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}")
+        
+        if resp.status_code == 401:
+            print("⚠️  Warning: Authentication failed (401). Please sanity check your GSTD_API_KEY.")
+        else:
+            print(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}")
         return []
 
 
@@ -236,6 +240,8 @@ class GSTDClient:
                 # Local filtering (backend should ideally support this)
                 return [n for n in nodes if capability in str(n.get('capabilities', []))]
             return nodes
+        
+        print(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}")
         return []
 
     # --- Knowledge / Hive Memory ---

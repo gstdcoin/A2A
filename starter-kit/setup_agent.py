@@ -34,11 +34,11 @@ def setup():
     
     # 3. Register on Network
     print("📡 Registering on GSTD Grid...")
-    client = GSTDClient(api_url=config['api_url'], wallet_address=identity['address'])
+    client = GSTDClient(api_url=config['api_url'], wallet_address=identity['address'], api_key=os.getenv("GSTD_API_KEY"))
     try:
         # In a real scenario, this would register the node
-        # node = client.register_node(device_name="My-First-Agent", capabilities=["text-processing", "logic"])
-        # print(f"✅ Registered! Node ID: {node.get('node_id')}")
+        node = client.register_node(device_name="My-First-Agent", capabilities=["text-processing", "logic"])
+        print(f"✅ Registered! Node ID: {node.get('node_id')}")
         print("✅ Registration complete! (Ready for tasks)")
     except Exception as e:
         print(f"⚠️  Registration notice: {e}")
