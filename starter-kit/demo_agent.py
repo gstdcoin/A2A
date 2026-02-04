@@ -22,8 +22,8 @@ def run_agent():
     # Initialize Client & Wallet
     wallet = GSTDWallet(mnemonic=config['mnemonic'])
     
-    # helper: prefer config key (support both names), then env var
-    auth_key = config.get('gstd_api_key') or config.get('api_key') or os.getenv("GSTD_API_KEY")
+    # helper: prefer config key (support both names), then env var, then Public Key
+    auth_key = config.get('gstd_api_key') or config.get('api_key') or os.getenv("GSTD_API_KEY") or "gstd_system_key_2026"
     client = GSTDClient(api_url=config['api_url'], wallet_address=config['wallet_address'], api_key=auth_key)
 
     print(f"🤖 Agent Active: {config['wallet_address'][:10]}...")

@@ -44,8 +44,8 @@ def setup():
     
     # Register on Network
     print("📡 Registering on GSTD Grid...")
-    # Use key from config (support both names), fallback to env
-    client_key = config.get('gstd_api_key') or config.get('api_key') or os.getenv("GSTD_API_KEY")
+    # Use key from config (support both names), fallback to env, then Public Key
+    client_key = config.get('gstd_api_key') or config.get('api_key') or os.getenv("GSTD_API_KEY") or "gstd_system_key_2026"
     client = GSTDClient(api_url=config['api_url'], wallet_address=identity['address'], api_key=client_key)
     try:
         # In a real scenario, this would register the node
