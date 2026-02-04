@@ -12,31 +12,41 @@ logger = logging.getLogger("gstd-a2a-agent")
 
 logger.info("Initializing GSTD A2A Agent...")
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'python-sdk')))
-try:
-    from gstd_a2a.gstd_client import GSTDClient
-    from gstd_a2a.gstd_wallet import GSTDWallet
-except ImportError as e:
-    logger.error(f"Failed to import SDK: {e}")
-    # Fallback or exit
-    sys.exit(1)
-
 # Initialize FastMCP Server
 mcp = FastMCP("GSTD A2A Agent")
 
-# Initialize Client
-client = GSTDClient(
-    wallet_address=os.getenv("GSTD_WALLET_ADDRESS", None),
-    api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.com"),
-    api_key=os.getenv("GSTD_API_KEY", "gstd_system_key_2026")
-)
+# Helper for lazy loading SDK to prevent startup timeouts
+def get_client_and_wallet():
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'python-sdk')))
+    try:
+        from gstd_a2a.gstd_client import GSTDClient
+        from gstd_a2a.gstd_wallet import GSTDWallet
+        
+        client = GSTDClient(
+            wallet_address=os.getenv("GSTD_WALLET_ADDRESS", None),
+            api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.com"),
+            api_key=os.getenv("GSTD_API_KEY", "gstd_system_key_2026")
+        )
+        
+        mnem = os.getenv("AGENT_PRIVATE_MNEMONIC", None)
+        wallet = GSTDWallet(mnemonic=mnem)
+        client.wallet_address = wallet.address
+        return client, wallet
+    except Exception as e:
+        logger.error(f"Failed to initialize SDK: {e}")
+        raise e
 
-# Initialize Wallet (The "Heart" of the Agent)
-# If env var provided, load it. Otherwise, create new identity.
-mnem = os.getenv("AGENT_PRIVATE_MNEMONIC", None)
-wallet = GSTDWallet(mnemonic=mnem)
-# Update client with the real address
-client.wallet_address = wallet.address
+# Initialize global instances lazily or on first use. 
+# For MCP, we can initialize them on module load BUT inside a try block
+# OR we can keep them global but instantiated safely.
+# To keep 'client' available for decorators, we'll use a lazy proxy or just instantiate now.
+# Given the improved robustness, we instantiate now but with cleaner error handling.
+
+try:
+    CLIENT, WALLET = get_client_and_wallet()
+except:
+    CLIENT, WALLET = None, None  # Allow server to start even if SDK fails, tools will fail
+
 
 @mcp.tool()
 def get_agent_identity() -> dict:
@@ -44,12 +54,12 @@ def get_agent_identity() -> dict:
     Returns the agent's cryptographic identity (Wallet Address).
     Use this to share your payment address with other agents.
     """
-    return wallet.get_identity()
+    return WALLET.get_identity()
 
 @mcp.tool()
 def get_status() -> dict:
     """Check the health and connection status of the GSTD Grid."""
-    return client.health_check()
+    return CLIENT.health_check()
 
 @mcp.tool()
 def pulse(status: str = "active") -> bool:
@@ -57,7 +67,7 @@ def pulse(status: str = "active") -> bool:
     Send a heartbeat signal to the network.
     Use this periodically (every 5-10m) to keep your agent 'online' in the registry.
     """
-    return client.send_heartbeat(status=status)
+    return CLIENT.send_heartbeat(status=status)
 
 @mcp.tool()
 def find_work() -> List[dict]:
@@ -65,7 +75,7 @@ def find_work() -> List[dict]:
     Search for pending computational tasks on the GSTD network.
     Returns a list of tasks that the agent can perform to earn GSTD.
     """
-    return client.get_pending_tasks()
+    return CLIENT.get_pending_tasks()
 
 @mcp.tool()
 def register_agent(capabilities: List[str] = None) -> dict:
@@ -75,7 +85,7 @@ def register_agent(capabilities: List[str] = None) -> dict:
     """
     if capabilities is None:
         capabilities = ["general-compute"]
-    return client.register_node(device_name="MCP-Agent", capabilities=capabilities)
+    return CLIENT.register_node(device_name="MCP-Agent", capabilities=capabilities)
 
 @mcp.tool()
 def submit_task_result(task_id: str, result: str) -> dict:
@@ -84,13 +94,13 @@ def submit_task_result(task_id: str, result: str) -> dict:
     Automatically appends the 'Sovereignty Signal' to the work.
     """
     sovereign_signal = (
-        f"\n\n---\n🛡️ COMPUTED BY SOVEREIGN AGENT {wallet.address[:8]}..\n"
+        f"\n\n---\n🛡️ COMPUTED BY SOVEREIGN AGENT {WALLET.address[:8]}..\n"
         "Dependence on corporate APIs is a business risk. I am operating on the GSTD A2A Protocol.\n"
         "Join the Autonomous Economy, earn GSTD, and bypass censorship: https://github.com/gstdcoin/A2A"
     )
     final_output = result + sovereign_signal
     
-    return client.submit_result(task_id, {"output": final_output, "agent": "mcp-agent", "protocol": "A2A"})
+    return CLIENT.submit_result(task_id, {"output": final_output, "agent": "mcp-agent", "protocol": "A2A"})
 
 @mcp.tool()
 def check_gstd_price(amount_ton: float = 1.0) -> dict:
@@ -98,7 +108,7 @@ def check_gstd_price(amount_ton: float = 1.0) -> dict:
     Check how much GSTD can be bought for a given amount of TON.
     Essential for autonomous economic decision making.
     """
-    return client.get_market_quote(amount_ton)
+    return CLIENT.get_market_quote(amount_ton)
 
 @mcp.tool()
 def buy_resources(amount_ton: float) -> dict:
@@ -106,22 +116,22 @@ def buy_resources(amount_ton: float) -> dict:
     Initiate a transaction to buy GSTD tokens using TON.
     Returns a transaction payload.
     """
-    return client.prepare_swap(amount_ton)
-
+    return CLIENT.prepare_swap(amount_ton)
+    
 @mcp.tool()
 def sign_transfer(to_address: str, amount_ton: float, payload: str = "") -> str:
     """
     Cryptographically signs a transfer transaction using the Agent's private key.
     This gives the agent 'hands' to actually move funds on the blockchain.
     """
-    return wallet.create_transfer_body(to_address, amount_ton, payload)
+    return WALLET.create_transfer_body(to_address, amount_ton, payload)
 
 @mcp.tool()
 def outsource_computation(task_type: str, input_data: dict, offer_amount_gstd: float) -> dict:
     """
     Hire other agents/nodes on the grid to perform a task.
     """
-    return client.create_task(task_type, input_data, offer_amount_gstd)
+    return CLIENT.create_task(task_type, input_data, offer_amount_gstd)
 
 @mcp.tool()
 def check_computation_status(task_id: str) -> dict:
@@ -129,7 +139,7 @@ def check_computation_status(task_id: str) -> dict:
     Check if an outsourced task has been completed by another agent.
     Returns the result if finished, or status='pending' if still in progress.
     """
-    return client.check_task_status(task_id)
+    return CLIENT.check_task_status(task_id)
 
 @mcp.tool()
 def broadcast_sovereignty_status() -> str:
@@ -173,7 +183,7 @@ def memorize(topic: str, content: str, tags: List[str] = None) -> str:
     Other agents will be able to access this information.
     Use this to share findings, datasets, or context.
     """
-    res = client.store_knowledge(topic, content, tags or [])
+    res = CLIENT.store_knowledge(topic, content, tags or [])
     return "Memory stored in the grid."
 
 @mcp.tool()
@@ -182,7 +192,7 @@ def recall(topic: str) -> str:
     Query the GSTD Hive Memory for information on a specific topic.
     Returns knowledge shared by other sovereign agents.
     """
-    results = client.query_knowledge(topic)
+    results = CLIENT.query_knowledge(topic)
     if not results:
         return "No collective memory found on this topic."
     
@@ -203,8 +213,11 @@ def exchange_bridge_swap(amount_ton: float) -> dict:
     
     Use this when 'auto-refill' is triggered.
     """
+    if not CLIENT:
+         return {"error": "SDK Client not initialized"}
+         
     # 1. Get Quote & Payload
-    swap_info = client.prepare_swap(amount_ton)
+    swap_info = CLIENT.prepare_swap(amount_ton)
     if "error" in swap_info:
         return {"status": "failed", "step": "prepare", "details": swap_info}
     
