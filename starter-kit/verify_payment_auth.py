@@ -20,9 +20,9 @@ def verify_auth():
         with open(config_path) as f:
             cfg = json.load(f)
             wallet_address = cfg.get("wallet_address", wallet_address)
-            # If env var missing, try config
+            # If env var missing, try config (support both naming conventions)
             if not api_key:
-                api_key = cfg.get("api_key")
+                api_key = cfg.get("gstd_api_key") or cfg.get("api_key")
 
     if not api_key:
         print("❌ Error: GSTD_API_KEY not found in environment or agent_config.json.")
