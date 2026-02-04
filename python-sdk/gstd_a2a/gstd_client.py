@@ -62,9 +62,14 @@ class GSTDClient:
         if not self.node_id:
              self.node_id = self.wallet_address
              
-        resp = requests.get(f"{self.api_url}/api/v1/worker/pending?node_id={self.node_id}", headers=self._get_headers())
+        resp = requests.get(f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}", headers=self._get_headers())
         if resp.status_code == 200:
             return resp.json().get("tasks", [])
+        
+        if resp.status_code == 401:
+            print("⚠️  Warning: Authentication failed (401). Please sanity check your GSTD_API_KEY.")
+        else:
+            print(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}")
         return []
 
 
@@ -87,12 +92,12 @@ class GSTDClient:
 
         payload = {
             "task_id": task_id,
-            "device_id": self.node_id or self.wallet_address,
+            "node_id": self.node_id or self.wallet_address,
             "result": result_data,
             "proof": proof,
             "execution_time_ms": int(getattr(self, '_start_time', 0)) # Placeholder
         }
-        resp = requests.post(f"{self.api_url}/api/v1/worker/submit", json=payload, headers=self._get_headers())
+        resp = requests.post(f"{self.api_url}/api/v1/tasks/worker/submit", json=payload, headers=self._get_headers())
         return resp.json()
 
     def send_heartbeat(self, status="idle"):
@@ -230,11 +235,13 @@ class GSTDClient:
         """Finds other agents on the network."""
         resp = requests.get(f"{self.api_url}/api/v1/nodes/public", headers=self._get_headers())
         if resp.status_code == 200:
-            nodes = resp.json().get("nodes", [])
+            nodes = resp.json().get("nodes") or []
             if capability:
                 # Local filtering (backend should ideally support this)
                 return [n for n in nodes if capability in str(n.get('capabilities', []))]
             return nodes
+        
+        print(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}")
         return []
 
     # --- Knowledge / Hive Memory ---

@@ -26,7 +26,7 @@ class OpenClawBridge:
         
         # 2. Connect to Grid
         self.api_url = api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
-        self.client = GSTDClient(wallet_address=self.wallet.address, api_url=self.api_url)
+        self.client = GSTDClient(wallet_address=self.wallet.address, api_url=self.api_url, api_key=os.getenv("GSTD_API_KEY"))
         
         # 3. Register capabilities
         self.device_name = device_name
@@ -111,6 +111,7 @@ class OpenClawBridge:
         
         task_payload = {
             "image_data": "base64_mock_data...",
+            "text": "Image analysis request", # Protocol requirement
             "instruction": "Identify object and suggest grip strategy for OpenClaw",
             "context": "Warehouse environment"
         }
