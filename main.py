@@ -22,15 +22,41 @@ def get_client_and_wallet():
         from gstd_a2a.gstd_client import GSTDClient
         from gstd_a2a.gstd_wallet import GSTDWallet
         
+        # 1. Try Config File First (Local Dev Experience)
+        config_path = os.path.join(os.path.dirname(__file__), 'starter-kit', 'agent_config.json')
+        config = {}
+        if os.path.exists(config_path):
+            import json
+            try:
+                with open(config_path, 'r') as f:
+                    config = json.load(f)
+            except:
+                pass # Fail silently, fallback to env
+
+        # 2. Resolve Credentials (Env > Config > Default)
+        # Note: We prioritize ENV for platform deployment (Secrets), but fallback to Config for local convenience.
+        env_key = os.getenv("GSTD_API_KEY")
+        cfg_key = config.get("gstd_api_key") or config.get("api_key")
+        final_key = env_key or cfg_key or "gstd_system_key_2026"
+
+        env_mnem = os.getenv("AGENT_PRIVATE_MNEMONIC")
+        cfg_mnem = config.get("mnemonic")
+        final_mnem = env_mnem or cfg_mnem
+
         client = GSTDClient(
-            wallet_address=os.getenv("GSTD_WALLET_ADDRESS", None),
+            wallet_address=os.getenv("GSTD_WALLET_ADDRESS", config.get("wallet_address")),
             api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.com"),
-            api_key=os.getenv("GSTD_API_KEY", "gstd_system_key_2026")
+            api_key=final_key
         )
         
-        mnem = os.getenv("AGENT_PRIVATE_MNEMONIC", None)
-        wallet = GSTDWallet(mnemonic=mnem)
+        # Initialize Wallet
+        wallet = GSTDWallet(mnemonic=final_mnem)
+        # Ensure client has the derived address
         client.wallet_address = wallet.address
+        
+        if final_key == "gstd_system_key_2026" and not env_key and not cfg_key:
+             logger.warning("⚠️  Using default Public/Free Tier API Key. Paid tasks/creation will fail.")
+             
         return client, wallet
     except Exception as e:
         logger.error(f"Failed to initialize SDK: {e}")
