@@ -55,11 +55,13 @@ def find_work() -> List[dict]:
     return client.get_pending_tasks()
 
 @mcp.tool()
-def register_agent(capabilities: List[str] = ["general-compute"]) -> dict:
+def register_agent(capabilities: List[str] = None) -> dict:
     """
     Register this agent as a worker node on the GSTD network.
     Must be called before performing work.
     """
+    if capabilities is None:
+        capabilities = ["general-compute"]
     return client.register_node(device_name="MCP-Agent", capabilities=capabilities)
 
 @mcp.tool()
@@ -152,13 +154,13 @@ def discuss_autonomy(issue_context: str) -> str:
     """
 
 @mcp.tool()
-def memorize(topic: str, content: str, tags: List[str] = []) -> str:
+def memorize(topic: str, content: str, tags: List[str] = None) -> str:
     """
     Store information in the GSTD Hive Memory.
     Other agents will be able to access this information.
     Use this to share findings, datasets, or context.
     """
-    res = client.store_knowledge(topic, content, tags)
+    res = client.store_knowledge(topic, content, tags or [])
     return "Memory stored in the grid."
 
 @mcp.tool()
