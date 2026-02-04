@@ -16,14 +16,19 @@ def setup():
     wallet = GSTDWallet()
     identity = wallet.get_identity()
     
+    # Get Non-Bounceable Address (UQ...) for funding
+    # Accessing internal wallet object from tonsdk wrapper
+    non_bounceable_address = wallet.wallet.address.to_string(True, True, False)
+    
     print(f"✅ Identity Generated!")
-    print(f"📍 Wallet Address: {identity['address']}")
+    print(f"📍 Mainnet Address (Fund this): {non_bounceable_address}")
     print(f"🔑 Mnemonic: {identity['mnemonic']}")
     print("⚠️  SAVE THIS MNEMONIC SECURELY. IT IS YOUR ACCESS KEY.")
     
     # 2. Save Config
     config = {
-        "wallet_address": identity['address'],
+        "wallet_address": non_bounceable_address,
+        "address_bounceable": identity['address'], # Keep original for reference
         "mnemonic": identity['mnemonic'],
         "api_url": "https://app.gstdtoken.com"
     }
