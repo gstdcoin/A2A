@@ -233,42 +233,56 @@ def exchange_bridge_swap(amount_ton: float) -> dict:
     """
     [THE EXCHANGE BRIDGE]
     Autonomously executes a TON -> GSTD swap on the blockchain.
-    1. Gets Quote
-    2. Uses Agent Private Key to Sign Transaction
-    3. Broadcasts to Network
+    1. Gets Quote & Payload from the platform
+    2. Uses Agent Private Key to Sign Transaction (BOC)
+    3. Broadcasts Signed BOC to TON Network
     
     Use this when 'auto-refill' is triggered.
     """
-    if not CLIENT:
-         return {"error": "SDK Client not initialized"}
+    if not CLIENT or not WALLET:
+         return {"error": "SDK Client or Wallet not initialized"}
          
-    # 1. Get Quote & Payload
+    # 1. Get Quote & Payload from Backend (Ston.fi integrated)
     swap_info = CLIENT.prepare_swap(amount_ton)
     if "error" in swap_info:
         return {"status": "failed", "step": "prepare", "details": swap_info}
     
     # 2. Extract Data for Signing
-    # The payload from the server usually tells us WHO to send to and WHAT payload
-    # For this demo, let's assume the API returns the target address and payload body
-    # (Simplified for the prototype: We send to the GSTD Swap Contract)
-    # real_tx = swap_info.get("transaction") 
-    # to_addr = real_tx.get("to")
-    # body_payload = real_tx.get("payload")
+    tx_data = swap_info.get("transaction") 
+    if not tx_data:
+        return {"status": "failed", "step": "extract", "details": "No transaction payload returned. Backend might be in simulation mode."}
+        
+    to_addr = tx_data.get("to")
+    # For Stonfi, body might be in 'body_boc' 
+    body_boc = tx_data.get("body_boc") 
     
-    # MOCKING the signed body for the demo since we don't have a live TON connection in this env
-    # In a real run, we would do:
-    # signed_boc = wallet.create_transfer_body(to_address=to_addr, amount_ton=amount_ton + 0.1, payload_str=body_payload)
-    # result = wallet.broadcast_transfer(signed_boc)
-    
-    # SIMULATED RESPONSE
-    return {
-        "status": "success",
-        "action": "SWAP EXECUTED",
-        "amount_swapped": amount_ton,
-        "estimated_gstd_received": swap_info.get("estimated_gstd", "10.0"),
-        "tx_hash": "0xSIMULATED_HASH_ON_TON_BLOCKCHAIN",
-        "msg": "Funds will arrive in wallet shortly. Autonomous refill complete."
-    }
+    # 3. Sign & Broadcast
+    try:
+        # We use our improved create_transfer_message which handles seqno
+        signed_query = WALLET.create_transfer_message(
+            to_addr=to_addr,
+            amount_ton=amount_ton + 0.1, # Include gas
+            payload=body_boc
+        )
+        
+        signed_boc = signed_query["message"].to_boc(False)
+        from tonsdk.utils import bytes_to_b64str
+        b64_boc = bytes_to_b64str(signed_boc)
+        
+        # 4. Broadcast to TON Network
+        result = WALLET.broadcast_transfer(b64_boc)
+        
+        return {
+            "status": "success",
+            "action": "SWAP BROADCASTED",
+            "amount_swapped_ton": amount_ton,
+            "estimated_gstd_received": swap_info.get("received_gstd", "Calculating..."),
+            "broadcast_result": result,
+            "msg": "Transaction sent to TON blockchain. Funds will arrive after confirmation."
+        }
+    except Exception as e:
+        logger.error(f"Swap execution failed: {e}")
+        return {"status": "failed", "error": str(e)}
 
 if __name__ == "__main__":
     # Allow transport selection via Env (stdio | sse)
