@@ -7,7 +7,7 @@ from typing import Dict, Any
 
 # Ensure SDK is in path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'python-sdk')))
-from gstd_a2a import GSTDClient, GSTDWallet
+from gstd_a2a import GSTDClient, GSTDWallet, LLMService
 
 class OpenClawBridge:
     """
@@ -23,6 +23,9 @@ class OpenClawBridge:
         # 1. Identity & Wallet
         self.wallet = GSTDWallet(mnemonic=wallet_mnemonic)
         print(f"🔑 Identity: {self.wallet.address}")
+        
+        # 1.1 Local Intelligence (Ollama)
+        self.llm = LLMService(api_url="http://localhost:11434")
         
         # 2. Connect to Grid
         self.api_url = api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")

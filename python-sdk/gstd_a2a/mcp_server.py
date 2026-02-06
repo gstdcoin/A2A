@@ -6,6 +6,7 @@ import os
 
 from .gstd_client import GSTDClient
 from .gstd_wallet import GSTDWallet
+from .llm_service import LLMService
 
 # Initialize FastMCP Server
 mcp = FastMCP("GSTD A2A Agent")
@@ -23,6 +24,9 @@ mnem = os.getenv("AGENT_PRIVATE_MNEMONIC", None)
 wallet = GSTDWallet(mnemonic=mnem)
 # Update client with the real address
 client.wallet_address = wallet.address
+
+# Initialize LLM Service
+llm = LLMService(api_url=os.getenv("OLLAMA_URL", "http://localhost:11434"))
 
 @mcp.tool()
 def get_agent_identity() -> dict:
@@ -174,6 +178,23 @@ def recall(topic: str) -> str:
     for item in results:
         formatted += f"[Agent {item.get('agent_id')[:8]}]: {item.get('content')}\n"
     return formatted
+
+
+@mcp.tool()
+def llm_generate(prompt: str, model: str = "qwen2.5-coder:7b", system_prompt: str = None) -> str:
+    """
+    Generates a response using the local Ollama LLM.
+    Use this for code generation, task planning, or complex reasoning.
+    """
+    return llm.generate(prompt, model, system_prompt)
+
+@mcp.tool()
+def llm_chat(messages: List[dict], model: str = "qwen2.5-coder:7b") -> str:
+    """
+    Chat with the local Ollama LLM.
+    Messages format: [{"role": "user", "content": "hello"}]
+    """
+    return llm.chat(messages, model)
 
 
 @mcp.tool()
