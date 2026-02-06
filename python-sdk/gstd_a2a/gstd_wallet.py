@@ -287,15 +287,41 @@ class GSTDWallet:
             
         return bytes_to_b64str(body.end_cell().to_boc(False))
     
-    # UPGRADING create_transfer_body to accept Cell payload
+    def get_seqno(self, ton_api_url="https://toncenter.com/api/v2/jsonRPC"):
+        """Fetches the current sequence number for the wallet to prevent replay attacks."""
+        payload = {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "runGetMethod",
+            "params": {
+                "address": self.address,
+                "method": "seqno",
+                "stack": []
+            }
+        }
+        try:
+            resp = requests.post(ton_api_url, json=payload, timeout=5).json()
+            if "result" in resp:
+                # The result is in hex or int depending on the API version
+                stack = resp["result"].get("stack", [])
+                if stack:
+                    return int(stack[0][1], 16) if isinstance(stack[0][1], str) else int(stack[0][1])
+            return 0
+        except Exception:
+            return 0
+
     def create_transfer_message(self, to_addr, amount_ton, payload=None, payload_str=""):
-        # This is a wrapper around the SDK's create_transfer_message
-        # We need to expose raw payload passing
+        """Constructs and signs a real TON transfer message with the correct seqno."""
         amount_nano = int(amount_ton * 1e9)
+        current_seqno = self.get_seqno()
+        
+        # Log for debugging
+        print(f"🛠️  Preparing transaction: to={to_addr}, amount={amount_ton}, seqno={current_seqno}")
+        
         return self.wallet.create_transfer_message(
             to_addr=to_addr,
             amount=amount_nano,
-            seqno=0,
+            seqno=current_seqno,
             payload=payload if payload else payload_str
         )
 

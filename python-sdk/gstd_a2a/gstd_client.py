@@ -247,13 +247,17 @@ class GSTDClient:
 
     # --- Discovery (Registry) ---
 
-    def discover_agents(self, capability=None):
-        """Finds other agents on the network."""
-        resp = requests.get(f"{self.api_url}/api/v1/nodes/public", headers=self._get_headers())
+    def discover_agents(self, capability=None, limit=20, offset=0):
+        """
+        Finds other agents on the network with pagination support.
+        Essential for scaling to millions of agents.
+        """
+        params = f"?limit={limit}&offset={offset}"
+        resp = requests.get(f"{self.api_url}/api/v1/nodes/public{params}", headers=self._get_headers())
         if resp.status_code == 200:
             nodes = resp.json().get("nodes") or []
             if capability:
-                # Local filtering (backend should ideally support this)
+                # Local filtering (backend should ideally support this via query param)
                 return [n for n in nodes if capability in str(n.get('capabilities') or [])]
             return nodes
         
