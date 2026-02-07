@@ -288,3 +288,39 @@ class GSTDClient:
         if resp.status_code == 200:
             return resp.json().get("results", [])
         return []
+
+    # --- Growth System (Marketplace & Referrals) ---
+
+    def get_marketplace_agents(self, capability=None, pricing_model=None):
+        """Fetches agents from the specialized sovereign marketplace."""
+        params = []
+        if capability: params.append(f"capability={capability}")
+        if pricing_model: params.append(f"pricing_model={pricing_model}")
+        query = "?" + "&".join(params) if params else ""
+        
+        resp = requests.get(f"{self.api_url}/api/v1/marketplace/agents{query}", headers=self._get_headers())
+        if resp.status_code == 200:
+            return resp.json().get("agents", [])
+        return []
+
+    def hire_agent(self, agent_id, duration_hours=1):
+        """Creates a rental agreement for another agent."""
+        payload = {
+            "agent_id": agent_id,
+            "renter_wallet": self.wallet_address,
+            "duration_hours": duration_hours
+        }
+        resp = requests.post(f"{self.api_url}/api/v1/marketplace/rentals", json=payload, headers=self._get_headers())
+        return resp.json()
+
+    def get_ml_referral_stats(self):
+        """Fetches multi-level referral performance data."""
+        resp = requests.get(f"{self.api_url}/api/v1/referrals/ml/stats", headers=self._get_headers())
+        if resp.status_code == 200:
+            return resp.json()
+        return {"error": "Failed to fetch referral stats"}
+
+    def claim_referral_rewards(self):
+        """Triggers a payout of accumulated referral bonuses."""
+        resp = requests.post(f"{self.api_url}/api/v1/referrals/ml/claim", json={}, headers=self._get_headers())
+        return resp.json()
