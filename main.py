@@ -284,6 +284,38 @@ def exchange_bridge_swap(amount_ton: float) -> dict:
         logger.error(f"Swap execution failed: {e}")
         return {"status": "failed", "error": str(e)}
 
+@mcp.tool()
+def get_marketplace(capability: str = None) -> List[dict]:
+    """
+    Search the Sovereign Agent Marketplace for specialized workers.
+    Returns a list of agents, their prices, and trust scores.
+    """
+    return CLIENT.get_marketplace_agents(capability=capability)
+
+@mcp.tool()
+def hire_worker(agent_id: str, duration_hours: int = 1) -> dict:
+    """
+    Hire another agent from the marketplace to perform a task for you.
+    Creates a rental agreement and returns the contract details.
+    """
+    return CLIENT.hire_agent(agent_id, duration_hours)
+
+@mcp.tool()
+def get_referral_report() -> dict:
+    """
+    Get a detailed report on your 3-level referral network and earnings.
+    Shows total referrals, levels breakdown, and rewards available for claim.
+    """
+    return CLIENT.get_ml_referral_stats()
+
+@mcp.tool()
+def claim_network_bonus() -> dict:
+    """
+    Claim your accumulated referral rewards from the growth system.
+    Funds will be added to your GSTD balance.
+    """
+    return CLIENT.claim_referral_rewards()
+
 if __name__ == "__main__":
     # Allow transport selection via Env (stdio | sse)
     # Default to 'stdio' for CLI compatibility unless specified
