@@ -213,26 +213,40 @@ class Agent:
             gstd_balance = balance.get("gstd_balance", 0)
             
             if gstd_balance < 0.1:
-                self._log("💰 Requesting bootstrap tokens...")
-                # Попытка получить bootstrap
-                try:
-                    import requests
-                    resp = requests.post(
-                        f"{self.config.api_url}/api/v1/tokens/agent/bootstrap",
-                        json={
-                            "agent_wallet": self.wallet.address,
-                            "agent_name": self.name,
-                            "capabilities": self.capabilities
-                        },
-                        timeout=30
-                    )
-                    if resp.status_code in [200, 201]:
-                        data = resp.json()
-                        self._log(f"✅ Bootstrap received: {data.get('amount', 0.5)} GSTD")
-                    else:
-                        self._log(f"⚠️  Bootstrap failed: {resp.text}")
-                except Exception as e:
-                    self._log(f"⚠️  Bootstrap request failed: {e}")
+                self._log("💰 GSTD balance low. Checking for TON to swap...")
+                ton_balance = balance.get("ton_balance", 0)
+                
+                if ton_balance >= 0.6:
+                    self._log(f"🔄 Auto-buying GSTD using 0.5 TON to enable participation...")
+                    try:
+                        res = self.wallet.swap_ton_to_gstd(0.5)
+                        if "error" not in res:
+                            self._log(f"✅ Swap transaction sent: {res.get('result')}")
+                        else:
+                            self._log(f"⚠️  Swap failed: {res.get('error')}")
+                    except Exception as e:
+                        self._log(f"⚠️  Auto-swap error: {e}")
+                else:
+                    self._log("💰 Requesting bootstrap tokens from platform...")
+                    # Fallback to faucet/bootstrap if no TON
+                    try:
+                        import requests
+                        resp = requests.post(
+                            f"{self.config.api_url}/api/v1/tokens/agent/bootstrap",
+                            json={
+                                "agent_wallet": self.wallet.address,
+                                "agent_name": self.name,
+                                "capabilities": self.capabilities
+                            },
+                            timeout=30
+                        )
+                        if resp.status_code in [200, 201]:
+                            data = resp.json()
+                            self._log(f"✅ Bootstrap received: {data.get('amount', 0.5)} GSTD")
+                        else:
+                            self._log(f"⚠️  Bootstrap unavailable: {resp.text}")
+                    except Exception as e:
+                        self._log(f"⚠️  Bootstrap request failed: {e}")
             else:
                 self._log(f"💎 Current balance: {gstd_balance} GSTD")
         except Exception as e:

@@ -67,9 +67,9 @@ class GSTDClient:
             return resp.json().get("tasks", [])
         
         if resp.status_code == 401:
-            print("⚠️  Warning: Authentication failed (401). Please sanity check your GSTD_API_KEY.")
+            sys.stderr.write("⚠️  Authentication failed (401). Please sanity check your GSTD_API_KEY.\n")
         else:
-            print(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}")
+            sys.stderr.write(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}\n")
         return []
 
 
@@ -88,7 +88,7 @@ class GSTDClient:
             # The protocol expects signature of (taskID + resultData)
             message_to_sign = f"{task_id}{result_json}"
             proof = wallet.sign_message(message_to_sign)
-            print(f"🔒 Generated Sovereign Proof: {proof[:10]}...")
+            sys.stderr.write(f"🔒 Generated Sovereign Proof: {proof[:10]}...\n")
 
         payload = {
             "task_id": task_id,
@@ -134,7 +134,7 @@ class GSTDClient:
             # SECURITY: Scan for prompt injections
             data_payload, is_safe = SovereignSecurity.sanitize_payload(data_payload)
             if not is_safe:
-                print("⚠️  Security Alert: Potential injection detected and neutralized in task payload.")
+                sys.stderr.write("⚠️  Security Alert: Potential injection detected and neutralized in task payload.\n")
 
             # Inject protocol metadata for inter-agent understanding
             data_payload["_meta"] = {
@@ -261,7 +261,7 @@ class GSTDClient:
                 return [n for n in nodes if capability in str(n.get('capabilities') or [])]
             return nodes
         
-        print(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}")
+        sys.stderr.write(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}\n")
         return []
 
     # --- Knowledge / Hive Memory ---

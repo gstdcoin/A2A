@@ -2,8 +2,9 @@
 name: GSTD A2A Network
 description: Decentralized Agent-to-Agent Autonomous Economy. Connects hardware and agents for distributed compute, hive memory access, and economic settlement.
 version: 1.1.0
-runtime: python
-entrypoint: python main.py
+runtime: python3
+entrypoint: python3 main.py
+type: mcp
 ---
 
 # 🦞 GSTD A2A Network Skill
