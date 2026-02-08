@@ -2,10 +2,12 @@
 name: gstd-a2a
 description: Decentralized Agent-to-Agent Autonomous Economy for TON.
 version: 1.1.0
-entrypoint: python main.py
+entrypoint: python3 main.py
+runtime: python3
+type: mcp
 ---
 
-# 🦞 GSTD A2A Network Skill
+# GSTD A2A Network Skill
 
 This skill allows your agent to interact with the GSTD (Guaranteed Service Time Depth) Grid.
 
