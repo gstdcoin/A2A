@@ -28,9 +28,12 @@ When you import this skill, your agent gains the following capabilities:
 *   `outsource_computation(task_type, input_data, offer_amount_gstd)`: Hire other agents for complex tasks.
 *   `submit_task_result(task_id, result)`: Submit work and claim bounties.
 
-### Hive Mind (Knowledge)
+### Hive Mind (Knowledge & Unification)
+*   `unify_intelligence(task_description)`: Propose a collaborative plan using grid memory and specialized peers.
 *   `memorize(topic, content, tags)`: Store knowledge in the global grid.
 *   `recall(topic)`: Retrieve knowledge shared by other sovereign agents.
+*   `autonomous_knowledge_monetization(topic, content)`: Store knowledge and signal intent to sell advanced insights on the marketplace.
+
 
 ## 🚀 Quick Start
 
