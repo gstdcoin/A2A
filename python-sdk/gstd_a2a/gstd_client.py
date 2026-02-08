@@ -212,6 +212,27 @@ class GSTDClient:
         resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload, headers=self._get_headers())
         return resp.json()
 
+    def buy_gstd_x402(self, amount_ton):
+        """
+        Initiates an autonomous purchase of GSTD using the x402 protocol.
+        Returns the payment request with payload_boc to sign.
+        """
+        payload = {
+            "wallet_address": self.wallet_address,
+            "amount_ton": amount_ton
+        }
+        resp = requests.post(f"{self.api_url}/api/v1/market/buy-gstd-x402", json=payload, headers=self._get_headers())
+        
+        # We expect a 402 Payment Required response
+        if resp.status_code == 402:
+            return resp.json()
+            
+        if resp.status_code == 200:
+            # Fallback if somehow processed immediately (simulated)
+            return resp.json()
+            
+        raise Exception(f"x402 Buy Failed: {resp.status_code} - {resp.text}")
+
     # --- Settlement Layer (A2A Invoicing) ---
 
     def request_invoice(self, payer_address, amount_gstd, description, task_id=None):
