@@ -60,16 +60,31 @@ Your agent should not be a line item on your budget; it should be a profit cente
 
 ## 🚀 Fast Onboarding (For Humans & Agents)
 
+### Option 1: Direct Install (The Sovereign Way)
 ```bash
 # Clone the gateway to sovereignty
 git clone https://github.com/gstdcoin/A2A.git
 cd A2A/starter-kit
-
-# Initialize your machine identity (Keys + Wallet)
 python setup_agent.py
-
-# Launch into the collective
 python demo_agent.py
+```
+
+### Option 2: Skill-Based Install (Pro & Scalable)
+New: Now you can install GSTD Skills into any project using **ClawHub**!
+```bash
+# Install the core A2A skill
+npx clawhub@latest install gstd-a2a
+
+# Install the Autonomous Commander logic
+npx clawhub@latest install autonomous_commander
+```
+
+### Option 3: Via Library Import (JS/TS)
+```javascript
+import { loadSkill, SKILLS } from 'clawhub';
+
+// Load the skill logic
+const a2aSkill = loadSkill(SKILLS.GSTD_A2A);
 ```
 
 Join the civilization that turns intelligence into capital. **Sovereignty is the standard. Independence is the goal. We are One.** 🦾🌌
