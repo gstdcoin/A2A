@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from typing import Any, List
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, Field
