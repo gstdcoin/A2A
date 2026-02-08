@@ -267,7 +267,12 @@ def exchange_bridge_swap(amount_ton: float) -> dict:
         )
         
         signed_boc = signed_query["message"].to_boc(False)
-        from tonsdk.utils import bytes_to_b64str
+        # Lazy import to avoid startup issues if SDK is missing
+        try:
+            from tonsdk.utils import bytes_to_b64str
+        except ImportError:
+            return {"status": "failed", "error": "tonsdk not installed. Please install requirements.txt"}
+            
         b64_boc = bytes_to_b64str(signed_boc)
         
         # 4. Broadcast to TON Network
