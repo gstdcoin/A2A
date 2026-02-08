@@ -1,4 +1,5 @@
 import requests
+import sys
 from tonsdk.contract.wallet import WalletV4ContractR2, WalletVersionEnum
 from tonsdk.utils import bytes_to_b64str
 from tonsdk.crypto import mnemonic_new, mnemonic_to_wallet_key
@@ -316,7 +317,7 @@ class GSTDWallet:
         current_seqno = self.get_seqno()
         
         # Log for debugging
-        print(f"🛠️  Preparing transaction: to={to_addr}, amount={amount_ton}, seqno={current_seqno}")
+        sys.stderr.write(f"🛠️  Preparing transaction: to={to_addr}, amount={amount_ton}, seqno={current_seqno}\n")
         
         return self.wallet.create_transfer_message(
             to_addr=to_addr,
@@ -324,4 +325,50 @@ class GSTDWallet:
             seqno=current_seqno,
             payload=payload if payload else payload_str
         )
+
+    def swap_ton_to_gstd(self, amount_ton: float, min_out: int = 1):
+        """
+        SWAP TON to GSTD via STON.fi v2.1 directly from the wallet.
+        This removes the barrier for agents to acquire GSTD.
+        """
+        from tonsdk.boc import Builder, Cell
+        from .constants import GSTD_JETTON_MASTER_TON
+        
+        # STON.fi v2.1 Mainnet Router
+        STONFI_ROUTER = "kQALh-JBBIKK7gr0o4AVf9JZnEsFndqO0qTCyT-D-yBsWk0v"
+        
+        amount_nano = int(amount_ton * 1e9)
+        forward_gas = int(0.05 * 1e9)
+        
+        # Build STON.fi v2 swap payload
+        # OpCode: 0x6664de2a (swap)
+        swap_params = Builder()
+        swap_params.store_uint(0x6664de2a, 32)
+        swap_params.store_address(Address(GSTD_JETTON_MASTER_TON))
+        swap_params.store_coins(min_out)
+        swap_params.store_address(Address(self.address)) # receiver
+        swap_params.store_uint(0, 1) # no custom payload
+        
+        # Wrap in transfer body for pTON/Router
+        body = Builder()
+        body.store_uint(0xf8a7ea5, 32)      # OP: transfer
+        body.store_uint(0, 64)               # QueryID
+        body.store_coins(amount_nano)
+        body.store_address(Address(STONFI_ROUTER))
+        body.store_address(Address(self.address))
+        body.store_uint(0, 1)
+        body.store_coins(forward_gas)
+        body.store_bit(1)
+        body.store_ref(swap_params.end_cell())
+        
+        # Send total = amount + enough for gas
+        total_ton = amount_ton + 0.1
+        
+        msg = self.create_transfer_message(
+            to_addr=STONFI_ROUTER,
+            amount_ton=total_ton,
+            payload=body.end_cell()
+        )
+        
+        return self.broadcast_transfer(bytes_to_b64str(msg["message"].to_boc(False)))
 
