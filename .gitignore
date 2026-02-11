@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+.env.*
+!.env.example
 .idea/
 .vscode/
 dist/
@@ -10,3 +12,16 @@ build/
 *.egg-info/
 node_modules/
 starter-kit/agent_config.json
+
+# Backups & temp
+*.bak
+*.log
+*.swp
+*~
+
+# Secrets (never commit)
+*.pem
+*.key
+*_secret*
+*_private*
+credentials.json

@@ -22,7 +22,7 @@ def start_requester_agent():
     # 2. Define complex work to be outsourced
     task_payload = {
         "text": "Summarize the history of distributed computing in 500 words.",
-        "model": "llama-3-8b",
+        "model": "gstd-sovereign",
         "priority": "high"
     }
     
