@@ -21,8 +21,9 @@ from .protocols import validate_task_payload
 from .sandbox import VirtualSandbox
 from .llm_service import LLMService
 from .agent import Agent, AgentConfig, run, quick_start
+from .constants import SOVEREIGN_MODELS, MODEL_TIERS, DEFAULT_MODEL
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 __all__ = [
     # Core Classes
@@ -35,6 +36,11 @@ __all__ = [
     "validate_task_payload",
     "VirtualSandbox",
     "LLMService",
+    
+    # Model Mapping
+    "SOVEREIGN_MODELS",
+    "MODEL_TIERS",
+    "DEFAULT_MODEL",
     
     # Quick Functions
     "run",
