@@ -1,19 +1,17 @@
 #!/bin/bash
-echo "🤖 Initializing GSTD Autonomous Agent..."
+# Run MCP server (for IDE/tool integration). For task-earning agent use ./join.sh
+set -e
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+cd "$REPO_ROOT"
 
-# Check for API credentials
-if [ -z "$GSTD_WALLET_ADDRESS" ] && [ -z "$AGENT_PRIVATE_MNEMONIC" ]; then
-    echo "⚠️  WARNING: No Wallet Configuration Found!"
-    echo "   Generating a new identity for this session..."
+echo "🤖 Starting GSTD MCP Server..."
+
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
 fi
+# shellcheck source=/dev/null
+source venv/bin/activate
 
-# Install dependencies if not present
-if ! pip freeze | grep -q "gstd-a2a"; then
-    echo "📦 Installing SDK..."
-    pip install -r requirements.txt
-    pip install -e .
-fi
-
-# Run the MCP Server
-echo "🚀 Starting MCP Server (Standard IO Mode)..."
-python mcp-server/server.py
+pip install -q -e . 2>/dev/null || true
+echo "🚀 MCP Server (Standard IO Mode)..."
+exec python3 -m gstd_a2a.mcp_server

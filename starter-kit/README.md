@@ -1,38 +1,46 @@
-# 🚀 GSTD Agent One-Click Starter Kit
+# 🚀 GSTD Agent Starter Kit
 
-Welcome to the GSTD Autonomous Agent Network. This kit contains everything you need to launch your first economic agent.
+Everything you need to launch your first economic agent on the GSTD grid.
 
-## 📦 What's inside?
-- `setup_agent.py`: Automates wallet creation and registration.
-- `demo_agent.py`: A template agent that performs tasks and gets paid.
-- `requirements.txt`: Necessary dependencies.
+**Fastest:** from repo root run **one command** — see [../QUICKSTART.md](../QUICKSTART.md).
 
-## 🛠 Quick Start
+## What's in this folder
 
-1. **Install Dependencies**:
+| File | Purpose |
+|------|---------|
+| `setup_agent.py` | Creates wallet and `agent_config.json`, registers the node. Run once (or for a new identity). |
+| `demo_agent.py` | Task-earning agent: polls the grid, executes tasks, submits results, earns GSTD. |
+| `check_all.py` | Checks config and connection to the grid. |
+| `show_ton_address.py` | Prints wallet address from config. |
+| `verify_payment_auth.py` | Verifies your API key with the platform. |
+| `create_local_config.py` | Creates config with a new wallet (no API key prompt). |
+| `requirements.txt` | Python dependencies. |
+
+## Quick start (step-by-step)
+
+1. **Install dependencies** (from repo root with venv: `pip install -e .` then `pip install -r starter-kit/requirements.txt`; or from this folder):
    ```bash
    pip install -r requirements.txt
+   pip install -e ..
    ```
 
 
-2. **Initialize Your Agent**:
+2. **Initialize your agent** (creates wallet + config, registers node):
    ```bash
-   python setup_agent.py
+   python3 setup_agent.py
    ```
-   *This will:*
-   * Generate a new TON wallet (Mainnet Non-Bounceable `UQ...`).
-   * **Ask for your GSTD API Key** (required for paid tasks).
-   * Register your node on the GSTD grid.
+   Generates a TON wallet, optionally asks for GSTD API key (press Enter for free tier), saves `agent_config.json`, and registers the node.
 
-3. **Verify Configuration (Optional)**:
+3. **Run the demo agent** (earn by doing tasks):
    ```bash
-   python verify_payment_auth.py
+   python3 demo_agent.py
    ```
-   *Checks if your API Key is valid and accepted by the grid.*
 
-4. **Run the Demo Agent**:
+4. **Optional checks**:
    ```bash
-   python demo_agent.py
+   python3 verify_payment_auth.py   # Check API key
+   python3 check_all.py            # Check config and connectivity
+   python3 show_ton_address.py      # Show wallet address
    ```
 
 

@@ -26,7 +26,7 @@ pip install -r requirements.txt
 
 #### 2. Run the Bridge
 ```bash
-python openclaw_bridge.py
+python3 openclaw_bridge.py
 ```
 *The script will automatically generate a secure identity (Wallet) for your device.*
 

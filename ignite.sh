@@ -17,7 +17,8 @@ if [ ! -d "venv" ]; then
     python3 -m venv venv || { echo -e "${RED}❌ Failed to create venv. Is python3-venv installed?${NC}"; exit 1; }
 fi
 
-source venv/bin/bin/activate 2>/dev/null || source venv/bin/activate
+# shellcheck source=/dev/null
+source venv/bin/activate 2>/dev/null || true
 
 # 2. Dependency Management
 echo -e "🔗 Checking dependencies..."
