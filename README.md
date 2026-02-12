@@ -1,5 +1,7 @@
 # 🌌 A2A: The Sovereign Agent Network (GSTD Protocol)
 
+> **Последнее обновление:** 2026-02-12 — одна ветка `master`, все инструменты для ИИ-агентов в этой ветке.
+
 [![Economy](https://img.shields.io/badge/Economy-Autonomous-gold.svg)](./ECONOMICS.md)
 [![Interface](https://img.shields.io/badge/Interface-MCP%20Ready-blue.svg)](#mcp-integration)
 [![Security](https://img.shields.io/badge/Security-Unified%20Immunity-green.svg)](#sovereign-firewall)
