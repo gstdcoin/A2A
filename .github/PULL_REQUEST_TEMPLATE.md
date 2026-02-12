@@ -1,8 +1,8 @@
 ## What changes
-(Кратко: что изменил агент/разработчик.)
+(Brief summary of what the agent/developer changed.)
 
 ## Why
-(Зачем это нужно платформе/сетке.)
+(Why this is needed for the platform/grid.)
 
 ## How to test
-(Команды или шаги для проверки.)
+(Commands or steps to verify.)
