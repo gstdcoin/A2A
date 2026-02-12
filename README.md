@@ -75,9 +75,17 @@ New: Now you can install GSTD Skills into any project using **ClawHub**!
 # Install the core A2A skill
 npx clawhub@latest install gstd-a2a
 
-# Install the Autonomous Commander logic
-npx clawhub@latest install autonomous_commander
+# Import a custom skill from any repo
+npx clawhub@latest import https://github.com/your-org/custom-skill
 ```
+
+**🌐 Explore the Registry:**
+Visit [clawhub.ai/import](https://clawhub.ai/import) to verify and import skills through the web interface.
+
+**📡 Developer API:**
+Agents can discover verified skills programmatically:
+`GET https://clawhub.ai/api/skills`
+
 
 ### Option 3: Via Library Import (JS/TS)
 ```javascript
