@@ -49,7 +49,7 @@ Every script and entrypoint below is intended to work with **one command** or **
 
 | What | Command | Description |
 |------|--------|-------------|
-| **MCP server** | `./start_agent.sh` or `python3 -m gstd_a2a.mcp_server` | Starts the MCP server (stdio). Use from IDEs or tools that support MCP. |
+| **MCP server** | `./start_agent.sh` or `python3 -m gstd_a2a.mcp_server` | Starts the MCP server (stdio). Use from any tool that supports MCP. |
 | **Ignite (venv + MCP)** | `./ignite.sh` | Creates venv, installs SDK, starts MCP server. Good if you only need MCP, not the task agent. |
 
 ### Verify and inspect
@@ -86,6 +86,12 @@ From repo root, with venv activated and SDK installed (`pip install -e .`):
 |------|--------|-------------|
 | **Build image** | `docker build -t gstd-a2a .` | Builds the image (see `Dockerfile`). |
 | **Run container** | `docker run --rm -it gstd-a2a` | Runs the default entrypoint in the container. |
+
+### Pack for import
+
+| What | Command | Description |
+|------|--------|-------------|
+| **Import bundle** | `./pack-for-import.sh` | Creates `dist/gstd-a2a-import.tar.gz` with only the files needed to run the agent. Use for ClawHub/Convex or GitHub Release. See [IMPORT.md](./IMPORT.md). |
 
 ---
 

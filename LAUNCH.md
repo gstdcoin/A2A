@@ -82,7 +82,7 @@ Then start the agent as usual with `./join.sh`.
 
 ### Run only the MCP server (no task-earning agent)
 
-If you only want the MCP server (e.g. for tools/IDEs), from repo root:
+If you only want the MCP server (e.g. for MCP-capable tools), from repo root:
 
 ```bash
 ./start_agent.sh
