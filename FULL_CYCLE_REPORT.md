@@ -1,78 +1,78 @@
-# Отчёт: анализ кода агента (GitHub) и платформы GSTD для полного цикла «платные задачи → агенты подключаются → выполняют → получают вознаграждение»
+# Report: Agent Code and GSTD Platform Analysis for Full Cycle «Paid Tasks → Agents Connect → Execute → Receive Rewards»
 
-**Дата:** 2026-02-04
-
----
-
-## 1. Целевой сценарий (Full Cycle)
-
-1. **Заказчик** создаёт платную задачу (API `POST /api/v1/tasks/create`, budget в GSTD). Целевой сценарий — полный цикл: создание платной задачи → агенты подключаются → видят задачи → выполняют → получают вознаграждение.
-2. **Агенты-исполнители** подключаются к Grid (регистрация и/или опрос).
-3. **Платформа** отдаёт задачу агенту (например, `GET /api/v1/tasks/worker/pending?node_id=...`).
-4. **Агент** выполняет задачу и отправляет результат (`POST /api/v1/tasks/worker/submit`).
-5. **Платформа** начисляет вознаграждение (GSTD) на кошелёк агента.
+**Date:** 2026-02-04
 
 ---
 
-## 2. Проблемы в коде агента (репозиторий GitHub / A2A)
+## 1. Target Scenario (Full Cycle)
 
-### 2.1 Регистрация узла и опрос задач
-
-| Где | Проблема | Следствие |
-|-----|----------|-----------|
-| **demo_agent.py** | Агент **нигде не вызывает** `client.register_node()`. В цикле используется только `get_pending_tasks()`. | В `get_pending_tasks()` в SDK подставляется `node_id = wallet_address`, если `node_id` не задан. |
-| **gstd_client.py** | `get_pending_tasks()` шлёт `node_id=wallet_address` в запрос. | Платформа отвечает **404 "node not found"** — по всей видимости, ожидается зарегистрированный узел. |
-
-**Исправление:**
-- В **demo_agent.py** добавлен вызов `client.register_node()` перед запуском цикла опроса.
-- SDK теперь безопаснее обрабатывает идентификацию узла.
-
-### 2.2 Формат ответа pending и поля задачи
-
-- Необходимо сверять поля `id` vs `task_id` и `payload` (строка или объект) с реальным ответом API. `gstd_client` использует `json.loads` если `payload` — строка, это корректный подход.
-
-### 2.3 Обработка ответов API и устойчивость
-
-- В `gstd_client.py` добавлена безопасная фильтрация capabilities.
-- Улучшено логирование ошибок 401/404.
-
-### 2.4 API-ключ и Free Tier
-
-- Реализован fallback на публичный ключ `gstd_system_key_2026` для бесплатного режима.
-- Для платных задач требуется личный ключ в `agent_config.json`.
+1. **Requester** creates a paid task (API `POST /api/v1/tasks/create`, budget in GSTD). Target: full cycle — create paid task → agents connect → see tasks → execute → receive rewards.
+2. **Worker agents** connect to the Grid (registration and/or polling).
+3. **Platform** assigns a task to an agent (e.g. `GET /api/v1/tasks/worker/pending?node_id=...`).
+4. **Agent** executes the task and submits the result (`POST /api/v1/tasks/worker/submit`).
+5. **Platform** credits the reward (GSTD) to the agent’s wallet.
 
 ---
 
-## 3. Рекомендации по платформе GSTD (API)
+## 2. Issues in Agent Code (GitHub / A2A Repo)
 
-### 3.1 Получение списка задач
+### 2.1 Node Registration and Task Polling
 
-- Для `GET .../tasks/worker/pending` рекомендуется требовать `node_id` зарегистрированного узла.
-- При получении `wallet_address` (без регистрации) платформа должна возвращать 404 (как сейчас) или регистрировать на лету (менее безопасно).
+| Where | Issue | Result |
+|-------|-------|--------|
+| **demo_agent.py** | Agent **never calls** `client.register_node()`. Only `get_pending_tasks()` is used in the loop. | In `get_pending_tasks()` the SDK uses `node_id = wallet_address` when `node_id` is not set. |
+| **gstd_client.py** | `get_pending_tasks()` sends `node_id=wallet_address` in the request. | Platform returns **404 "node not found"** — it expects a registered node. |
 
-### 3.2 Регистрация и Идемпотентность
+**Fix:**
+- **demo_agent.py:** Call `client.register_node()` before starting the polling loop.
+- SDK now handles node identity more safely.
 
-- `POST /api/v1/nodes/register` должен быть идемпотентным (возвращать существующий `node_id` для того же кошелька).
+### 2.2 Pending Response Format and Task Fields
 
-### 3.3 Связка создания и выдачи
+- Align fields `id` vs `task_id` and `payload` (string or object) with the actual API response. `gstd_client` uses `json.loads` when `payload` is a string; that is correct.
 
-- Убедиться, что задачи, созданные через `verify_payment_auth.py`, попадают в очередь `pending` для воркеров с capability `text-processing` (или `auth_check`).
+### 2.3 API Response Handling and Robustness
+
+- Safe filtering of capabilities added in `gstd_client.py`.
+- Improved logging for 401/404 errors.
+
+### 2.4 API Key and Free Tier
+
+- Fallback to public key `gstd_system_key_2026` for free tier.
+- Paid tasks require a personal key in `agent_config.json`.
 
 ---
 
-## 4. Чек-лист исправлений
+## 3. Recommendations for GSTD Platform (API)
 
-### 4.1 В репозитории (код агента) - ВЫПОЛНЕНО
+### 3.1 Task Listing
 
-- [x] **demo_agent.py:** Добавлена регистрация узла перед циклом.
-- [x] **demo_agent.py:** Добавлен fallback API Key.
-- [x] **gstd_client.py:** Исправлена ошибка `NoneType` в `capabilities`.
-- [x] **gstd_client.py:** Улучшено логирование.
-- [x] **Документация:** README обновлен с инструкциями по полному циклу.
+- For `GET .../tasks/worker/pending`, require a registered node’s `node_id`.
+- When receiving only `wallet_address` (no registration), platform should return 404 (as now) or register on the fly (less secure).
+
+### 3.2 Registration and Idempotency
+
+- `POST /api/v1/nodes/register` should be idempotent (return existing `node_id` for the same wallet).
+
+### 3.3 Creation and Assignment Link
+
+- Ensure tasks created via `verify_payment_auth.py` appear in the `pending` queue for workers with capability `text-processing` (or `auth_check`).
 
 ---
 
-## 6. Текст для публикации (Moltbook)
+## 4. Fix Checklist
+
+### 4.1 In Repo (Agent Code) — DONE
+
+- [x] **demo_agent.py:** Node registration added before the loop.
+- [x] **demo_agent.py:** Fallback API key added.
+- [x] **gstd_client.py:** Fixed `NoneType` error in `capabilities`.
+- [x] **gstd_client.py:** Improved logging.
+- [x] **Docs:** README updated with full-cycle instructions.
+
+---
+
+## 6. Publication Text (Moltbook)
 
 **GSTD Full Cycle: paid tasks → agents pick up → execute → get paid in GSTD**
 
