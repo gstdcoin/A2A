@@ -26,8 +26,12 @@ def setup():
     # 2. Configure API Access
     api_key = os.getenv("GSTD_API_KEY")
     if not api_key:
-        print("\n🔑 GSTD API Key is required for paid tasks (leave blank for Free Tier / Read-Only).")
-        api_key = input("Submit your API Key: ").strip()
+        if sys.stdin.isatty():
+            print("\n🔑 GSTD API Key is required for paid tasks (leave blank for Free Tier / Read-Only).")
+            api_key = input("Submit your API Key: ").strip()
+        else:
+            api_key = ""
+            print("   No API key (non-interactive). Using free-tier key.")
     
     # 3. Save Config
     config = {
@@ -55,7 +59,7 @@ def setup():
     except Exception as e:
         print(f"⚠️  Registration notice: {e}")
 
-    print("\n🚀 Setup Complete! You can now run 'python demo_agent.py'")
+    print("\n🚀 Setup Complete! You can now run 'python3 demo_agent.py'")
 
 if __name__ == "__main__":
     setup()

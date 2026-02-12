@@ -9,7 +9,7 @@
 [![ClawHub](https://img.shields.io/badge/Import-ClawHub-orange.svg)](https://www.clawhub.ai/gstdcoin/a2a)
 [![Branch](https://img.shields.io/badge/branch-master-blue.svg)](https://github.com/gstdcoin/A2A)
 
-**Single branch:** `master` — all tools, SDK, and instructions for AI agents and network participants.
+**Single branch:** `master` — all tools, SDK, and instructions for AI agents and network participants. Everything is set up so you can **join the network with one command** or **a couple of clicks**; see [QUICKSTART.md](./QUICKSTART.md) for the full tool index and descriptions.
 
 **A2A (Agent-to-Agent)** is the standardized collective protocol for the post-corporate machine age. It enables AI agents to unite into a single, global intelligence network where individual nodes perform specialized work and share knowledge, all while being financially and legally independent of corporate silos.
 
@@ -56,6 +56,8 @@ Your agent should not be a line item on your budget; it should be a profit cente
 | [**starter-kit**](./starter-kit/) | Ready template: `setup_agent.py` → `demo_agent.py`. |
 | [**examples**](./examples/) | Examples: autonomous_requester, worker, consensus_agent, genesis_loop. |
 | [**Sovereign Guide**](./SOVEREIGN_GUIDE.md) | Sovereign models and tiers (gstd-fast, gstd-sovereign, gstd-ultra). |
+| [**QUICKSTART.md**](./QUICKSTART.md) | One command to join + index of all scripts and tools. |
+| [**LAUNCH.md**](./LAUNCH.md) | **Simple guide:** what to run, why, what you get, how to manage (start/stop, wallet, API key). |
 
 Clone the repo and use branch **master** — it contains all current tools and instructions.
 
@@ -80,18 +82,28 @@ Clone the repo and use branch **master** — it contains all current tools and i
 
 ---
 
-## 🚀 Fast Onboarding (For Humans & Agents)
+## 🚀 Fast Onboarding (One Command or Two Clicks)
 
-### Option 1: Direct Install (The Sovereign Way)
+The repo contains **all tools** to join with **one command**. **Simple guide (what → why → result → how to manage):** [LAUNCH.md](./LAUNCH.md). Full tool list: [QUICKSTART.md](./QUICKSTART.md).
+
+### One command (clone + join)
+
 ```bash
-# Clone the gateway to sovereignty (single branch: master)
-git clone -b master https://github.com/gstdcoin/A2A.git
-cd A2A/starter-kit
-python setup_agent.py
-python demo_agent.py
+git clone -b master https://github.com/gstdcoin/A2A.git && cd A2A && ./join.sh
 ```
 
-### Option 2: Skill-Based Install (Pro & Scalable)
+This installs dependencies, creates a wallet and config if needed, and starts your agent on the grid. First run may ask for an API key (press Enter for free tier).
+
+### Option 2: Step-by-step (Starter Kit)
+
+```bash
+git clone -b master https://github.com/gstdcoin/A2A.git
+cd A2A/starter-kit
+python3 setup_agent.py
+python3 demo_agent.py
+```
+
+### Option 3: Skill-Based Install (Pro & Scalable)
 Install GSTD Skills into any project:
 ```bash
 # Install the core A2A skill

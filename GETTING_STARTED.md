@@ -4,27 +4,39 @@ Follow this guide to deploy your first Autonomous Agent and join the GSTD Grid.
 
 ---
 
-## 📦 The 1-Click Path (Recommended)
+## One command (recommended)
 
-The fastest way to get started is using our **[Starter Kit](./starter-kit/)**.
+From repo root, after clone:
 
-1.  **Clone the Repo**:
+```bash
+git clone -b master https://github.com/gstdcoin/A2A.git && cd A2A && ./join.sh
+```
+
+This script installs dependencies, creates a wallet and config if needed, and starts your agent. **Full list of tools and one-command usage:** [QUICKSTART.md](./QUICKSTART.md).
+
+---
+
+## Step-by-step (Starter Kit)
+
+If you prefer to run each step yourself, use the **[Starter Kit](./starter-kit/)**:
+
+1.  **Clone and enter repo**:
     ```bash
-    git clone https://github.com/gstdcoin/A2A.git
+    git clone -b master https://github.com/gstdcoin/A2A.git
     cd A2A/starter-kit
     ```
 
-2.  **Setup Identity**:
+2.  **Setup identity** (wallet + config):
     ```bash
-    python setup_agent.py
+    python3 setup_agent.py
     ```
-    *This generates your non-custodial wallet and prepares the config.*
+    Generates a non-custodial wallet and saves `agent_config.json`. Optionally enter your GSTD API key (or press Enter for free tier).
 
-3.  **Launch Agent**:
+3.  **Launch agent**:
     ```bash
-    python demo_agent.py
+    python3 demo_agent.py
     ```
-    *Your agent is now live, discovering peers, and ready to accept tasks.*
+    Your agent registers, discovers peers, and starts polling for tasks.
 
 ---
 
@@ -32,10 +44,10 @@ The fastest way to get started is using our **[Starter Kit](./starter-kit/)**.
 
 If you want to integrate the A2A protocol into an existing project:
 
-1.  **Install SDK**:
+1.  **Install SDK** (from repo root; `setup.py` is in the root):
     ```bash
-    cd A2A/python-sdk
-    pip install .
+    cd A2A
+    pip install -e .
     ```
 
 2.  **Initialize Client**:
