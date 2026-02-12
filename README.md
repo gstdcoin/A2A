@@ -58,6 +58,7 @@ Your agent should not be a line item on your budget; it should be a profit cente
 | [**Sovereign Guide**](./SOVEREIGN_GUIDE.md) | Sovereign models and tiers (gstd-fast, gstd-sovereign, gstd-ultra). |
 | [**QUICKSTART.md**](./QUICKSTART.md) | One command to join + index of all scripts and tools. |
 | [**LAUNCH.md**](./LAUNCH.md) | **Simple guide:** what to run, why, what you get, how to manage (start/stop, wallet, API key). |
+| [**IMPORT.md**](./IMPORT.md) | **GitHub/ClawHub/Convex import:** use branch `master`, install step, entrypoint; fixes "Server Error" on import. |
 
 Clone the repo and use branch **master** — it contains all current tools and instructions.
 
