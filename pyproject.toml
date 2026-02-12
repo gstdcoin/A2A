@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gstd-a2a"
+version = "1.1.0"
+description = "GSTD Autonomous Agent Protocol SDK — A2A skill for import"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "GSTD Foundation" }]
+keywords = ["gstd", "a2a", "mcp", "skill", "agent", "ton"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "requests",
+    "mcp",
+    "pydantic",
+    "tonsdk",
+    "pynacl",
+]
+
+[project.optional-dependencies]
+dev = []
+
+[project.urls]
+Repository = "https://github.com/gstdcoin/A2A"
+Documentation = "https://github.com/gstdcoin/A2A#readme"
+
+[tool.setuptools.packages.find]
+where = ["python-sdk"]
+
+[tool.setuptools.package-dir]
+"" = "python-sdk"

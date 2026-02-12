@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run MCP server (for IDE/tool integration). For task-earning agent use ./join.sh
+# Run MCP server (for MCP-capable tools). For task-earning agent use ./join.sh
 set -e
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$REPO_ROOT"
