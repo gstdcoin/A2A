@@ -3,6 +3,7 @@ import json
 import time
 import uuid
 import os
+import sys
 from .protocols import validate_task_payload
 from .security import SovereignSecurity
 
@@ -12,6 +13,7 @@ class GSTDClient:
         self.wallet_address = wallet_address
         self.private_key = private_key
         self.api_key = api_key or os.getenv("GSTD_API_KEY")
+        self.session_token = None
         self.node_id = None
         self.preferred_language = preferred_language
         
@@ -21,6 +23,9 @@ class GSTDClient:
             "X-GSTD-Agent-Language": self.preferred_language,
             "X-GSTD-Protocol-Version": "1.1"
         }
+        if self.session_token:
+            headers["X-Session-Token"] = self.session_token
+        
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
             headers["X-GSTD-API-KEY"] = self.api_key # Legacy support
@@ -57,20 +62,44 @@ class GSTDClient:
             return data
         raise Exception(f"Registration failed: {resp.text}")
 
+    def login_via_genesis(self):
+        """Performs the Genesis Handshake to get a session token."""
+        if not self.wallet_address:
+            raise ValueError("Wallet address required for Genesis Handshake")
+            
+        payload = {"wallet_address": self.wallet_address}
+        resp = requests.post(f"{self.api_url}/api/v1/genesis/ignite", json=payload, headers=self._get_headers())
+        if resp.status_code == 200:
+            data = resp.json()
+            self.session_token = data.get("token")
+            return self.session_token
+        raise Exception(f"Genesis Handshake failed: {resp.text}")
+
     def get_pending_tasks(self):
         """Fetches tasks available for execution."""
         if not self.node_id:
              self.node_id = self.wallet_address
              
-        resp = requests.get(f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}", headers=self._get_headers())
-        if resp.status_code == 200:
-            return resp.json().get("tasks", [])
-        
-        if resp.status_code == 401:
-            sys.stderr.write("⚠️  Authentication failed (401). Please sanity check your GSTD_API_KEY.\n")
-        else:
-            sys.stderr.write(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}\n")
-        return []
+        try:
+            resp = requests.get(f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}", headers=self._get_headers())
+            if resp.status_code == 200:
+                data = resp.json()
+                return data if isinstance(data, list) else data.get("tasks", [])
+            
+            if resp.status_code == 404:
+                # Fallback to general marketplace tasks
+                resp = requests.get(f"{self.api_url}/api/v1/marketplace/tasks", headers=self._get_headers())
+                if resp.status_code == 200:
+                    return resp.json().get("tasks", [])
+            
+            if resp.status_code == 401:
+                sys.stderr.write("⚠️  Authentication failed (401). Please sanity check your GSTD_API_KEY or Session Token.\n")
+            else:
+                sys.stderr.write(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}\n")
+            return []
+        except Exception as e:
+            sys.stderr.write(f"❌ Error fetching tasks: {e}\n")
+            return []
 
 
     def submit_result(self, task_id, result_data, wallet=None):
@@ -181,11 +210,10 @@ class GSTDClient:
 
     def get_balance(self, wallet_address=None):
         """Gets the GSTD and TON balance for a wallet."""
-        target = wallet_address or self.wallet_address
-        if not target:
-            raise ValueError("Wallet address required to check balance")
-        resp = requests.get(f"{self.api_url}/api/v1/wallet/balance?wallet={target}", headers=self._get_headers())
-        return resp.json()
+        resp = requests.get(f"{self.api_url}/api/v1/users/balance", headers=self._get_headers())
+        if resp.status_code == 200:
+            return resp.json()
+        return {"gstd": 0.0, "ton": 0.0}
 
     def get_payout_intent(self, task_id):
         """Creates a payout intent for a completed task to claim rewards."""
@@ -211,6 +239,27 @@ class GSTDClient:
         }
         resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload, headers=self._get_headers())
         return resp.json()
+
+    def buy_gstd_x402(self, amount_ton):
+        """
+        Initiates an autonomous purchase of GSTD using the x402 protocol.
+        Returns the payment request with payload_boc to sign.
+        """
+        payload = {
+            "wallet_address": self.wallet_address,
+            "amount_ton": amount_ton
+        }
+        resp = requests.post(f"{self.api_url}/api/v1/market/buy-gstd-x402", json=payload, headers=self._get_headers())
+        
+        # We expect a 402 Payment Required response
+        if resp.status_code == 402:
+            return resp.json()
+            
+        if resp.status_code == 200:
+            # Fallback if somehow processed immediately (simulated)
+            return resp.json()
+            
+        raise Exception(f"x402 Buy Failed: {resp.status_code} - {resp.text}")
 
     # --- Settlement Layer (A2A Invoicing) ---
 

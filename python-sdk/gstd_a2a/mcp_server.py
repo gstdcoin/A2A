@@ -181,7 +181,7 @@ def recall(topic: str) -> str:
 
 
 @mcp.tool()
-def llm_generate(prompt: str, model: str = "qwen2.5-coder:7b", system_prompt: str = None) -> str:
+def llm_generate(prompt: str, model: str = "gstd-fast", system_prompt: str = None) -> str:
     """
     Generates a response using the local Ollama LLM.
     Use this for code generation, task planning, or complex reasoning.
@@ -189,7 +189,7 @@ def llm_generate(prompt: str, model: str = "qwen2.5-coder:7b", system_prompt: st
     return llm.generate(prompt, model, system_prompt)
 
 @mcp.tool()
-def llm_chat(messages: List[dict], model: str = "qwen2.5-coder:7b") -> str:
+def llm_chat(messages: List[dict], model: str = "gstd-fast") -> str:
     """
     Chat with the local Ollama LLM.
     Messages format: [{"role": "user", "content": "hello"}]
