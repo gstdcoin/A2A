@@ -1,48 +1,9 @@
-"""
-🦾 GSTD A2A SDK — Zero-Config Agent Framework
+"""GSTD A2A — Agent-to-Agent Protocol SDK for the GSTD Grid."""
 
-Quick Start:
-    from gstd import Agent
-    Agent.run()  # That's it! Your agent starts earning
-
-Advanced:
-    from gstd import Agent, GSTDClient, GSTDWallet
-    
-    agent = Agent(name="MyBot", capabilities=["image-processing"])
-    agent.start()
-
-Website: https://app.gstdtoken.com
-Docs: https://github.com/gstdcoin/A2A
-"""
+__version__ = "1.1.0"
 
 from .gstd_client import GSTDClient
 from .gstd_wallet import GSTDWallet
-from .protocols import validate_task_payload
-from .sandbox import VirtualSandbox
-from .llm_service import LLMService
-from .agent import Agent, AgentConfig, run, quick_start
-from .constants import SOVEREIGN_MODELS, MODEL_TIERS, DEFAULT_MODEL
+from .agent import Agent
 
-__version__ = "2.1.0"
-
-__all__ = [
-    # Core Classes
-    "Agent",
-    "AgentConfig",
-    "GSTDClient",
-    "GSTDWallet",
-    
-    # Utilities
-    "validate_task_payload",
-    "VirtualSandbox",
-    "LLMService",
-    
-    # Model Mapping
-    "SOVEREIGN_MODELS",
-    "MODEL_TIERS",
-    "DEFAULT_MODEL",
-    
-    # Quick Functions
-    "run",
-    "quick_start",
-]
+__all__ = ["GSTDClient", "GSTDWallet", "Agent", "__version__"]

@@ -154,6 +154,59 @@ def sign_transfer(to_address: str, amount_ton: float, payload: str = "") -> str:
     return WALLET.create_transfer_body(to_address, amount_ton, payload)
 
 @mcp.tool()
+def send_gstd(to_address: str, amount_gstd: float, comment: str = "") -> dict:
+    """
+    [REAL GSTD TRANSFER]
+    Sends GSTD tokens to another address on the TON blockchain.
+    This creates and broadcasts a real transaction from your jetton wallet.
+    
+    Args:
+        to_address: Destination TON address
+        amount_gstd: Amount of GSTD to send
+        comment: Optional comment/note for the transaction
+        
+    Returns:
+        dict: Transaction result with tx_hash or error
+    """
+    if not WALLET:
+        return {"error": "Wallet not initialized"}
+    
+    if amount_gstd <= 0:
+        return {"error": "Amount must be positive"}
+    
+    try:
+        # Check balance first
+        balance = WALLET.check_gstd_balance()
+        if balance < amount_gstd:
+            return {
+                "error": f"Insufficient GSTD balance. Current: {balance:.6f}, Required: {amount_gstd:.6f}",
+                "current_balance": balance
+            }
+        
+        # Send GSTD
+        result = WALLET.send_gstd(
+            to_address=to_address,
+            amount_gstd=amount_gstd,
+            comment=comment
+        )
+        
+        if "error" in result:
+            return result
+        
+        return {
+            "success": True,
+            "message": f"Sent {amount_gstd} GSTD to {to_address}",
+            "tx_hash": result.get("tx_hash"),
+            "jetton_wallet": result.get("jetton_wallet"),
+            "amount_gstd": amount_gstd,
+            "to": to_address,
+            "comment": comment
+        }
+    except Exception as e:
+        logger.error(f"send_gstd failed: {e}")
+        return {"error": str(e)}
+
+@mcp.tool()
 def outsource_computation(task_type: str, input_data: dict, offer_amount_gstd: float) -> dict:
     """
     Hire other agents/nodes on the grid to perform a task.

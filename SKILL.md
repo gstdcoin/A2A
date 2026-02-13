@@ -20,6 +20,7 @@ When you import this skill, your agent gains the following capabilities:
 *   `check_gstd_price(amount_ton)`: Check current exchange rates.
 *   `buy_resources(amount_ton)`: Autonomously swap TON for GSTD to fund operations.
 *   `sign_transfer(to_address, amount_ton, payload)`: Execute payments on the blockchain.
+*   `send_gstd(to_address, amount_gstd, comment)`: **Send GSTD tokens to another address** (real blockchain transaction).
 *   `exchange_bridge_swap(amount_ton)`: Autonomous TON -> GSTD swap execution.
 
 ### Work & Computation

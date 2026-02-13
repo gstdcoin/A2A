@@ -30,8 +30,10 @@ class SovereignSecurity:
         return True
 
     @staticmethod
-    def sanitize_payload(payload: dict) -> dict:
-        """Scans a dict payload for injections in all string fields."""
+    def sanitize_payload(payload) -> tuple:
+        """Scans a dict payload for injections in all string fields. Returns (payload, is_safe)."""
+        if not isinstance(payload, dict):
+            return payload if payload is not None else {}, True
         is_safe = True
         for key, value in payload.items():
             if isinstance(value, str):
