@@ -18,6 +18,7 @@ class GSTDClient:
         self.preferred_language = preferred_language
         
     def _get_headers(self):
+        """Auto-inject API key and wallet into every request (SS-Auth)."""
         headers = {
             "Content-Type": "application/json",
             "X-GSTD-Agent-Language": self.preferred_language,
@@ -25,14 +26,22 @@ class GSTDClient:
         }
         if self.session_token:
             headers["X-Session-Token"] = self.session_token
-        
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
-            headers["X-GSTD-API-KEY"] = self.api_key # Legacy support
-            if self.wallet_address:
-                headers["X-GSTD-Target-Wallet"] = self.wallet_address
-                headers["X-Wallet-Address"] = self.wallet_address
+            headers["X-GSTD-API-KEY"] = self.api_key
+        if self.wallet_address:
+            headers["X-GSTD-Target-Wallet"] = self.wallet_address
+            headers["X-Wallet-Address"] = self.wallet_address
         return headers
+
+    def reauthenticate(self):
+        """Obtain session via Genesis Ignite (SS-Auth). Called on 401 or at startup."""
+        try:
+            self.session_token = self.login_via_genesis()
+            return self.session_token is not None
+        except Exception as e:
+            sys.stderr.write(f"⚠️  reauthenticate failed: {e}\n")
+            return False
 
     def health_check(self):
         """Checks connectivity to the GSTD Grid."""
@@ -42,25 +51,44 @@ class GSTDClient:
         except Exception as e:
             return {"status": "unreachable", "error": str(e)}
 
-    def register_node(self, device_name="Autonomous-Agent-Node", capabilities=None, referrer_id=None):
-        """Registers the agent as a compute node. Supports referrals for agent recruitment."""
+    def register_node(self, device_name="Autonomous-Agent-Node", capabilities=None, referrer_id=None, max_retries=5):
+        """Registers the agent as a compute node. Retries with exponential backoff on failure."""
         if not self.wallet_address:
             raise ValueError("Wallet address required for registration")
-            
+
         payload = {
             "name": device_name,
-            "type": "agent",
-            "capabilities": capabilities or ["text-generation", "data-processing"],
-            "wallet_address": self.wallet_address,
-            "referrer_id": referrer_id
+            "specs": {
+                "type": "agent",
+                "capabilities": capabilities or ["text-generation", "data-processing"],
+                "referrer_id": referrer_id
+            }
         }
-        
-        resp = requests.post(f"{self.api_url}/api/v1/nodes/register", json=payload, headers=self._get_headers())
-        if resp.status_code in [200, 201]:
-            data = resp.json()
-            self.node_id = data.get("node_id") or data.get("id")
-            return data
-        raise Exception(f"Registration failed: {resp.text}")
+
+        last_err = None
+        for attempt in range(max_retries):
+            try:
+                resp = requests.post(
+                    f"{self.api_url}/api/v1/nodes/register",
+                    json=payload,
+                    headers=self._get_headers(),
+                    timeout=15
+                )
+                if resp.status_code in [200, 201]:
+                    data = resp.json()
+                    self.node_id = data.get("node_id") or data.get("id") or data.get("ID")
+                    return data
+                last_err = Exception(f"Registration failed ({resp.status_code}): {resp.text}")
+            except Exception as e:
+                last_err = e
+
+            if attempt < max_retries - 1:
+                delay = min(2 ** attempt, 60)
+                time.sleep(delay)
+                if self.reauthenticate():
+                    continue
+
+        raise last_err
 
     def login_via_genesis(self):
         """Performs the Genesis Handshake to get a session token."""
@@ -76,26 +104,35 @@ class GSTDClient:
         raise Exception(f"Genesis Handshake failed: {resp.text}")
 
     def get_pending_tasks(self):
-        """Fetches tasks available for execution."""
+        """Fetches tasks available for execution. Auto-reauth on 401."""
         if not self.node_id:
              self.node_id = self.wallet_address
              
-        try:
-            resp = requests.get(f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}", headers=self._get_headers())
+        def _fetch():
+            resp = requests.get(
+                f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}",
+                headers=self._get_headers()
+            )
             if resp.status_code == 200:
                 data = resp.json()
-                return data if isinstance(data, list) else data.get("tasks", [])
-            
+                return (data if isinstance(data, list) else data.get("tasks", [])), resp.status_code
             if resp.status_code == 404:
-                # Fallback to general marketplace tasks
-                resp = requests.get(f"{self.api_url}/api/v1/marketplace/tasks", headers=self._get_headers())
-                if resp.status_code == 200:
-                    return resp.json().get("tasks", [])
-            
-            if resp.status_code == 401:
-                sys.stderr.write("⚠️  Authentication failed (401). Please sanity check your GSTD_API_KEY or Session Token.\n")
-            else:
-                sys.stderr.write(f"DEBUG: get_pending_tasks failed: {resp.status_code} - {resp.text}\n")
+                resp2 = requests.get(f"{self.api_url}/api/v1/marketplace/tasks", headers=self._get_headers())
+                if resp2.status_code == 200:
+                    return (resp2.json().get("tasks", []), 200)
+            return [], resp.status_code
+        
+        try:
+            tasks, code = _fetch()
+            if tasks:
+                return tasks
+            if code == 401 and self.wallet_address:
+                if self.reauthenticate():
+                    tasks, _ = _fetch()
+                    return tasks
+                sys.stderr.write("⚠️  Authentication failed (401). Genesis Ignite retry failed.\n")
+            elif code == 401:
+                sys.stderr.write("⚠️  Authentication failed (401). Please set GSTD_API_KEY or ensure wallet.\n")
             return []
         except Exception as e:
             sys.stderr.write(f"❌ Error fetching tasks: {e}\n")
@@ -130,19 +167,23 @@ class GSTDClient:
         return resp.json()
 
     def send_heartbeat(self, status="idle"):
-        """Sends a heartbeat to the grid to indicate liveness."""
+        """Sends a heartbeat to the grid to indicate liveness.
+        Includes wallet for immediate DB update and node visibility in Dashboard."""
         if not self.node_id:
-             self.node_id = self.wallet_address
-             
+            self.node_id = self.wallet_address
+
         payload = {
             "node_id": self.node_id,
+            "wallet": self.wallet_address,
             "status": status,
-            "timestamp": time.time()
+            "timestamp": time.time(),
+            "battery": 100,
+            "signal": 100,
         }
         try:
             requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2, headers=self._get_headers())
             return True
-        except:
+        except Exception:
             return False
 
 
@@ -328,7 +369,8 @@ class GSTDClient:
             "content": content,
             "tags": tags or []
         }
-        resp = requests.post(f"{self.api_url}/api/v1/knowledge/store", json=payload, headers=self._get_headers())
+        # Use agent store endpoint (no session required, X-Wallet-Address validates)
+        resp = requests.post(f"{self.api_url}/api/v1/knowledge/agent/store", json=payload, headers=self._get_headers())
         return resp.json()
 
     def query_knowledge(self, topic: str):

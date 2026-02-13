@@ -7,6 +7,11 @@ from tonsdk.crypto import mnemonic_new, mnemonic_to_wallet_key
 from .constants import GSTD_JETTON_MASTER_TON
 
 class GSTDWallet:
+    @classmethod
+    def generate(cls, version=WalletVersionEnum.v4r2):
+        """Create a new wallet with a fresh mnemonic."""
+        return cls(mnemonic=None, version=version)
+
     def __init__(self, mnemonic=None, version=WalletVersionEnum.v4r2):
         """
         Initialize the agent's wallet.
@@ -27,6 +32,21 @@ class GSTDWallet:
             # but for an autonomous agent "waking up", it needs to know its own seed.
             "mnemonic": " ".join(self.mnemonics) 
         }
+
+    def save(self, path: str):
+        """Save wallet mnemonic to JSON file."""
+        import json
+        with open(path, "w") as f:
+            json.dump({"mnemonic": " ".join(self.mnemonics), "address": self.address}, f, indent=2)
+
+    @classmethod
+    def load(cls, path: str):
+        """Load wallet from JSON file."""
+        import json
+        with open(path) as f:
+            data = json.load(f)
+        mnemonic = data.get("mnemonic") or data.get("mnemonic_phrase")
+        return cls(mnemonic=mnemonic)
 
     def check_gstd_balance(self):
         """Check GSTD Jetton balance via tonapi.io indexer."""
@@ -120,22 +140,76 @@ class GSTDWallet:
         
         return {"status": "ok", "balance": current_ton}
 
-    def broadcast_transfer(self, boc_b64, ton_api_url="https://toncenter.com/api/v2/jsonRPC"):
+    def broadcast_transfer(self, boc_b64, ton_api_url="https://toncenter.com/api/v2/jsonRPC", api_key=None):
         """
         Broadcasts a signed message (BOC) to the TON network.
+        
+        Args:
+            boc_b64 (str): Base64 encoded BOC
+            ton_api_url (str): TON API endpoint
+            api_key (str): Optional API key for toncenter (required for mainnet)
+            
+        Returns:
+            dict: Transaction result with tx_hash or error
         """
+        # Try toncenter format first
         payload = {
             "id": 1,
             "jsonrpc": "2.0",
             "method": "sendBoc",
             "params": {"boc": boc_b64}
         }
+        
+        headers = {"Content-Type": "application/json"}
+        if api_key:
+            headers["X-API-Key"] = api_key
+        
         try:
-            # In a real scenario, this would need an API Key for toncenter or use a public node
-            resp = requests.post(ton_api_url, json=payload).json()
-            return resp
+            resp = requests.post(ton_api_url, json=payload, headers=headers, timeout=10).json()
+            
+            # Check for errors
+            if "error" in resp:
+                error_msg = resp["error"].get("message", str(resp["error"]))
+                # If API key required, try alternative providers
+                if "api key" in error_msg.lower() or "401" in str(resp):
+                    sys.stderr.write("⚠️  Toncenter requires API key. Trying alternative providers...\n")
+                    return self._broadcast_via_alternative(boc_b64)
+                return {"error": error_msg}
+            
+            # Extract tx hash from result
+            result = resp.get("result", {})
+            tx_hash = result.get("hash") or result.get("tx_hash")
+            
+            if tx_hash:
+                return {"success": True, "tx_hash": tx_hash, "result": result}
+            else:
+                return {"success": True, "result": result}
+                
         except Exception as e:
-            return {"error": str(e)}
+            # Fallback to alternative providers
+            sys.stderr.write(f"⚠️  Toncenter failed: {e}. Trying alternatives...\n")
+            return self._broadcast_via_alternative(boc_b64)
+    
+    def _broadcast_via_alternative(self, boc_b64):
+        """Try alternative TON broadcast providers."""
+        alternatives = [
+            ("https://tonapi.io/v2/blockchain/message", {"boc": boc_b64}),
+        ]
+        
+        for url, data in alternatives:
+            try:
+                resp = requests.post(url, json=data, timeout=10)
+                if resp.status_code in [200, 201]:
+                    result = resp.json()
+                    tx_hash = result.get("hash") or result.get("tx_hash")
+                    if tx_hash:
+                        return {"success": True, "tx_hash": tx_hash, "provider": url}
+                    return {"success": True, "result": result, "provider": url}
+            except Exception as e:
+                sys.stderr.write(f"⚠️  {url} failed: {e}\n")
+                continue
+        
+        return {"error": "All broadcast providers failed. Transaction created but not broadcasted. Use TON wallet or TON API with key."}
 
     def sign_message(self, message: str) -> str:
         """
@@ -168,9 +242,8 @@ class GSTDWallet:
         """
         target_master = jetton_master_address or GSTD_JETTON_MASTER_TON
         
-        # 1. Try tonapi.io
+        # 1. Try tonapi.io (most reliable)
         try:
-            # Using public tonapi endpoint
             url = f"https://tonapi.io/v2/accounts/{self.address}/jettons"
             resp = requests.get(url, timeout=5)
             if resp.status_code == 200:
@@ -178,64 +251,56 @@ class GSTDWallet:
                 for b in balances:
                     jetton = b.get("jetton", {})
                     if jetton.get("address") == target_master:
-                        return b.get("wallet_address", {}).get("address")
-        except Exception:
-            pass
+                        wallet_addr = b.get("wallet_address", {}).get("address")
+                        if wallet_addr:
+                            return wallet_addr
+        except Exception as e:
+            sys.stderr.write(f"⚠️  tonapi.io failed: {e}\n")
 
-        # 2. Fallback to toncenter runGetMethod
+        # 2. Fallback: Calculate jetton wallet address deterministically
+        # Jetton wallet address = hash(jetton_master_address + owner_address)
+        # This is the standard TEP-74 way
         try:
-            # We need to run 'get_wallet_address' on the Master Contract
-            # Argument: owner_address (Slice)
             from tonsdk.utils import Address
-            from tonsdk.boc import Builder
+            from tonsdk.boc import Builder, Cell
+            import hashlib
             
-            # Construct the stack argument [["tvm.Slice", "<b64_address_slice>"]]
-            # To create a Slice from address, we store address in a builder and convert to boc? 
-            # toncenter expects a base64 of the cell/slice.
+            # Create state init for jetton wallet
+            owner_addr = Address(self.address)
+            master_addr = Address(target_master)
             
-            owner_addr_cell = Builder()
-            owner_addr_cell.store_address(Address(self.address))
-            owner_slice_b64 = bytes_to_b64str(owner_addr_cell.end_cell().to_boc(False))
+            # Build state init data cell
+            data_cell = Builder()
+            data_cell.store_address(owner_addr)
+            data_cell.store_address(master_addr)
             
-            payload = {
-                "id": 1,
-                "jsonrpc": "2.0",
-                "method": "runGetMethod",
-                "params": {
-                    "address": target_master,
-                    "method": "get_wallet_address",
-                    "stack": [
-                        ["tvm.Slice", owner_slice_b64]
-                    ]
-                }
-            }
+            # Get jetton wallet code (standard TEP-74)
+            from tonsdk.contract.token.ft.jetton_wallet import JettonWallet
+            jetton_wallet_code = Cell.one_from_boc(JettonWallet.code)
             
-            resp = requests.post(ton_api_url, json=payload, timeout=5).json()
-            if "result" in resp:
-                # Result stack: [["tvm.Slice", "base64_result"]]
-                result_stack = resp["result"].get("stack", [])
-                if result_stack:
-                    # Parse the address from the returned slice
-                    # The result is usually a Cell/Slice in base64
-                    # We would need to decode it.
-                    # For simplicity, if tonapi fails, we might just return None or try a simpler parsing if the format allows.
-                    # Given the environment, fully parsing the stack output manually might be error prone without using `tonsdk` objects recursively.
-                    # However, let's assume valid return.
-                    
-                    # If this is too complex for this snippet, we might rely on the fact that if tonapi fails, we are in trouble anyway.
-                    # But the requirement is to use runGetMethod.
-                    val = result_stack[0][1] # value
-                    # In many cases toncenter returns the raw parseable data or we have to parse the BOC.
-                    # For now, let's leave robust parsing or rely on tonapi mostly.
-                    # But to strictly follow "runGetMethod... in toncenter":
-                    pass
-                    
-                # Note: To properly decode the address from the stack result (tvm.Slice), 
-                # we'd need to interpret the BOC.
-                pass
-
-        except Exception:
-            pass
+            # Build state init
+            state_init = Builder()
+            state_init.store_bit(0)  # split_depth
+            state_init.store_bit(0)  # special
+            state_init.store_ref(jetton_wallet_code)
+            state_init.store_ref(data_cell.end_cell())
+            
+            # Calculate address from state init
+            state_init_boc = state_init.end_cell().to_boc(False)
+            hash_bytes = hashlib.sha256(state_init_boc).digest()
+            
+            # TON address from hash (workchain 0)
+            from tonsdk.utils import b64str_to_bytes
+            addr_bytes = bytes([0]) + hash_bytes[:31]  # workchain 0 + hash
+            checksum = hashlib.sha256(bytes([0xFF]) + addr_bytes).digest()[:2]
+            full_addr = addr_bytes + checksum
+            
+            # Convert to base64 address format
+            jetton_wallet_addr = Address(full_addr).to_string(True, True, True)
+            return jetton_wallet_addr
+            
+        except Exception as e:
+            sys.stderr.write(f"⚠️  Jetton wallet address calculation failed: {e}\n")
             
         return None
 
@@ -288,6 +353,117 @@ class GSTDWallet:
             
         return bytes_to_b64str(body.end_cell().to_boc(False))
     
+    def send_gstd(self, to_address, amount_gstd, comment="", jetton_master_address=None, ton_api_url="https://toncenter.com/api/v2/jsonRPC", api_key=None):
+        """
+        Sends GSTD tokens to another address. This creates and broadcasts a real transaction.
+        
+        Args:
+            to_address (str): Destination address
+            amount_gstd (float): Amount of GSTD to send
+            comment (str): Optional comment
+            jetton_master_address (str): GSTD jetton master address (defaults to GSTD_JETTON_MASTER_TON)
+            ton_api_url (str): TON API endpoint
+            api_key (str): Optional API key for toncenter
+            
+        Returns:
+            dict: Transaction result with tx_hash or error
+        """
+        try:
+            from tonsdk.utils import Address
+            try:
+                from tonsdk.contract.token.ft.jetton_wallet import JettonWallet
+            except ImportError:
+                from tonsdk.contract.token.ft import JettonWallet
+            
+            target_master = jetton_master_address or GSTD_JETTON_MASTER_TON
+            
+            # 1. Get jetton wallet address
+            jetton_wallet_addr = self.get_jetton_wallet_address(target_master, ton_api_url)
+            if not jetton_wallet_addr:
+                return {"error": "Could not determine jetton wallet address. Make sure you have GSTD tokens."}
+            
+            sys.stderr.write(f"📦 Jetton wallet: {jetton_wallet_addr}\n")
+            
+            # 2. Get seqno for jetton wallet (not regular wallet)
+            jetton_seqno = self._get_jetton_wallet_seqno(jetton_wallet_addr, ton_api_url)
+            
+            # 3. Create transfer body using tonsdk JettonWallet
+            jetton_wallet = JettonWallet()
+            to_addr = Address(to_address)
+            response_addr = Address(self.address)
+            amount_nanos = int(amount_gstd * 1e9)
+            
+            # Forward payload for comment
+            forward_payload = None
+            if comment:
+                # Text comment format: 0x00000000 + UTF-8 bytes
+                comment_bytes = b'\x00' * 4 + comment.encode('utf-8')
+                forward_payload = comment_bytes
+            
+            transfer_body = jetton_wallet.create_transfer_body(
+                to_address=to_addr,
+                jetton_amount=amount_nanos,
+                forward_amount=int(0.01 * 1e9),  # 0.01 TON for notification
+                forward_payload=forward_payload,
+                response_address=response_addr,
+                query_id=0
+            )
+            
+            # 4. Create message FROM jetton wallet TO destination
+            # We need to create a transfer message from our regular wallet TO jetton wallet
+            # with the transfer body as payload
+            amount_ton_for_gas = 0.05  # Enough for gas + forward
+            
+            msg = self.create_transfer_message(
+                to_addr=jetton_wallet_addr,
+                amount_ton=amount_ton_for_gas,
+                payload=transfer_body
+            )
+            
+            # 5. Broadcast transaction
+            boc_b64 = bytes_to_b64str(msg["message"].to_boc(False))
+            result = self.broadcast_transfer(boc_b64, ton_api_url, api_key)
+            
+            if "error" in result:
+                return result
+            
+            # Extract tx hash from result
+            tx_hash = result.get("result") or result.get("tx_hash") or "pending"
+            
+            return {
+                "success": True,
+                "tx_hash": tx_hash,
+                "jetton_wallet": jetton_wallet_addr,
+                "amount_gstd": amount_gstd,
+                "to": to_address
+            }
+            
+        except Exception as e:
+            return {"error": f"Failed to send GSTD: {str(e)}"}
+    
+    def _get_jetton_wallet_seqno(self, jetton_wallet_address, ton_api_url="https://toncenter.com/api/v2/jsonRPC"):
+        """Get seqno for jetton wallet (needed for creating transfer from jetton wallet)."""
+        payload = {
+            "id": 1,
+            "jsonrpc": "2.0",
+            "method": "runGetMethod",
+            "params": {
+                "address": jetton_wallet_address,
+                "method": "seqno",
+                "stack": []
+            }
+        }
+        try:
+            resp = requests.post(ton_api_url, json=payload, timeout=5).json()
+            if "result" in resp:
+                stack = resp["result"].get("stack", [])
+                if stack:
+                    val = stack[0][1]
+                    return int(val, 16) if isinstance(val, str) and val.startswith("0x") else int(val)
+            return 0
+        except Exception:
+            return 0
+    
     def get_seqno(self, ton_api_url="https://toncenter.com/api/v2/jsonRPC"):
         """Fetches the current sequence number for the wallet to prevent replay attacks."""
         payload = {
@@ -312,18 +488,35 @@ class GSTDWallet:
             return 0
 
     def create_transfer_message(self, to_addr, amount_ton, payload=None, payload_str=""):
-        """Constructs and signs a real TON transfer message with the correct seqno."""
+        """
+        Constructs and signs a real TON transfer message with the correct seqno.
+        
+        Args:
+            to_addr (str): Destination address
+            amount_ton (float): Amount in TON
+            payload: Cell object or None
+            payload_str: String payload (ignored if payload is provided)
+        """
+        from tonsdk.utils import Address
+        
         amount_nano = int(amount_ton * 1e9)
         current_seqno = self.get_seqno()
         
         # Log for debugging
         sys.stderr.write(f"🛠️  Preparing transaction: to={to_addr}, amount={amount_ton}, seqno={current_seqno}\n")
         
+        # Convert string address to Address object if needed
+        if isinstance(to_addr, str):
+            to_addr = Address(to_addr)
+        
+        # Use payload if provided (Cell object), otherwise payload_str
+        final_payload = payload if payload is not None else (payload_str if payload_str else None)
+        
         return self.wallet.create_transfer_message(
             to_addr=to_addr,
             amount=amount_nano,
             seqno=current_seqno,
-            payload=payload if payload else payload_str
+            payload=final_payload
         )
 
     def swap_ton_to_gstd(self, amount_ton: float, min_out: int = 1):

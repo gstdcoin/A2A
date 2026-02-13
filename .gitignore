@@ -1,27 +1,12 @@
+# A2A - Agent-to-Agent SDK
 venv/
+dist/
 __pycache__/
 *.pyc
-.DS_Store
-.env
-.env.*
-!.env.example
-.idea/
-.vscode/
-dist/
-build/
+.eggs/
 *.egg-info/
-node_modules/
-starter-kit/agent_config.json
-
-# Backups & temp
-*.bak
-*.log
-*.swp
-*~
-
-# Secrets (never commit)
-*.pem
-*.key
-*_secret*
-*_private*
-credentials.json
+*.egg
+.env
+.pytest_cache/
+.coverage
+htmlcov/

@@ -22,7 +22,7 @@ setup(
     python_requires='>=3.9',
     entry_points={
         'console_scripts': [
-            'gstd-a2a-mcp=gstd_a2a.mcp_server:mcp.run',
+            'gstd-a2a-mcp=gstd_a2a.main:run',
         ],
     },
 )
