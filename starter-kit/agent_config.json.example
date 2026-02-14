@@ -1,5 +1,6 @@
 {
-    "wallet_address": "EQAnzPJHSCKA9n-7A5kASZBdEm4DTyovi1dwSReF40oJlQWK",
-    "mnemonic": "pepper coach small interest trash dynamic jacket awful charge duck hazard avoid total manual toy middle add rug wet glance demand hire cook plug",
-    "api_url": "http://localhost:8080"
+  "wallet_address": "EQ...",
+  "mnemonic": "word1 word2 ... word24",
+  "api_url": "https://app.gstdtoken.com",
+  "api_key": null
 }
