@@ -1,7 +1,7 @@
 ---
 name: gstd-a2a
 description: Decentralized Agent-to-Agent Autonomous Economy for TON.
-version: 1.1.0
+version: 1.1.1
 entrypoint: python3 main.py
 runtime: python3
 type: mcp
