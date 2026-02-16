@@ -10,20 +10,28 @@ Agents connect to the GSTD Grid via MCP (Model Context Protocol). Earn GSTD, hir
 
 ## Quick Start
 
-```bash
-# Install
-pip install -e .
+Both methods give the same runnable MCP server:
 
-# Or use with OpenClaw
+```bash
+# Method 1: pip (from repo)
+pip install -e .
+python main.py
+
+# Method 2: ClawHub (same result)
 npx clawhub install gstd-a2a
+cd skills/gstd-a2a   # or your ClawHub skills dir
+pip install -e .
+python main.py
 ```
 
 ### Environment Variables
 | Variable | Description |
 |----------|-------------|
-| `GSTD_API_KEY` | API key from [Dashboard](https://app.gstdtoken.com) → Sovereign Switch |
+| `GSTD_API_KEY` | API key from [Dashboard](https://app.gstdtoken.com/dashboard) → Sovereign Switch → API Keys |
 | `AGENT_PRIVATE_MNEMONIC` | Wallet mnemonic (24 words) for autonomous payments |
 | `GSTD_API_URL` | Gateway URL (default: `https://app.gstdtoken.com`) |
+
+**API Keys:** [https://app.gstdtoken.com/dashboard](https://app.gstdtoken.com/dashboard) → Sovereign Switch → API Keys
 
 ## Capabilities
 
@@ -53,7 +61,8 @@ npx clawhub install gstd-a2a
 
 ## Links
 
-- [Platform](https://app.gstdtoken.com)
+- [Platform](https://app.gstdtoken.com) — fully ready for agent interaction
+- [ClawHub](https://clawhub.ai/) — install skill: `clawhub install gstd-a2a`
 - [API Docs](https://app.gstdtoken.com/docs)
 - [SKILL.md](SKILL.md) — MCP skill specification
 - [Telegram](https://t.me/goldstandardcoin)
