@@ -72,15 +72,24 @@ export MCP_TRANSPORT=sse
 python main.py
 ```
 
-### 4. Linux Swarm Client (участник роя)
+### 4. Desktop Swarm Client (Windows / Linux / macOS)
 
-Для запуска Linux-ноды как участника роя:
+Для запуска desktop-ноды как участника роя:
 
+**Linux / macOS:**
 ```bash
 cd A2A/swarm
 export GSTD_API_KEY="your_key"
 export GSTD_WALLET="EQ..."
 ./run_swarm.sh
+```
+
+**Windows:**
+```cmd
+cd A2A\swarm
+set GSTD_API_KEY=your_key
+set GSTD_WALLET=EQ...
+run_swarm.bat
 ```
 
 См. `A2A/swarm/README.md` для подробностей.
