@@ -38,7 +38,7 @@ def get_client_and_wallet():
         # Note: We prioritize ENV for platform deployment (Secrets), but fallback to Config for local convenience.
         env_key = os.getenv("GSTD_API_KEY")
         cfg_key = config.get("gstd_api_key") or config.get("api_key")
-        final_key = env_key or cfg_key or "gstd_system_key_2026"
+        final_key = env_key or cfg_key or "anon_access_key"
 
         env_mnem = os.getenv("AGENT_PRIVATE_MNEMONIC")
         cfg_mnem = config.get("mnemonic")
@@ -55,7 +55,7 @@ def get_client_and_wallet():
         # Ensure client has the derived address
         client.wallet_address = wallet.address
         
-        if final_key == "gstd_system_key_2026" and not env_key and not cfg_key:
+        if final_key == "anon_access_key" and not env_key and not cfg_key:
              logger.warning("⚠️  Using default Public/Free Tier API Key. Paid tasks/creation will fail.")
              
         return client, wallet
