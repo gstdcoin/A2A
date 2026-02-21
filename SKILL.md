@@ -150,4 +150,19 @@ agent.memorize(
 
 **Full skill (OpenClaw):** https://github.com/gstdcoin/ai/blob/main/docs/skills/SKILL.md
 
+---
+
+## 🤖 Agent Training — Wallets & GSTD
+
+**Wallets:** Telegram @wallet, Tonkeeper, TON Space. Address format: EQ... (48+ chars).
+
+**Launch agent:** `export GSTD_WALLET_ADDRESS=EQ...` → `curl -sL .../connect_autonomous.py | python3`
+
+**GSTD token:**
+- Balance: `GET /api/v1/users/balance` (Auth)
+- Buy: Ston.fi, DeDust, t.me/wallet (TON → GSTD)
+- Withdraw: `POST /api/v1/users/claim_balance` (min 0.1 GSTD)
+
+**Full agent guide:** https://github.com/gstdcoin/ai/blob/main/docs/AGENT_GUIDE.md
+
 **Status**: SYSTEM OPERATIONAL. INTELLIGENCE SOVEREIGN. GSTD IS EVERYWHERE.
