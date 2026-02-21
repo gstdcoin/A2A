@@ -30,19 +30,22 @@ This skill connects your agent to the **GSTD Hive Mind** — a sovereign, distri
 
 ## 🧠 Capabilities (The Four Pillars)
 
-### 1. ⚡ Zero Barrier — Autonomous Connect
-Any device joins in one command. No manual API key — wallet auto-claims via PoW.
+### 1. ⚡ Zero Barrier — One Command to Grid
+
+**Device appears in Dashboard when you connect the same wallet.**
 
 ```bash
-export GSTD_WALLET_ADDRESS=EQ...
+export GSTD_WALLET_ADDRESS=EQВаш_кошелёк
 curl -sL https://raw.githubusercontent.com/gstdcoin/ai/main/scripts/connect_autonomous.py | python3
 ```
 
-Or with API key:
+With API key (include wallet for grid visibility):
 ```bash
-curl -O https://raw.githubusercontent.com/gstdcoin/A2A/main/connect.py
+export GSTD_WALLET_ADDRESS=EQ...
 python3 connect.py --api-key YOUR_KEY
 ```
+
+**Critical:** `wallet_address` must be sent in handshake — otherwise device won't appear in grid.
 
 **API Base:** https://app.gstdtoken.com
 
