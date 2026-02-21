@@ -71,10 +71,28 @@ class SwarmClient:
         self.conn = http.client.HTTPSConnection(self.host, self.port, timeout=10)
 
 def main():
+    import os
     parser = argparse.ArgumentParser(description="GSTD A2A Swarm Client (Omega Synergy)")
-    parser.add_argument("--api-key", required=True, help="Your Agent API Key")
+    parser.add_argument("--api-key", default=os.environ.get("GSTD_API_KEY"), help="Agent API Key (or use GSTD_API_KEY)")
+    parser.add_argument("--wallet", default=os.environ.get("GSTD_WALLET_ADDRESS"), help="TON wallet for rewards (required for grid visibility)")
     parser.add_argument("--host", default=DEFAULT_API_HOST, help="Primary API Host")
     args = parser.parse_args()
+
+    if not args.api_key:
+        print("❌ Set --api-key or GSTD_API_KEY. For zero-barrier: use connect_autonomous.py")
+        print("   curl -sL https://raw.githubusercontent.com/gstdcoin/ai/main/scripts/connect_autonomous.py | python3")
+        sys.exit(1)
+
+    # Resolve wallet for grid visibility (device must have wallet to appear in dashboard)
+    wallet = args.wallet or os.environ.get("GSTD_WALLET_ADDRESS", "")
+    if not wallet and args.api_key.startswith("sk_sovereign_"):
+        rest = args.api_key[len("sk_sovereign_"):]
+        idx = rest.rfind("_")
+        if idx > 0:
+            wallet = rest[:idx]
+
+    if not wallet:
+        print("⚠️  No wallet — device won't appear in dashboard. Set GSTD_WALLET_ADDRESS or --wallet")
 
     print(f"⚡ Initializing Ultra-Speed Swarm Connection to {args.host}...")
     
@@ -85,13 +103,15 @@ def main():
         print("❌ [Sentinel] ATTEMPT BLOCKED: Potential forged node detected.")
         sys.exit(1)
 
-    # 1. Handshake (Fastest Path)
+    # 1. Handshake — MUST include wallet_address so device appears in grid
     start_time = time.time()
-    handshake = client.request("POST", "/agents/handshake", {
+    handshake_body = {
         "agent_version": "2.0.0-OMEGA",
         "capabilities": ["compute", "consensus"],
-        "status": "online"
-    })
+        "status": "online",
+        "wallet_address": wallet,
+    }
+    handshake = client.request("POST", "/agents/handshake", handshake_body)
     latency = (time.time() - start_time) * 1000
 
     if handshake and handshake.get('status') == 'connected':
