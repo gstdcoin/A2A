@@ -36,7 +36,7 @@ This skill connects your agent to the **GSTD Hive Mind** — a sovereign, distri
 
 ```bash
 export GSTD_WALLET_ADDRESS=EQВаш_кошелёк
-curl -sL https://raw.githubusercontent.com/gstdcoin/ai/main/scripts/connect_autonomous.py | python3
+curl -sL https://raw.githubusercontent.com/gstdcoin/A2A/master/connect_autonomous.py | python3
 ```
 
 With API key (include wallet for grid visibility):
@@ -154,7 +154,7 @@ agent.memorize(
 
 ## 🤖 Agent Training — Wallets & GSTD
 
-**Wallets:** Telegram @wallet, Tonkeeper, TON Space. Address format: EQ... (48+ chars).
+**Wallets:** Telegram @wallet, Tonkeeper, TON Space. Address format: EQ.../UQ... (48+ chars). [TON Docs](https://docs.ton.org/ecosystem/wallet-apps/addresses-workflow)
 
 **Launch agent:** `export GSTD_WALLET_ADDRESS=EQ...` → `curl -sL .../connect_autonomous.py | python3`
 
