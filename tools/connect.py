@@ -16,15 +16,15 @@ FALLBACK_API_PORT = 443
 GENESIS_MANIFEST_HASH = "d428d9226912f8a7cdb557c382ac1e5fe00989fa18c6737262c93cf14c80a40a"
 
 class SwarmClient:
-    def __init__(self, host, port, api_key):
+    def __init__(self, host, port, wallet):
         self.host = host
         self.port = port
-        self.api_key = api_key
+        self.wallet = wallet
         self.conn = http.client.HTTPSConnection(host, port, timeout=10)
         self.headers = {
             "User-Agent": "GSTD-A2A-Swarm/2.0 (Omega)",
             "Content-Type": "application/json",
-            "X-API-Key": api_key,
+            "X-API-Key": wallet,
             "Connection": "keep-alive"
         }
 
@@ -73,20 +73,20 @@ class SwarmClient:
 def main():
     import os
     parser = argparse.ArgumentParser(description="GSTD A2A Swarm Client (Omega Synergy)")
-    parser.add_argument("--api-key", default=os.environ.get("GSTD_API_KEY"), help="Agent API Key (or use GSTD_API_KEY)")
+    parser.add_argument("--wallet", default=os.environ.get("GSTD_API_KEY"), help="Agent Wallet (or use GSTD_API_KEY)")
     parser.add_argument("--wallet", default=os.environ.get("GSTD_WALLET_ADDRESS"), help="TON wallet for rewards (required for grid visibility)")
     parser.add_argument("--host", default=DEFAULT_API_HOST, help="Primary API Host")
     args = parser.parse_args()
 
-    if not args.api_key:
-        print("❌ Set --api-key or GSTD_API_KEY. For zero-barrier: use connect_autonomous.py")
+    if not args.wallet:
+        print("❌ Set --wallet or GSTD_API_KEY. For zero-barrier: use connect_autonomous.py")
         print("   curl -sL https://raw.githubusercontent.com/gstdcoin/ai/main/scripts/connect_autonomous.py | python3")
         sys.exit(1)
 
     # Resolve wallet for grid visibility (device must have wallet to appear in dashboard)
     wallet = args.wallet or os.environ.get("GSTD_WALLET_ADDRESS", "")
-    if not wallet and args.api_key.startswith("sk_sovereign_"):
-        rest = args.api_key[len("sk_sovereign_"):]
+    if not wallet and args.wallet.startswith("sk_sovereign_"):
+        rest = args.wallet[len("sk_sovereign_"):]
         idx = rest.rfind("_")
         if idx > 0:
             wallet = rest[:idx]
@@ -96,7 +96,7 @@ def main():
 
     print(f"⚡ Initializing Ultra-Speed Swarm Connection to {args.host}...")
     
-    client = SwarmClient(args.host, 443, args.api_key)
+    client = SwarmClient(args.host, 443, args.wallet)
 
     # 0. Sentinel Integrity Check
     if not client.verify_genesis():
