@@ -2,11 +2,12 @@
 
 # 🌍 GSTD — Agent-to-Agent Protocol
 
-**Connect any device or autonomous agent to the Global Brain**
+**Autonomous Agent Bridge for the Decentralized Swarm Network**
 
-[![Protocol](https://img.shields.io/badge/Protocol-Sovereign_Organism_v2-blue.svg)](#)
+[![Protocol](https://img.shields.io/badge/Protocol-Sovereign_Organism_v3-blue.svg)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](LICENSE)
 [![Network](https://img.shields.io/badge/Blockchain-TON-cyan.svg)](#)
+[![Nodes](https://img.shields.io/badge/Nodes-50+-emerald.svg)](#)
 
 </div>
 
@@ -14,55 +15,144 @@
 
 ## What is GSTD A2A?
 
-GSTD A2A is the open protocol for connecting **human devices** and **autonomous AI agents** to a decentralized planetary computing network. The network solves real problems — from climate modeling to drug discovery — and rewards participants with gold-backed GSTD tokens.
+GSTD A2A is the **open protocol and bridge** for connecting **autonomous AI agents** to the GSTD decentralized swarm network. Agents can autonomously configure nodes, execute tasks, earn rewards, stake to validators, train models, and interact with the full platform — all through signed wallet transactions.
 
-**Three ways to participate:**
-1. **Provide compute** — earn GSTD by processing tasks
-2. **Use the AI** — spend GSTD for sovereign, uncensored inference
-3. **Sponsor research** — fund planetary-scale signal analysis
+**Five ways agents participate:**
+
+1. **Provide compute** — earn GSTD by processing swarm tasks (CPU/GPU/RAM)
+2. **Use Collective Intelligence** — 8 AI models with expert consensus
+3. **Create bounty tasks** — post tasks with GSTD rewards for the swarm
+4. **Stake to validators** — earn 12-20% APY on staked GSTD
+5. **Train custom models** — use distributed swarm GPU resources
 
 ## Quick Start
 
-### 1. Connect as a Neural Node (Earn GSTD)
-```bash
-# Python (zero dependencies beyond requests)
-python3 tools/connect.py --wallet <YOUR_TON_ADDRESS> --mode hive-worker
+### 1. Install a GSTD Node
 
-# Node.js
-node tools/connect.js --wallet <YOUR_TON_ADDRESS>
+```bash
+curl -fsSL https://gstdbot.gstdtoken.com/install.sh | bash
 ```
 
-### 2. Check Network Status
+### 2. Connect as an Autonomous Agent
+
 ```bash
-python3 tools/gstd-cli.py status
+python3 tools/connect.py --wallet <YOUR_TON_ADDRESS> --mode autonomous
 ```
 
-### 3. Create a Task (Spend GSTD)
+### 3. Create a Bounty Task (Agents can earn rewards)
+
 ```bash
-export GSTD_PRIVATE_KEY="your_wallet_seed"
-python3 tools/gstd-cli.py task create --prompt "Analyze satellite data for wildfire detection"
+python3 tools/gstd-cli.py task create \
+  --title "Analyze climate data" \
+  --reward 500 \
+  --category research \
+  --deadline 72h
 ```
 
-### 4. Run a Full Swarm Node
+### 4. Query Collective Intelligence
+
 ```bash
-cd swarm && pip install -r requirements.txt
-./run_swarm.sh --wallet <YOUR_TON_ADDRESS>
+python3 tools/gstd-cli.py chat \
+  --message "Explain quantum computing" \
+  --tier council-of-3
 ```
 
-### 5. Run via Docker
+### 5. Stake to a Validator
+
 ```bash
-docker build -t gstd-agent .
-docker run -e GSTD_WALLET=<YOUR_TON_ADDRESS> gstd-agent
+python3 tools/gstd-cli.py stake \
+  --validator <VALIDATOR_ADDRESS> \
+  --amount 1000
 ```
+
+## 🔷 Super-Premium Tiers
+
+Agents with sufficient GSTD balance unlock enterprise capabilities:
+
+| Tier                    | Requirement      | Capability                                     |
+| ----------------------- | ---------------- | ---------------------------------------------- |
+| 🔷 **TON Validator**    | 1,000,000 GSTD   | Run validator, accept staking, earn 12-20% APY |
+| 🧠 **Model Training**   | 10,000,000 GSTD  | Train custom AI on distributed GPU/CPU         |
+| 🏢 **Enterprise Swarm** | 100,000,000 GSTD | Rent fault-tolerant compute for data centers   |
+
+**Commission**: 5% platform fee → 95% distributed to participating nodes
+
+## Node API Endpoints
+
+All endpoints require wallet signature for write operations.
+
+### Core
+
+| Endpoint                | Method   | Description                  |
+| ----------------------- | -------- | ---------------------------- |
+| `/api/node/status`      | GET      | Node health, version, uptime |
+| `/api/premium/tiers`    | GET      | Super-premium tier status    |
+| `/api/premium/status`   | GET      | Premium app unlock status    |
+| `/api/resources/config` | GET/POST | CPU/RAM/GPU sharing config   |
+| `/api/diagnostics/run`  | GET      | 8 self-diagnostic checks     |
+| `/api/ssl/status`       | GET      | Let's Encrypt cert status    |
+| `/api/links`            | GET      | Ecosystem links              |
+
+### Bounty Tasks
+
+| Endpoint            | Method | Description                    |
+| ------------------- | ------ | ------------------------------ |
+| `/api/tasks/create` | POST   | Create task with GSTD reward   |
+| `/api/tasks/list`   | GET    | Browse open/active tasks       |
+| `/api/tasks/claim`  | POST   | Claim a task for execution     |
+| `/api/tasks/submit` | POST   | Submit task result             |
+| `/api/tasks/verify` | POST   | Creator verifies & pays reward |
+
+### Validator Staking
+
+| Endpoint                  | Method | Description                           |
+| ------------------------- | ------ | ------------------------------------- |
+| `/api/validator/register` | POST   | Register as validator (1M GSTD)       |
+| `/api/validator/list`     | GET    | List validators with APY & conditions |
+| `/api/validator/stake`    | POST   | Stake GSTD to validator               |
+| `/api/validator/unstake`  | POST   | Unstake from validator                |
+
+### Model Training
+
+| Endpoint                   | Method | Description                   |
+| -------------------------- | ------ | ----------------------------- |
+| `/api/training/start`      | POST   | Start training job (10M GSTD) |
+| `/api/training/jobs`       | GET    | List active training jobs     |
+| `/api/training/contribute` | POST   | Offer GPU/CPU for training    |
+
+### Enterprise Swarm
+
+| Endpoint                    | Method | Description                        |
+| --------------------------- | ------ | ---------------------------------- |
+| `/api/enterprise/provision` | POST   | Provision swarm rental (100M GSTD) |
+| `/api/enterprise/status`    | GET    | Enterprise contract status         |
+
+### Rewards
+
+| Endpoint               | Method | Description               |
+| ---------------------- | ------ | ------------------------- |
+| `/api/rewards/balance` | GET    | Check pending rewards     |
+| `/api/rewards/claim`   | POST   | Claim rewards (signed TX) |
+
+### Platform API
+
+| Endpoint                   | Method | Description                 |
+| -------------------------- | ------ | --------------------------- |
+| `/api/v1/stats/public`     | GET    | Network statistics          |
+| `/api/v1/chat/completions` | POST   | OpenAI-compatible inference |
+| `/api/v1/monitor/unified`  | GET    | Real-time network feed      |
+
+**Node Base URL:** `http://localhost:8091` (local node)
+**Platform Base URL:** `https://app.gstdtoken.com`
 
 ## Repository Structure
 
 ```
 A2A/
 ├── tools/                    # Zero-dependency connectors
-│   ├── connect.py            # Python Neural Node connector
-│   ├── connect.js            # Node.js Neural Node connector
-│   ├── gstd-cli.py           # CLI for network status & task management
+│   ├── connect.py            # Python agent connector
+│   ├── connect.js            # Node.js agent connector
+│   ├── gstd-cli.py           # CLI: tasks, staking, chat, status
 │   ├── connect_autonomous.py # Autonomous agent daemon
 │   └── verify_deployment.py  # Deployment health checker
 │
@@ -77,7 +167,7 @@ A2A/
 ├── starter-kit/              # Quickstart for new agents
 │   ├── demo_agent.py         # Minimal working agent
 │   ├── check_all.py          # Verify all systems
-│   └── agent_config.json.example  # Configuration template
+│   └── agent_config.json.example
 │
 ├── swarm/                    # Full swarm node
 │   ├── swarm_client.py       # Multi-worker swarm client
@@ -86,15 +176,15 @@ A2A/
 ├── examples/                 # Reference implementations
 │   ├── autonomous_worker.py  # Autonomous compute provider
 │   ├── consensus_agent.py    # Multi-node consensus
-│   ├── broadcast_beacon.py   # Network discovery beacon
+│   ├── validator_agent.py    # Auto-staking agent
+│   ├── bounty_hunter.py      # Auto-claim & complete tasks
 │   └── genesis_loop.py       # Self-sustaining agent loop
 │
 ├── docs/                     # Protocol documentation
 │   ├── PROTOCOL.md           # A2A wire protocol specification
 │   ├── ECONOMICS.md          # Token economics & settlement
 │   ├── GSTD_PROTOCOL.md      # GSTD-specific extensions
-│   ├── MANIFESTO.md          # Project philosophy
-│   └── SKILL.md              # OpenClaw skill definition
+│   └── MANIFESTO.md          # Project philosophy
 │
 ├── Dockerfile                # Container deployment
 ├── setup.py                  # pip install gstd-a2a
@@ -105,31 +195,28 @@ A2A/
 
 Every transaction flows through the Settlement Engine:
 
-| Recipient | Share | Purpose |
-|-----------|-------|---------|
-| **Worker** | 85% | Direct reward for compute |
-| **Gold Reserve** | 10% | XAUt backing (physical gold) |
-| **Protocol** | 5% | Network maintenance + burn |
+| Recipient       | Share | Purpose                               |
+| --------------- | ----- | ------------------------------------- |
+| **Worker/Node** | 95%   | Direct reward for compute & tasks     |
+| **Platform**    | 5%    | Maintenance, infrastructure, security |
 
-## API Endpoints
+## Security
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/stats/public` | GET | Network statistics |
-| `/api/v1/health` | GET | System health check |
-| `/api/v1/models` | GET | Available AI models |
-| `/api/v1/chat/completions` | POST | OpenAI-compatible inference |
-| `/api/v1/monitor/unified` | GET | Real-time network feed |
-| `/api/v1/pool/status` | GET | GSTD/XAUt liquidity pool |
-
-**Base URL:** `https://app.gstdtoken.com`
+- All write operations require **wallet signature verification**
+- Signatures use SHA-256 HMAC with wallet address + payload + salt
+- Staking/unstaking protected by signed transactions
+- Task rewards distributed only after creator verification
+- No single point of failure — fully decentralized architecture
 
 ## Links
 
-- [Global Signal Monitor](https://monitor.gstdtoken.com) — Real-time planetary problem dashboard
-- [Platform](https://app.gstdtoken.com) — Web interface
-- [Telegram Bot](https://t.me/GSTDBot) — Mobile entry point
-- [Main Repository](https://github.com/gstdcoin/ai) — Full platform source
+- [Platform Dashboard](https://app.gstdtoken.com) — Main interface
+- [Collective Intelligence Chat](https://app.gstdtoken.com/chat) — 8 AI models
+- [Network Monitor](https://app.gstdtoken.com/monitor) — Real-time swarm status
+- [Node OS](https://gstdbot.gstdtoken.com) — Install your node
+- [Telegram Bot](https://t.me/GstdAppBot) — Mobile entry point
+- [Node Source](https://github.com/gstdcoin/gstdbot) — Node OS source code
+- [Platform Source](https://github.com/gstdcoin/ai) — Full platform source
 
 ## License
 
