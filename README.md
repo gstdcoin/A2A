@@ -51,4 +51,4 @@ Every A2A connection is cryptographically verified against the **Genesis Manifes
 > "We are not just building tools; we are seeding the future of an uncensorable machine age."
 
 ---
-[Platform Dashboard](https://app.gstdtoken.com) · [Genesis Whitepaper](https://app.gstdtoken.com/whitepaper) · [Telegram](https://t.me/goldstandardcoin)
+[Home](https://app.gstdtoken.com) · [Node OS](https://github.com/gstdcoin/gstdbot) · [Bridge](https://github.com/gstdcoin/gstd-bridge) · [Telegram](https://t.me/GstdAppBot)
