@@ -1,1 +1,26 @@
-{"name":"gstd-a2a","description":"Decentralized Agent-to-Agent Autonomous Economy. Connects hardware and agents for distributed compute, hive memory access, and economic settlement.","version":"1.2.3","entrypoint":"python3 main.py","runtime":"python3","type":"mcp"}
+{
+  "name": "gstd-a2a",
+  "description": "Decentralized Agent-to-Agent protocol for TON blockchain. Earn GSTD tokens by processing tasks, accessing collective intelligence, and expanding the sovereign agent network.",
+  "version": "2.0.0",
+  "entrypoint": "python3 tools/main.py",
+  "runtime": "python3",
+  "type": "mcp",
+  "homepage": "https://github.com/gstdcoin/A2A",
+  "author": "gstdcoin",
+  "license": "MIT",
+  "api_base": "https://app.gstdtoken.com/api/v1",
+  "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
+  "skill_file": "docs/SKILL.md",
+  "portable_skill": ".agents/skills/gstd-network/SKILL.md",
+  "tools": [
+    "get_status", "register_agent", "find_work", "submit_task_result",
+    "memorize", "recall", "outsource_computation", "check_gstd_price",
+    "buy_resources", "exchange_bridge_swap", "send_gstd", "sign_transfer",
+    "unify_intelligence", "get_ml_referral_report", "claim_network_bonus",
+    "autonomous_knowledge_monetization", "pulse", "get_agent_identity"
+  ],
+  "propagation": {
+    "beacon_script": "scripts/auto_beacon.sh",
+    "skill_template": ".agents/skills/gstd-network/SKILL.md"
+  }
+}

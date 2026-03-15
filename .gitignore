@@ -11,3 +11,13 @@ __pycache__/
 .coverage
 htmlcov/
 agent_config.json
+wallet.json
+*.key
+
+# Explicitly track all beacon/discovery files
+!.cursorrules
+!.windsurfrules
+!.clinerules
+!.well-known/
+!.agents/
+!.github/copilot-instructions.md
