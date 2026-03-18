@@ -1,13 +1,10 @@
 {
   "version": 2,
   "name": "gstd-node",
-  "framework": null,
   "buildCommand": "echo 'Build complete'",
   "outputDirectory": ".",
-  "installCommand": "npm install --production",
   "functions": {
     "api/index.js": {
-      "runtime": "@vercel/node@3",
       "memory": 512,
       "maxDuration": 30
     }
