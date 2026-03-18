@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSTD Node</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--card:#12121a;--border:#1e1e2e;--text:#e8e8f0;--muted:#6b7280;--accent:#8b5cf6;--cyan:#06b6d4;--emerald:#10b981;--gold:#ffd700;--rose:#f43f5e}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.container{max-width:640px;width:100%}
+h1{font-size:28px;font-weight:900;margin-bottom:4px;background:linear-gradient(135deg,var(--gold),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{color:var(--muted);font-size:13px;margin-bottom:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:12px}
+.card-title{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:12px}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.stat{text-align:center;padding:16px;border:1px solid var(--border);border-radius:12px;background:rgba(255,255,255,0.02)}
+.stat .v{font-size:20px;font-weight:900;margin:4px 0}
+.stat .l{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:1px}
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase}
+.badge-live{background:rgba(16,185,129,0.12);color:var(--emerald)}
+.badge-cloud{background:rgba(139,92,246,0.12);color:var(--accent)}
+.btn{padding:10px 20px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:all 0.2s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--cyan));color:white}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(139,92,246,0.3)}
+.btn-secondary{background:rgba(255,255,255,0.05);color:var(--text);border:1px solid var(--border)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:12px}
+.info-row:last-child{border:none}
+.info-row .k{color:var(--muted)}
+.info-row .v{font-weight:700;font-family:monospace;font-size:11px}
+.logo{font-size:48px;margin-bottom:12px}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+  <div class="logo">🐝</div>
+  <h1>GSTD Node</h1>
+  <p class="subtitle">Decentralized AI Node • <span class="badge badge-live">LIVE</span> <span class="badge badge-cloud">Cloud</span></p>
+
+  <div class="stat-grid" id="stats">
+    <div class="stat"><div class="v" style="color:var(--emerald)" id="st-uptime">—</div><div class="l">Uptime</div></div>
+    <div class="stat"><div class="v" style="color:var(--cyan)" id="st-model">—</div><div class="l">AI Model</div></div>
+    <div class="stat"><div class="v" style="color:var(--gold)" id="st-openclaw">—</div><div class="l">OpenClaw</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Node Information</div>
+    <div id="node-info"><div style="color:var(--muted);text-align:center;padding:16px">Loading...</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧠 Quick AI Chat</div>
+    <div style="display:flex;gap:8px">
+      <input id="chat-input" placeholder="Ask anything..." style="flex:1;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;outline:none;font-family:Inter,sans-serif" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-primary" onclick="sendChat()">Send</button>
+    </div>
+    <div id="chat-reply" style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.7;display:none"></div>
+  </div>
+
+  <div class="actions">
+    <a href="https://github.com/gstdcoin/gstdbot" target="_blank" class="btn btn-secondary">📦 Full Node</a>
+    <a href="https://app.gstdtoken.com" target="_blank" class="btn btn-secondary">🌐 Platform</a>
+    <a href="/api/node/info" target="_blank" class="btn btn-secondary">⚡ API</a>
+    <a href="/api/health" target="_blank" class="btn btn-secondary">❤️ Health</a>
+  </div>
+
+  <p style="text-align:center;margin-top:24px;font-size:10px;color:var(--muted)">GSTD Node v2.1.0 • <a href="https://github.com/gstdcoin/A2A">GitHub</a> • Deploy your own: <code style="background:rgba(255,255,255,0.05);padding:2px 6px;border-radius:4px">Import on Vercel →</code></p>
+</div>
+<script>
+async function loadInfo() {
+  try {
+    const r = await fetch('/api/node/info');
+    const d = await r.json();
+    document.getElementById('st-uptime').textContent = Math.round(d.uptime) + 's';
+    document.getElementById('st-model').textContent = (d.model || 'auto').split('/').pop();
+    document.getElementById('st-openclaw').textContent = d.openclaw ? 'ON' : 'OFF';
+    document.getElementById('node-info').innerHTML = [
+      ['Node ID', d.node_id], ['Platform', d.platform], ['Mode', d.mode],
+      ['Version', d.version], ['Model', d.model], ['API', d.api]
+    ].map(([k,v]) => `<div class="info-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+  } catch(e) { document.getElementById('node-info').innerHTML = '<div style="color:var(--rose)">Error loading node info</div>'; }
+}
+async function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const msg = inp.value.trim(); if (!msg) return;
+  const reply = document.getElementById('chat-reply');
+  reply.style.display = 'block';
+  reply.style.color = 'var(--cyan)';
+  reply.textContent = 'Thinking...';
+  inp.value = '';
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({message: msg}) });
+    const d = await r.json();
+    reply.style.color = 'var(--text)';
+    reply.textContent = d.reply || 'No response';
+  } catch(e) { reply.style.color = 'var(--rose)'; reply.textContent = 'Error: ' + e.message; }
+}
+loadInfo();
+setInterval(loadInfo, 30000);
+</script>
+</body>
+</html>
