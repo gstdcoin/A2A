@@ -13,6 +13,7 @@ htmlcov/
 agent_config.json
 wallet.json
 *.key
+node_modules/
 
 # Explicitly track all beacon/discovery files
 !.cursorrules

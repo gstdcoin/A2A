@@ -1,20 +1,14 @@
 {
   "name": "gstd-node",
   "version": "2.1.0",
+  "private": true,
   "description": "GSTD Decentralized AI Node — Join the swarm, earn GSTD, run OpenClaw robots",
   "main": "api/index.js",
   "scripts": {
     "dev": "node api/index.js",
     "start": "node api/index.js",
-    "build": "mkdir -p dist && cp -r api dist/ && cp -r public dist/ 2>/dev/null || true",
-    "vercel-build": "npm run build",
-    "node:start": "bash scripts/run-node.sh",
-    "node:status": "curl -s http://localhost:8080/api/node/status | node -e \"process.stdin.resume();process.stdin.on('data',d=>console.log(JSON.stringify(JSON.parse(d),null,2)))\""
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "ws": "^8.16.0",
-    "uuid": "^9.0.0"
+    "build": "echo 'Build complete'",
+    "node:start": "bash scripts/run-node.sh"
   },
   "engines": {
     "node": ">=18.0.0"
