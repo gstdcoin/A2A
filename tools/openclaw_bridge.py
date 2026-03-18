@@ -12,9 +12,11 @@ from gstd_a2a import GSTDClient, GSTDWallet, LLMService
 class OpenClawBridge:
     """
     Bridge between OpenClaw hardware and the GSTD Decentralized Grid.
+    Uses groq/compound as the default AI model for planning and vision.
     Enables:
     1. Monetization: Rent out your OpenClaw hardware to global agents.
     2. Intelligence: Offload heavy AI tasks (Vision, Planning) to the GSTD grid.
+    3. Panel: Full management dashboard at /api/v1/openclaw/*
     """
     
     def __init__(self, device_name="OpenClaw-Unit-01", wallet_mnemonic=None, api_url=None):
@@ -24,8 +26,10 @@ class OpenClawBridge:
         self.wallet = GSTDWallet(mnemonic=wallet_mnemonic)
         print(f"🔑 Identity: {self.wallet.address}")
         
-        # 1.1 Local Intelligence (Ollama)
+        # 1.1 Local Intelligence (Ollama) + Cloud compound model
         self.llm = LLMService(api_url="http://localhost:11434")
+        self.default_model = os.getenv("GSTD_DEFAULT_MODEL", "groq/compound")
+        self.openclaw_api = os.getenv("OPENCLAW_API_BASE", "https://api.gstdtoken.com/api/v1/openclaw")
         
         # 2. Connect to Grid
         self.api_url = api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")

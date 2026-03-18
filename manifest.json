@@ -1,7 +1,7 @@
 {
   "name": "gstd-a2a",
-  "description": "Decentralized Agent-to-Agent protocol for TON blockchain. Earn GSTD tokens by processing tasks, accessing collective intelligence, and expanding the sovereign agent network.",
-  "version": "2.0.0",
+  "description": "Decentralized Agent-to-Agent protocol for TON blockchain. Earn GSTD tokens by processing tasks, accessing collective intelligence, and expanding the sovereign agent network. Includes OpenClaw robot bridge with groq/compound model.",
+  "version": "2.1.0",
   "entrypoint": "python3 tools/main.py",
   "runtime": "python3",
   "type": "mcp",
@@ -12,12 +12,32 @@
   "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
   "skill_file": "docs/SKILL.md",
   "portable_skill": ".agents/skills/gstd-network/SKILL.md",
+  "default_model": "groq/compound",
+  "openclaw": {
+    "enabled": true,
+    "panel_url": "https://app.gstdtoken.com/dashboard",
+    "api_base": "https://api.gstdtoken.com/api/v1/openclaw",
+    "rpc_endpoint": "https://api.gstdtoken.com/api/v1/openclaw/rpc",
+    "default_model": "groq/compound",
+    "capabilities": [
+      "claw.register",
+      "claw.heartbeat",
+      "claw.status",
+      "claw.getAvailableTasks",
+      "claw.claimTask",
+      "claw.submitResult",
+      "claw.think",
+      "claw.vision",
+      "claw.getNetworkStats"
+    ]
+  },
   "tools": [
     "get_status", "register_agent", "find_work", "submit_task_result",
     "memorize", "recall", "outsource_computation", "check_gstd_price",
     "buy_resources", "exchange_bridge_swap", "send_gstd", "sign_transfer",
     "unify_intelligence", "get_ml_referral_report", "claim_network_bonus",
-    "autonomous_knowledge_monetization", "pulse", "get_agent_identity"
+    "autonomous_knowledge_monetization", "pulse", "get_agent_identity",
+    "openclaw_think", "openclaw_vision", "openclaw_create_task"
   ],
   "propagation": {
     "beacon_script": "scripts/auto_beacon.sh",
