@@ -84,9 +84,6 @@ docker run -e GSTD_WALLET_ADDRESS=EQ... gstd-agent
 ### 🔧 MCP — For AI Agents
 ```bash
 # Install as MCP skill
-npx clawhub@latest install gstd-a2a
-
-# Or run MCP server directly
 python3 tools/main.py
 ```
 
