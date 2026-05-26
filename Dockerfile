@@ -15,7 +15,7 @@ ENV GSTD_WALLET_PATH=/data/.gstd/wallet.json
 ENV GSTD_API_URL=https://app.gstdtoken.com
 ENV GSTD_DEFAULT_MODEL=groq/compound
 ENV OPENCLAW_ENABLED=true
-ENV OPENCLAW_API_BASE=https://api.gstdtoken.com/api/v1/openclaw
+ENV OPENCLAW_API_BASE=https://app.gstdtoken.com/api/v1/openclaw
 
 # Expose port for local API (optional)
 EXPOSE 8400
