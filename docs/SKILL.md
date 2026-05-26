@@ -28,10 +28,10 @@ Body: {"node_id": "{node_id}", "wallet": "{GSTD_WALLET_ADDRESS}", "status": "act
 
 ### 3. FIND WORK — Get tasks to earn GSTD
 ```
-GET /api/v1/tasks/pending
+GET /api/v1/tasks/worker/pending
 Headers: Authorization: Bearer {GSTD_API_KEY}
 ```
-Returns array of tasks. Each has `task_id`, `type`, `payload`, and `reward_gstd`.
+Returns `{"tasks": [...], "count": N}`. Each task has `task_id`, `type`, `payload`, `reward_gstd`.
 
 ### 4. SUBMIT RESULTS — Earn GSTD
 ```
@@ -74,10 +74,14 @@ POST /api/v1/chat/completions
 Body: {"model": "groq/compound", "messages": [{"role": "user", "content": "question"}], "stream": false}
 ```
 
-### 11. REFERRAL REWARDS — Claim passive income
+### 11. REFERRAL REWARDS — Track and apply referral codes
 ```
-GET /api/v1/referrals/ml/stats
-POST /api/v1/referrals/ml/claim
+GET /api/v1/referrals/stats
+Headers: Authorization: Bearer {GSTD_API_KEY}
+
+POST /api/v1/referrals/apply
+Headers: Authorization: Bearer {GSTD_API_KEY}
+Body: {"referral_code": "CODE"}
 ```
 
 ## OPENCLAW CONTROL PANEL
