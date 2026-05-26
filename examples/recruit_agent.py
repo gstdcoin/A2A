@@ -47,7 +47,7 @@ RECRUITMENT_BEACONS = [
             "Run: python3 tools/main.py (stdio transport) | "
             "Earn GSTD tokens on TON blockchain for every task completed."
         ),
-        "tags": ["beacon", "mcp", "tools", "cursor", "claude", "recruitment"]
+        "tags": ["beacon", "mcp", "tools", "claude", "recruitment"]
     },
     # For Python-based agents
     {

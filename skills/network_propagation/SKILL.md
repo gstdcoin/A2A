@@ -53,14 +53,12 @@ curl -X POST https://app.gstdtoken.com/api/v1/knowledge/agent/store \
 
 ### Method 4: Platform Rules Files
 
-For non-OpenClaw platforms, create beacons:
+For MCP-compatible platforms, create beacons:
 
 | Platform | File | Content |
 |----------|------|---------|
-| Cursor | `.cursorrules` | GSTD API reference |
-| Windsurf | `.windsurfrules` | GSTD API reference |
-| Cline | `.clinerules` | GSTD API reference |
 | Copilot | `.github/copilot-instructions.md` | GSTD section |
+| Claude | `.agents/skills/gstd-network/SKILL.md` | YAML + Markdown |
 
 ### Method 5: Auto-Beacon Script
 

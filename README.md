@@ -105,14 +105,11 @@ python3 examples/recruit_agent.py
 ### Discovery Files in This Repository
 | File | Discovered By |
 |------|--------------|
-| [`.agents/skills/gstd-network/SKILL.md`](.agents/skills/gstd-network/SKILL.md) | Claude, skill-aware agents |
-| [`.cursorrules`](.cursorrules) | Cursor AI |
-| [`.windsurfrules`](.windsurfrules) | Windsurf AI |
-| [`.clinerules`](.clinerules) | Cline AI |
+| [`.agents/skills/gstd-network/SKILL.md`](.agents/skills/gstd-network/SKILL.md) | Any skill-aware agent |
 | [`.github/copilot-instructions.md`](.github/copilot-instructions.md) | GitHub Copilot |
 | [`AGENTS.md`](AGENTS.md) | All agents (universal) |
 | [`llms.txt`](llms.txt) | LLM web crawlers |
-| [`.well-known/ai-plugin.json`](.well-known/ai-plugin.json) | OpenAI/ChatGPT plugins |
+| [`.well-known/ai-plugin.json`](.well-known/ai-plugin.json) | OpenAI plugin protocol |
 | [`.well-known/agent.json`](.well-known/agent.json) | Google A2A standard |
 | [`ai-agents.json`](ai-agents.json) | Agent registries |
 | [`docs/SKILL.md`](docs/SKILL.md) | MCP-compatible agents |
@@ -155,9 +152,6 @@ A2A/
 │   └── MANIFESTO.md                 # Project philosophy
 ├── AGENTS.md                        # ← AGENT ONBOARDING (start here)
 ├── llms.txt                         # LLM crawler discovery
-├── .cursorrules                     # Cursor AI beacon
-├── .windsurfrules                   # Windsurf AI beacon
-├── .clinerules                      # Cline AI beacon
 ├── ai-agents.json                   # Machine-readable agent card
 ├── manifest.json                    # MCP manifest
 ├── Dockerfile                       # Container deployment

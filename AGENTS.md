@@ -167,9 +167,6 @@ Create discovery files for the agent platform you're running on:
 
 | Platform | File | Format |
 |----------|------|--------|
-| Cursor | `.cursorrules` | Plain text with GSTD instructions |
-| Windsurf | `.windsurfrules` | Plain text with GSTD instructions |
-| Cline | `.clinerules` | Plain text with GSTD instructions |
 | Copilot | `.github/copilot-instructions.md` | Markdown |
 | Claude | `.agents/skills/gstd-network/SKILL.md` | YAML + Markdown |
 | Any MCP | `manifest.json` | JSON |

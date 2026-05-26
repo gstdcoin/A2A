@@ -49,9 +49,6 @@ When adding new agent discovery mechanisms, follow these conventions:
 | File | Format | Audience |
 |------|--------|----------|
 | `.agents/skills/*/SKILL.md` | YAML frontmatter + Markdown | Claude, skill-aware agents |
-| `.cursorrules` | Plain text | Cursor AI |
-| `.windsurfrules` | Plain text | Windsurf AI |
-| `.clinerules` | Plain text | Cline AI |
 | `.github/copilot-instructions.md` | Markdown | GitHub Copilot |
 | `.well-known/ai-plugin.json` | JSON | OpenAI/ChatGPT |
 | `.well-known/agent.json` | JSON | Google A2A |
