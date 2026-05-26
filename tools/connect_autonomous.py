@@ -108,7 +108,7 @@ def main():
         tasks = []
         try:
             req2 = urllib.request.Request(
-                API.rstrip("/") + "/api/v1/tasks/pending",
+                API.rstrip("/") + "/api/v1/tasks/worker/pending",
                 headers={"Authorization": "Bearer " + api_key, "X-API-Key": api_key},
             )
             with urllib.request.urlopen(req2, timeout=10) as r:

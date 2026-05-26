@@ -16,8 +16,8 @@
   "openclaw": {
     "enabled": true,
     "panel_url": "https://app.gstdtoken.com/dashboard",
-    "api_base": "https://api.gstdtoken.com/api/v1/openclaw",
-    "rpc_endpoint": "https://api.gstdtoken.com/api/v1/openclaw/rpc",
+    "api_base": "https://app.gstdtoken.com/api/v1/openclaw",
+    "rpc_endpoint": "https://app.gstdtoken.com/api/v1/openclaw/rpc",
     "default_model": "groq/compound",
     "capabilities": [
       "claw.register",

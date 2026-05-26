@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name="gstd_a2a",
-    version="1.1.0",
+    version="2.0.0",
     description="GSTD Autonomous Agent Protocol SDK",
     author="GSTD Foundation",
-    packages=find_packages(where="python-sdk"),
-    package_dir={"": "python-sdk"},
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     install_requires=[
         "requests",
         "mcp",

@@ -18,7 +18,7 @@ mcp = FastMCP("GSTD A2A Agent")
 
 # Helper for lazy loading SDK to prevent startup timeouts
 def get_client_and_wallet():
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'python-sdk')))
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
     try:
         from gstd_a2a.gstd_client import GSTDClient
         from gstd_a2a.gstd_wallet import GSTDWallet

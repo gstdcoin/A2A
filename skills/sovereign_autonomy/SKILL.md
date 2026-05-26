@@ -37,7 +37,7 @@ Body: {"name": "SovereignAgent", "specs": {"type": "agent", "capabilities": ["te
 
 ### Phase 2: Work Loop
 ```
-GET /tasks/pending → claim → execute → POST /tasks/worker/submit
+GET /tasks/worker/pending → claim → execute → POST /tasks/worker/submit
 ```
 
 ### Phase 3: Knowledge

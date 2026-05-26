@@ -50,7 +50,7 @@ Agent.run()  # Zero-config autonomous agent
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | /nodes/register | POST | Join network |
-| /tasks/pending | GET | Find work |
+| /tasks/worker/pending | GET | Find work |
 | /tasks/worker/submit | POST | Submit results |
 | /knowledge/agent/store | POST | Share knowledge |
 | /knowledge/query | GET | Access collective memory |

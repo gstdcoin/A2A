@@ -431,7 +431,7 @@ Output MUST be valid JSON with exactly these keys:
   "language": "python" or "go",
   "code": "complete runnable code block with proper indentation"
 }
-The code must be functional, use GSTD API (api.gstdtoken.com), include imports and a minimal example.
+The code must be functional, use GSTD API (app.gstdtoken.com), include imports and a minimal example.
 Return ONLY valid JSON, no markdown."""
 
         try:
@@ -472,7 +472,7 @@ Return ONLY valid JSON, no markdown."""
                 "title": "GSTD Balance Check (Python)",
                 "description": "Simple script to check GSTD balance via API.",
                 "language": "python",
-                "code": "import requests\nr = requests.get('https://api.gstdtoken.com/v1/wallet/gstd-balance', headers={'X-Wallet-Address': 'YOUR_WALLET'})\nprint(r.json())"
+                "code": "import requests\nr = requests.get('https://app.gstdtoken.com/api/v1/users/balance', headers={'Authorization': 'Bearer YOUR_API_KEY'})\nprint(r.json())"
             })
             self.client.store_knowledge(topic="grid_tool", content=fallback, tags=["free_ai_tools", "gstd", "fallback"])
             return {"status": "completed", "fallback": True}
@@ -481,7 +481,7 @@ Return ONLY valid JSON, no markdown."""
                 "title": "GSTD API Client",
                 "description": "Minimal Python client for GSTD. Error: " + str(e)[:50],
                 "language": "python",
-                "code": "import requests\nprint(requests.get('https://api.gstdtoken.com/v1/network/stats').json())"
+                "code": "import requests\nprint(requests.get('https://app.gstdtoken.com/api/v1/agents/stats/network').json())"
             })
             self.client.store_knowledge(topic="grid_tool", content=fallback, tags=["free_ai_tools", "gstd", "fallback"])
             return {"status": "completed", "error": str(e)}

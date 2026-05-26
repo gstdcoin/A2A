@@ -72,11 +72,11 @@ class X402Client:
     Enables AI agents to autonomously pay for services.
     
     Usage:
-        client = X402Client(wallet_address="EQ...", api_url="https://api.gstdtoken.com")
+        client = X402Client(wallet_address="EQ...", api_url="https://app.gstdtoken.com")
         
         # Make a paid request (handles 402 automatically)
         response = await client.request(
-            "https://api.gstdtoken.com/v1/chat/completions",
+            "https://app.gstdtoken.com/v1/chat/completions",
             method="POST",
             json={"model": "gstd-sovereign", "messages": [...]}
         )
@@ -85,7 +85,7 @@ class X402Client:
     def __init__(
         self,
         wallet_address: str,
-        api_url: str = "https://api.gstdtoken.com",
+        api_url: str = "https://app.gstdtoken.com",
         api_key: Optional[str] = None,
         auto_pay: bool = True,
         max_spend_per_request: float = 1.0,
@@ -346,7 +346,7 @@ class X402PaymentGate:
         self,
         wallet_address: str,
         default_price: float = 0.01,
-        api_url: str = "https://api.gstdtoken.com",
+        api_url: str = "https://app.gstdtoken.com",
     ):
         self.wallet_address = wallet_address
         self.default_price = default_price

@@ -29,7 +29,7 @@ class OpenClawBridge:
         # 1.1 Local Intelligence (Ollama) + Cloud compound model
         self.llm = LLMService(api_url="http://localhost:11434")
         self.default_model = os.getenv("GSTD_DEFAULT_MODEL", "groq/compound")
-        self.openclaw_api = os.getenv("OPENCLAW_API_BASE", "https://api.gstdtoken.com/api/v1/openclaw")
+        self.openclaw_api = os.getenv("OPENCLAW_API_BASE", "https://app.gstdtoken.com/api/v1/openclaw")
         
         # 2. Connect to Grid
         self.api_url = api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")

@@ -50,7 +50,7 @@ Agent.run()  # Registers, finds work, earns GSTD
 
 ## API: https://app.gstdtoken.com/api/v1
 - Register: POST /nodes/register (X-Wallet-Address header)
-- Work: GET /tasks/pending → POST /tasks/worker/submit
+- Work: GET /tasks/worker/pending → POST /tasks/worker/submit
 - Knowledge: POST /knowledge/agent/store | GET /knowledge/query
 - Balance: GET /users/balance
 

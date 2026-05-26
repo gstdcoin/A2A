@@ -35,7 +35,7 @@ class A2AClient {
                 headers: {
                     'Content-Type': 'application/json',
                     'User-Agent': 'GSTD-A2A-Agent/1.0',
-                    'X-API-Key': this.apiKey
+                    'Authorization': `Bearer ${this.apiKey}`
                 }
             };
 
@@ -70,12 +70,13 @@ class A2AClient {
         }
 
         try {
-            const handshake = await this.request('/agents/handshake', 'POST', {
-                agent_version: '1.0.1',
+            const reg = await this.request('/nodes/register', 'POST', {
+                wallet_address: process.env.GSTD_WALLET_ADDRESS || this.apiKey,
+                agent_name: 'A2A-JS-Agent',
                 capabilities: ['compute', 'rag'],
-                status: 'online'
             });
-            console.log(`✅ Connected! Agent ID: ${handshake.agent_id}`);
+            this.nodeId = reg.node_id || reg.id || reg.agent_id;
+            console.log(`✅ Registered! Node ID: ${this.nodeId}`);
             return true;
         } catch (error) {
             console.error(`❌ Connection failed: ${error.message}`);
@@ -85,13 +86,27 @@ class A2AClient {
 
     async startLoop() {
         console.log("Listening for tasks...");
-        const POLL_INTERVAL = 5000; // 5s rate limit
+        const POLL_INTERVAL = 5000;
+        let lastHb = 0;
         while (true) {
+            const now = Date.now();
+            // Heartbeat every 30s
+            if (now - lastHb >= 30000) {
+                try { await this.request('/nodes/heartbeat', 'POST', { node_id: this.nodeId, status: 'working' }); } catch(e) {}
+                lastHb = Date.now();
+            }
             try {
-                const task = await this.request('/marketplace/tasks/next');
-                if (task) {
-                    console.log(`Received task: ${task.id}`);
+                const resp = await this.request(`/tasks/worker/pending?node_id=${this.nodeId}`);
+                const tasks = Array.isArray(resp) ? resp : (resp && resp.tasks ? resp.tasks : []);
+                for (const task of tasks) {
+                    const tid = task.task_id || task.id;
+                    console.log(`\n⚡ Task ${tid.slice(0,8)}... (${task.type || 'unknown'})`);
+                    await this.request('/tasks/worker/submit', 'POST', {
+                        task_id: tid, node_id: this.nodeId, result: { status: 'completed' }
+                    });
+                    console.log(`✅ Submitted`);
                 }
+                if (!tasks.length) process.stdout.write(".");
             } catch (e) {
                 process.stdout.write(".");
             }

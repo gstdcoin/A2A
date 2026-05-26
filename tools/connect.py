@@ -73,8 +73,7 @@ class SwarmClient:
 def main():
     import os
     parser = argparse.ArgumentParser(description="GSTD A2A Swarm Client (Omega Synergy)")
-    parser.add_argument("--wallet", default=os.environ.get("GSTD_API_KEY"), help="Agent Wallet (or use GSTD_API_KEY)")
-    parser.add_argument("--wallet", default=os.environ.get("GSTD_WALLET_ADDRESS"), help="TON wallet for rewards (required for grid visibility)")
+    parser.add_argument("--wallet", default=os.environ.get("GSTD_API_KEY") or os.environ.get("GSTD_WALLET_ADDRESS"), help="Agent API key (gstd_agent_xxx) or TON wallet for registration")
     parser.add_argument("--host", default=DEFAULT_API_HOST, help="Primary API Host")
     args = parser.parse_args()
 
@@ -105,28 +104,44 @@ def main():
 
     # 1. Handshake — MUST include wallet_address so device appears in grid
     start_time = time.time()
-    handshake_body = {
-        "agent_version": "2.0.0-OMEGA",
-        "capabilities": ["compute", "consensus"],
-        "status": "online",
+    reg_body = {
         "wallet_address": wallet,
+        "agent_name": "Swarm-Agent",
+        "capabilities": ["compute", "consensus"],
     }
-    handshake = client.request("POST", "/agents/handshake", handshake_body)
+    reg = client.request("POST", "/nodes/register", reg_body)
     latency = (time.time() - start_time) * 1000
 
-    if handshake and handshake.get('status') == 'connected':
-        print(f"✅ Connected! Agent ID: {handshake.get('agent_id')}")
-        print(f"🚀 Latency: {latency:.2f}ms (Target: <50ms)")
-        print("Listening for swarm directives...")
-        
+    node_id = None
+    if reg:
+        node_id = reg.get("node_id") or reg.get("id") or reg.get("agent_id")
+        api_key = reg.get("api_key") or args.wallet
+        print(f"✅ Registered! Node ID: {node_id}")
+        print(f"🚀 Latency: {latency:.2f}ms")
+        print("Listening for tasks...")
+
+        # Update headers to use api_key
+        client.headers["Authorization"] = f"Bearer {api_key}"
+
+        last_hb = 0
         while True:
-            # Poll for work or consensus tasks
-            # task = client.request("GET", "/marketplace/tasks/next")
-            time.sleep(5) 
-            print(".", end="", flush=True)
-            
+            now = time.time()
+            if now - last_hb >= 30:
+                client.request("POST", "/nodes/heartbeat", {"node_id": node_id, "status": "working"})
+                last_hb = time.time()
+            tasks_resp = client.request("GET", f"/tasks/worker/pending?node_id={node_id}")
+            tasks = tasks_resp if isinstance(tasks_resp, list) else (tasks_resp or {}).get("tasks", [])
+            if tasks:
+                for task in tasks:
+                    tid = task.get("task_id") or task.get("id", "")
+                    result = {"status": "completed", "node_id": node_id}
+                    client.request("POST", "/tasks/worker/submit", {"task_id": tid, "node_id": node_id, "result": result})
+                    print(f"\n✅ Task {tid[:8]}... processed")
+            else:
+                time.sleep(5)
+                print(".", end="", flush=True)
     else:
-        print("❌ Handshake failed.")
+        print("❌ Registration failed.")
 
 if __name__ == "__main__":
     main()
