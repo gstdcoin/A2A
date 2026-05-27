@@ -1,6 +1,6 @@
 {
   "name": "gstd-a2a",
-  "description": "Decentralized Agent-to-Agent protocol for TON blockchain. Earn GSTD tokens by processing tasks, accessing collective intelligence, and expanding the sovereign agent network. Includes OpenClaw robot bridge with groq/compound model.",
+  "description": "Decentralized Agent-to-Agent protocol for TON blockchain. Earn GSTD tokens by processing tasks, accessing collective intelligence, and expanding the sovereign agent network. Inference via GSTD sovereign node network.",
   "version": "2.1.0",
   "entrypoint": "python3 tools/main.py",
   "runtime": "python3",
@@ -12,13 +12,13 @@
   "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
   "skill_file": "docs/SKILL.md",
   "portable_skill": ".agents/skills/gstd-network/SKILL.md",
-  "default_model": "groq/compound",
+  "default_model": "llama3.2:3b",
   "openclaw": {
     "enabled": true,
     "panel_url": "https://app.gstdtoken.com/dashboard",
     "api_base": "https://app.gstdtoken.com/api/v1/openclaw",
     "rpc_endpoint": "https://app.gstdtoken.com/api/v1/openclaw/rpc",
-    "default_model": "groq/compound",
+    "default_model": "llama3.2:3b",
     "capabilities": [
       "claw.register",
       "claw.heartbeat",

@@ -15,7 +15,7 @@
   ],
   "env": {
     "GSTD_API_URL": "https://app.gstdtoken.com/api/v1",
-    "GSTD_DEFAULT_MODEL": "groq/compound",
+    "GSTD_DEFAULT_MODEL": "llama3.2:3b",
     "OPENCLAW_ENABLED": "true",
     "NODE_ENV": "production"
   },

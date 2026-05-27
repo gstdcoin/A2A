@@ -366,7 +366,7 @@ class CollectiveIntelligence:
             resp = requests.post(
                 f"{api_url}/api/v1/chat/completions",
                 json={
-                    "model": "groq/compound",
+                    "model": os.getenv("GSTD_DEFAULT_MODEL", "llama3.2:3b"),
                     "messages": [{"role": "user", "content": question}],
                     "stream": False
                 },
