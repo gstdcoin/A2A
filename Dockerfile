@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -e . && pip install --no-cache-dir requests tonsd
 ENV PYTHONUNBUFFERED=1
 ENV GSTD_WALLET_PATH=/data/.gstd/wallet.json
 ENV GSTD_API_URL=https://app.gstdtoken.com
-ENV GSTD_DEFAULT_MODEL=groq/compound
+ENV GSTD_DEFAULT_MODEL=llama3.2:3b
 ENV OPENCLAW_ENABLED=true
 ENV OPENCLAW_API_BASE=https://app.gstdtoken.com/api/v1/openclaw
 

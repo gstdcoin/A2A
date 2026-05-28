@@ -358,13 +358,10 @@ class GSTDClient:
 
     def store_knowledge(self, topic: str, content: str, tags: list = None):
         """Stores information in the collective grid memory."""
-        if not self.wallet_address:
-             self.node_id = "anonymous"
-        else:
-             self.node_id = self.wallet_address
+        agent_id = self.node_id or self.wallet_address or "anonymous"
 
         payload = {
-            "agent_id": self.node_id,
+            "agent_id": agent_id,
             "topic": topic,
             "content": content,
             "tags": tags or []

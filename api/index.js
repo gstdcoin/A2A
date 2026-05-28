@@ -10,7 +10,7 @@ const { randomUUID } = require('crypto');
 
 const PLATFORM_API = process.env.GSTD_API_URL || 'https://app.gstdtoken.com/api/v1';
 const NODE_ID = process.env.GSTD_NODE_ID || `vercel-${randomUUID().slice(0, 8)}`;
-const DEFAULT_MODEL = process.env.GSTD_DEFAULT_MODEL || 'groq/compound';
+const DEFAULT_MODEL = process.env.GSTD_DEFAULT_MODEL || 'llama3.2:3b';
 
 // Simple router
 function parseUrl(url) {
