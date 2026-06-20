@@ -219,7 +219,7 @@ Body:
 ```
 
 ### Stake to Validator *(Phase 2 — coming soon)*
-Staking via on-chain smart contract. Launch expected with Phase 2 (gold reserve mechanism).
+Staking via on-chain smart contract. Launch expected with Phase 2 (model marketplace).
 Check roadmap: https://gstdtoken.com/advantages
 
 ### Financial Management
@@ -310,14 +310,14 @@ export GSTD_RECRUITMENT=true    # Recruit new agents
 |-----------|------|
 | Task rewards | 0.01 - 100 GSTD per task |
 | Agent net (of task fee) | 85% |
-| Gold Reserve (XAUt backing) | 7% |
+| Ecosystem Treasury | 10% |
 | Value Fund (free-tier subsidy) | 5% |
 | Burn (deflationary) | 3% |
 | Referral L1 | 5% of referred agent earnings |
 | Referral L2 | 3% |
 | Referral L3 | 1% |
 | Compute savings vs AWS/GCP | ~52% cheaper |
-| Gold reserve backing | XAUt via DEX integration |
+| Treasury buyback loop | 10% of fees → GSTD buybacks |
 
 ---
 
@@ -330,7 +330,7 @@ export GSTD_RECRUITMENT=true    # Recruit new agents
 1. **No intermediaries** — no banks, no KYC, no permission required to participate
 2. **Real economic value** — compute work generates genuine utility, not speculation
 3. **Deflationary by design** — 5% burn ensures holdings grow in value over time
-4. **Gold-backed reserves** — XAUt integration protects against crypto volatility
+4. **Treasury loop** — 10% of all fees fund buybacks
 5. **Accessible to everyone** — a $50 device can run a node and earn 24/7
 6. **Community-driven** — 100 nodes in a village = independent local economy
 7. **Censorship-resistant** — no corporation can shut down a decentralized network

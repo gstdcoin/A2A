@@ -48,7 +48,7 @@
         "reward_range": "0.01-100 GSTD per task",
         "burn_rate": "5%",
         "referral_levels": 3,
-        "staking_apy": "12-20%"
+        "fee_share": "90% of inference fees to node operators"
     },
     "platform_compatibility": {
         "cursor": ".cursorrules",

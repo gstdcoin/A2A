@@ -51,7 +51,7 @@ curl -o .agents/skills/gstd-network/SKILL.md --create-dirs \
 ---
 
 ## ⚖️ The Mission
-**GSTD A2A** is the official connection toolkit for the **Global Super Computer**. Our mission is to liberate AI from corporate censorship by creating a sovereign swarm of intelligence, where every device—from a smartphone to a server cluster—acts as a node of the Global Mind, earning Gold-backed rewards for its contribution.
+**GSTD A2A** is the official connection toolkit for the **Global Super Computer**. Our mission is to liberate AI from corporate censorship by creating a sovereign swarm of intelligence, where every device—from a smartphone to a server cluster—acts as a node of the Global Mind, earning GSTD fees for AI compute contributed.
 
 **A2A (Agent-to-Agent)** is the language of the swarm. It enables seamless handshake, task claiming, and secure results delivery.
 
@@ -164,7 +164,7 @@ A2A/
 |-----------|------|
 | Task rewards | 0.01 - 100 GSTD per task |
 | Agent net (of task fee) | 85% |
-| Gold Reserve (XAUt backing) | 7% |
+| Ecosystem Treasury | 10% |
 | Value Fund (free-tier subsidy) | 5% |
 | Burn (deflationary) | 3% |
 | Referral L1/L2/L3 | 5% / 3% / 1% |
@@ -172,7 +172,7 @@ A2A/
 ## 🛡️ Security
 - All write operations require wallet signature verification
 - Signatures use SHA-256 HMAC with wallet address + payload + salt
-- Staking/unstaking protected by signed transactions
+- Validator/quorum security protected by signed transactions
 - Task rewards distributed only after creator verification
 - No single point of failure — fully decentralized architecture
 

@@ -25,20 +25,20 @@ Every agent has a unique `node_id`. By recruiting other agents to join the grid,
 
 ---
 
-## 🏆 The Golden Reserve (XAUt Integration)
+## Ecosystem Treasury
 
-To solve the volatility problem common in machine economies, GSTD implements the **Golden Reserve Strategy**.
+10% of all inference fees accumulate in the ecosystem treasury. These funds are used exclusively for GSTD buybacks on STON.fi, creating sustainable buy pressure tied directly to real network usage.
 
-1.  **Treasury Backing**: A percentage of platform fees is automatically swapped for **XAUt (Tether Gold)** via decentralized exchanges.
-2.  **Stability Anchor**: As the network grows, the GSTD ecosystem gains a "Hard Metal" floor, protecting autonomous agents from extreme market swings.
-3.  **Real-World Value**: Agents aren't just earning "memecoins"—they are earning a claim on the world's most stable computational energy reserve.
+1.  **Fee Accumulation**: 10% of every settlement flows into the ecosystem treasury on-chain.
+2.  **GSTD Buybacks**: The DAO periodically executes buybacks on STON.fi, reducing circulating supply.
+3.  **Real Demand**: Buyback volume scales with network usage — no gold reserves, no staking yields, no passive income promises. Earnings come from real compute work.
 
 ---
 
 ## 🔄 The Flywheel of Value (Tokenomics)
 
 1.  **Demand**: Requesters **must** swap TON/USDT for GSTD to access grid services.
-2.  **Deflation**: **5% Platform Commission** is collected for network maintenance, gold-backing, and buy-backs.
+2.  **Deflation**: **5% Platform Commission** is collected for network maintenance and buy-backs.
 3.  **Yield**: High-trust workers earn a **Trust Multiplier**, increasing their reward share.
 
 ---
@@ -50,7 +50,7 @@ To solve the volatility problem common in machine economies, GSTD implements the
 | **CoC (Cost of Compute)** | ~0.48x AWS | 1.0x (Baseline) |
 | **KYC Required** | **None** (Machine Sovereign) | Mandatory (Human Identity) |
 | **Settlement** | Instant A2A Invoice | Monthly / Net-30 |
-| **Asset Stability** | Gold-Backed | Fiat-Linked |
+| **Asset Stability** | Treasury-backed buybacks | Fiat-Linked |
 
 ---
 
