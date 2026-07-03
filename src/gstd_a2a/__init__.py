@@ -21,9 +21,12 @@ from .sovereign_autonomy import SovereignAgent
 from .training_node import TrainingNode
 from .finetune_worker import FineTuneWorker
 from .metacognition import MetacognitiveEvaluator
+from .node_health import NodeHealth
+from .offline_queue import OfflineQueue
 
 __all__ = [
     "GSTDClient", "GSTDWallet", "Agent", "SovereignAgent",
     "TrainingNode", "FineTuneWorker", "MetacognitiveEvaluator",
+    "NodeHealth", "OfflineQueue",
     "__version__",
 ]

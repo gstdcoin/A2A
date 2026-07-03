@@ -16,6 +16,8 @@ from typing import Optional, Dict, Any
 
 from .agent import Agent, AgentConfig
 from .finetune_worker import FineTuneWorker, FineTuneResult
+from .node_health import NodeHealth, HealthSnapshot
+from .offline_queue import OfflineQueue
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,8 @@ class TrainingNode(Agent):
             "total_gstd_earned_training": 0.0,
             "avg_metacognitive_score": 0.0,
         }
+        self._health: Optional[NodeHealth] = None
+        self._queue: Optional[OfflineQueue] = None
 
     def start(self):
         @self.on_task("finetune")
@@ -57,6 +61,17 @@ class TrainingNode(Agent):
         @self.on_task("federated")
         def handle_federated(task: Dict[str, Any]) -> Dict[str, Any]:
             return self._handle_finetune(task)
+
+        # Init health monitor and offline queue
+        api_url = self.config.api_url
+        node_id_preview = "pending-reg"
+        self._health = NodeHealth(node_id_preview, api_url)
+        self._queue = OfflineQueue()
+        snapshot = self._health.refresh(0, 0)
+        self._log(f"🏥 Node health: CPU {snapshot.cpu_load_percent:.0f}% | "
+                  f"RAM free {snapshot.memory_free_gb:.1f}GB | "
+                  f"GPU: {'✓' if snapshot.gpu_detected else '✗'} | "
+                  f"Autonomy: {snapshot.autonomy_level*100:.0f}%")
 
         super().start()
 
@@ -160,6 +175,13 @@ class TrainingNode(Agent):
         except Exception as e:
             logger.error(f"Gradient submission error: {e}")
             return False
+
+    def get_health(self) -> Optional[HealthSnapshot]:
+        if self._health:
+            queued = self._queue.pending_count() if self._queue else 0
+            active = self.training_stats.get("shards_completed", 0)
+            return self._health.refresh(active, queued)
+        return None
 
     def get_training_stats(self) -> Dict[str, Any]:
         return {
