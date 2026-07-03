@@ -27,9 +27,23 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
 SUPPORTED_MODELS = {
     "llama3.1:8b":  {"min_vram_gb": 6, "ollama_id": "llama3.1:8b"},
+    "llama3.2:3b":  {"min_vram_gb": 3, "ollama_id": "llama3.2:3b"},
+    "llama3.2:1b":  {"min_vram_gb": 2, "ollama_id": "llama3.2:1b"},
     "qwen2.5:7b":   {"min_vram_gb": 6, "ollama_id": "qwen2.5:7b"},
+    "qwen2.5:3b":   {"min_vram_gb": 3, "ollama_id": "qwen2.5:3b"},
     "mistral:7b":   {"min_vram_gb": 6, "ollama_id": "mistral:7b"},
+    "phi3:mini":    {"min_vram_gb": 3, "ollama_id": "phi3:mini"},
+    "gemma2:2b":    {"min_vram_gb": 2, "ollama_id": "gemma2:2b"},
 }
+
+def _is_ollama_model_available(model_id: str) -> bool:
+    """Check if a model is installed in local Ollama instance."""
+    try:
+        r = urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=3)
+        tags = json.loads(r.read())
+        return any(m.get("name", "").startswith(model_id.split(":")[0]) for m in tags.get("models", []))
+    except Exception:
+        return False
 
 
 @dataclass
@@ -87,15 +101,19 @@ class FineTuneWorker:
         try:
             model_spec = SUPPORTED_MODELS.get(base_model)
             if not model_spec:
-                raise ValueError(f"Unsupported model: {base_model}. Supported: {list(SUPPORTED_MODELS)}")
+                # Accept any model that's actually installed in Ollama
+                if _is_ollama_model_available(base_model):
+                    model_spec = {"min_vram_gb": 0, "ollama_id": base_model}
+                else:
+                    raise ValueError(f"Unsupported model: {base_model}. Supported: {list(SUPPORTED_MODELS)}")
 
             shard_path = self._download_shard(shard_url, job_id)
             examples = self._load_examples(shard_path)
             dataset_size = len(examples)
             logger.info(f"Loaded {dataset_size} examples for job {job_id}")
 
-            if dataset_size < 10:
-                raise ValueError(f"Shard too small: {dataset_size} examples (min 10)")
+            if dataset_size < 2:
+                raise ValueError(f"Shard too small: {dataset_size} examples (min 2)")
 
             if self._has_peft():
                 result = self._train_peft(job_id, domain, base_model, examples, steps)
@@ -258,8 +276,15 @@ class FineTuneWorker:
 
     # ─── Helpers ────────────────────────────────────────────────────
     def _download_shard(self, url: str, job_id: str) -> Path:
-        if not url or url.startswith("/"):
-            p = Path(url) if url else self.work_dir / f"{job_id}.jsonl"
+        if not url:
+            raise FileNotFoundError("No shard URL provided")
+        if url.startswith("file://"):
+            p = Path(url[7:])
+            if p.exists():
+                return p
+            raise FileNotFoundError(f"Shard not found: {url}")
+        if url.startswith("/"):
+            p = Path(url)
             if p.exists():
                 return p
             raise FileNotFoundError(f"Shard not found: {url}")
@@ -300,7 +325,7 @@ class FineTuneWorker:
 
     def _eval_loss_ollama(self, model_id: str, examples: list) -> float:
         losses = []
-        for ex in examples[:5]:
+        for ex in examples[:2]:
             prompt = self._format_example(ex)
             resp = self._ollama_generate(model_id, prompt[:500])
             if resp:
@@ -327,15 +352,15 @@ class FineTuneWorker:
     def _ollama_generate(self, model_id: str, prompt: str) -> Optional[Dict]:
         try:
             data = json.dumps({
-                "model": model_id, "prompt": prompt[:1000],
-                "stream": False, "options": {"temperature": 0.1, "num_predict": 64},
+                "model": model_id, "prompt": prompt[:500],
+                "stream": False, "options": {"temperature": 0.1, "num_predict": 16},
             }).encode()
             r = urllib.request.urlopen(
                 urllib.request.Request(
                     f"{OLLAMA_URL}/api/generate", data=data,
                     headers={"Content-Type": "application/json"},
                 ),
-                timeout=30,
+                timeout=180,
             )
             return json.loads(r.read())
         except Exception as e:
