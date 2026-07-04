@@ -97,6 +97,7 @@ class TrainingNode(Agent):
         self._init_worker()
 
         job_id = task.get("job_id") or task.get("id", "unknown")
+        shard_id = task.get("shard_id") or task.get("task_id") or job_id
         reward_gstd = float(task.get("reward_gstd", task.get("payment", 0)))
 
         self._log(f"🎓 Starting fine-tune shard: {job_id} (model: {task.get('base_model', '?')})")
@@ -123,7 +124,7 @@ class TrainingNode(Agent):
                 "score": result.metacognitive_score, "job_id": job_id,
             }
 
-        submitted = self._submit_gradient(result)
+        submitted = self._submit_gradient(result, shard_id=shard_id)
 
         if submitted:
             self.training_stats["shards_completed"] += 1
@@ -143,25 +144,28 @@ class TrainingNode(Agent):
             "training_seconds": result.training_seconds,
         }
 
-    def _submit_gradient(self, result: FineTuneResult) -> bool:
+    def _submit_gradient(self, result: FineTuneResult, shard_id: str = "") -> bool:
         if not self.client:
             return False
 
+        # Submit to platform (app.gstdtoken.com) — not local gstdbot endpoint
+        platform_url = self.config.api_url.rstrip('/')
         payload = {
-            "jobId": result.job_id,
-            "nodeId": result.node_id,
-            "domain": result.domain,
-            "metacognitiveScore": result.metacognitive_score,
-            "gradientNorm": result.gradient_norm,
-            "datasetSize": result.dataset_size,
-            "valLossImprovement": result.val_loss_improvement,
-            "loraPath": result.lora_path,
+            "job_id":               result.job_id,
+            "shard_id":             shard_id or result.job_id,
+            "node_id":              result.node_id,
+            "domain":               result.domain,
+            "metacognitive_score":  result.metacognitive_score,
+            "gradient_norm":        result.gradient_norm,
+            "dataset_size":         result.dataset_size,
+            "val_loss_improvement": result.val_loss_improvement,
+            "lora_path":            result.lora_path,
         }
 
         try:
             import requests
             resp = requests.post(
-                f"{TRAINING_API_URL}/api/training/gradient",
+                f"{platform_url}/api/v1/training/gradient",
                 json=payload,
                 headers=self.client._get_headers(),
                 timeout=15,
@@ -170,7 +174,7 @@ class TrainingNode(Agent):
                 data = resp.json()
                 self._log(f"Gradient {'accepted' if data.get('accepted') else 'rejected'}: {data.get('reason', 'ok')}")
                 return data.get("accepted", False)
-            logger.warning(f"Gradient submission HTTP {resp.status_code}")
+            logger.warning(f"Gradient submission HTTP {resp.status_code}: {resp.text[:200]}")
             return False
         except Exception as e:
             logger.error(f"Gradient submission error: {e}")
