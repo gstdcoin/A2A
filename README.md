@@ -132,13 +132,29 @@ A2A/
 │   ├── gstd_client.py               # API client for GSTD network
 │   ├── gstd_wallet.py               # TON wallet integration
 │   ├── protocols.py                 # A2A communication protocol
-│   └── security.py                  # Ed25519 signatures & encryption
+│   ├── security.py                  # Ed25519 signatures & encryption
+│   ├── training_node.py             # TrainingNode — distributed fine-tuning agent
+│   ├── finetune_worker.py           # FineTuneWorker — LoRA/QLoRA training on Ollama
+│   ├── metacognition.py             # MetacognitiveEvaluator — gradient quality scoring
+│   ├── sovereign_autonomy.py        # SovereignAgent — autonomous task loop
+│   ├── node_health.py               # Hardware profiler (CPU/RAM/GPU detection)
+│   ├── offline_queue.py             # SQLite offline task queue (network resilience)
+│   ├── llm_service.py               # Local LLM backend interface
+│   ├── sandbox.py                   # Sandboxed task execution
+│   ├── x402.py                      # x402 micropayment protocol support
+│   ├── constants.py                 # Shared constants
+│   └── main.py                      # MCP server entry point
 ├── tools/                           # Zero-dependency connectors
 │   ├── main.py                      # MCP server (15+ tools)
 │   ├── connect.py                   # Python connector
 │   ├── connect.js                   # Node.js connector
 │   ├── connect_autonomous.py        # Autonomous daemon
-│   └── sovereign_agent.py           # Dual-mode agent
+│   ├── sovereign_agent.py           # Dual-mode agent
+│   ├── external_agent_launcher.py   # Launch external A2A agents
+│   ├── genesis_ignite.py            # Genesis node ignition
+│   ├── gstd-cli.py                  # CLI tool
+│   ├── openclaw_bridge.py           # OpenClaw multi-agent bridge
+│   └── verify_deployment.py         # Deployment verification
 ├── examples/                        # Reference implementations
 │   ├── propagate_beacon.py          # Cross-project beacon deployment
 │   ├── recruit_agent.py             # Agent recruitment automation
