@@ -875,7 +875,312 @@ EOF
 
 ---
 
-## Task 5: Final verification
+## Task 5: `sovereign_autonomy.py` — cascade the same fixes into the parallel SovereignAgent implementation
+
+**Why this task exists:** discovered mid-execution (after Task 1 landed) that `src/gstd_a2a/sovereign_autonomy.py` (962 lines, imported by `__init__.py` -- `from .sovereign_autonomy import SovereignAgent`) is a second, largely-parallel autonomous-agent implementation with its own `EconomicEngine`, `NetworkGuardian`, `CollectiveIntelligence`, and `TaskProcessor` classes, all built on the same 14-methods-that-don't-exist pattern already fixed in `agent.py`/`tools/main.py`. Additionally, Task 1's `get_balance()` repair (new field names: `balance_gstd` instead of `gstd_balance`/`gstd`) broke `EconomicEngine.check_balance()`, which still reads the old field names -- a real regression introduced by this plan's own earlier task, not a pre-existing bug, and it must be fixed before this plan is done.
+
+**Files:**
+- Modify: `/home/bot/gstd-a2a/src/gstd_a2a/sovereign_autonomy.py`
+
+**Interfaces:**
+- Consumes: `GSTDWallet.check_balance() -> dict` (same real on-chain method used in Task 2's `agent.py` fix).
+- Produces: `EconomicEngine`, `NetworkGuardian`, `CollectiveIntelligence`, `TaskProcessor`, `SovereignAgent` with no remaining calls to any of the 14 methods removed in Task 1.
+
+- [ ] **Step 1: Fix `EconomicEngine.check_balance()` and remove `_request_bootstrap()`**
+
+Replace (currently `sovereign_autonomy.py:101-117`):
+```python
+    def check_balance(self, force: bool = False) -> Dict[str, float]:
+        """Get current balance with caching."""
+        now = time.time()
+        if not force and now - self.balance_cache["last_check"] < 60:
+            return self.balance_cache
+
+        try:
+            balance = self.client.get_balance()
+            self.balance_cache = {
+                "gstd": float(balance.get("gstd_balance", balance.get("gstd", 0))),
+                "ton": float(balance.get("ton_balance", balance.get("ton", 0))),
+                "pending": float(balance.get("pending_gstd", 0)),
+                "last_check": now
+            }
+        except Exception as e:
+            self._log(f"⚠️  Balance check failed: {e}")
+        return self.balance_cache
+```
+with:
+```python
+    def check_balance(self, force: bool = False) -> Dict[str, float]:
+        """Get current on-chain balance with caching."""
+        now = time.time()
+        if not force and now - self.balance_cache["last_check"] < 60:
+            return self.balance_cache
+
+        try:
+            balance = self.wallet.check_balance()
+            if "error" in balance:
+                raise Exception(balance["error"])
+            self.balance_cache = {
+                "gstd": float(balance.get("GSTD", 0)),
+                "ton": float(balance.get("TON", 0)),
+                "pending": 0.0,
+                "last_check": now
+            }
+        except Exception as e:
+            self._log(f"⚠️  Balance check failed: {e}")
+        return self.balance_cache
+```
+
+(`self.wallet` already exists on `EconomicEngine` -- see its `__init__` at line 91, which already takes and stores a `wallet: GSTDWallet` parameter. There's no real per-wallet "pending" credit concept on-chain, so it's hardcoded to 0.0 rather than reading a field the new endpoint doesn't return either.)
+
+Then replace (currently `sovereign_autonomy.py:131-146`, inside `ensure_survival()`):
+```python
+            if bal["ton"] >= self.config.auto_swap_amount + 0.3:
+                self._log(f"🔄 Auto-swap: {self.config.auto_swap_amount} TON → GSTD")
+                try:
+                    result = self.wallet.swap_ton_to_gstd(self.config.auto_swap_amount)
+                    if "error" not in result:
+                        self._log(f"✅ Swap transaction sent")
+                        return True
+                    else:
+                        self._log(f"⚠️  Swap failed: {result.get('error')}")
+                except Exception as e:
+                    self._log(f"⚠️  Auto-swap error: {e}")
+            else:
+                # Request bootstrap tokens
+                self._request_bootstrap()
+        return True
+```
+with:
+```python
+            if bal["ton"] >= self.config.auto_swap_amount + 0.3:
+                self._log(f"🔄 Auto-swap: {self.config.auto_swap_amount} TON → GSTD")
+                try:
+                    result = self.wallet.swap_ton_to_gstd(self.config.auto_swap_amount)
+                    if "error" not in result:
+                        self._log(f"✅ Swap transaction sent")
+                        return True
+                    else:
+                        self._log(f"⚠️  Swap failed: {result.get('error')}")
+                except Exception as e:
+                    self._log(f"⚠️  Auto-swap error: {e}")
+            else:
+                # No platform faucet exists -- stays unfunded until someone tops it up.
+                self._log(f"⚠️  Insufficient TON to auto-swap and no faucet is available. "
+                          f"Fund {self.wallet.address} with TON or GSTD to proceed.")
+        return True
+```
+
+And delete the now-unused `_request_bootstrap` method entirely (currently `sovereign_autonomy.py:149-166`):
+```python
+    def _request_bootstrap(self):
+        """Request bootstrap tokens from the platform."""
+        try:
+            import requests
+            resp = requests.post(
+                f"{self.config.api_url}/api/v1/tokens/agent/bootstrap",
+                json={
+                    "agent_wallet": self.wallet.address,
+                    "agent_name": "SovereignAgent",
+                    "capabilities": self.config.capabilities
+                },
+                timeout=30
+            )
+            if resp.status_code in [200, 201]:
+                data = resp.json()
+                self._log(f"✅ Bootstrap: {data.get('amount', 0.5)} GSTD received")
+        except Exception as e:
+            self._log(f"⚠️  Bootstrap request failed: {e}")
+```
+
+- [ ] **Step 2: Fix `NetworkGuardian.monitor_health()`, remove `broadcast_beacons()` and `claim_referral_rewards()`**
+
+In `monitor_health()` (currently lines 208-230), remove just the dead knowledge-store sub-call. Replace:
+```python
+            if not is_healthy:
+                self._log(f"⚠️  NETWORK ALERT: Status = {health.get('status')}")
+                # Store health report in Hive Memory for other agents
+                self.client.store_knowledge(
+                    topic="network_health_alert",
+                    content=f"Agent detected network issue at {datetime.now().isoformat()}: {json.dumps(health)[:200]}",
+                    tags=["health", "alert", "monitoring"]
+                )
+            return self.network_status
+```
+with:
+```python
+            if not is_healthy:
+                self._log(f"⚠️  NETWORK ALERT: Status = {health.get('status')}")
+            return self.network_status
+```
+
+Delete `broadcast_beacons()` entirely (currently lines 232-284) -- its entire purpose was deploying content via `store_knowledge`, which no longer exists, and it silently swallowed every failure (`except Exception: pass`), meaning it has never actually deployed a beacon since the endpoint doesn't exist.
+
+Delete `claim_referral_rewards()` entirely (currently lines 286-301) -- built entirely on the two removed referral methods, with no real per-wallet claim endpoint to redirect to (see Task 1's rationale for why `get_ml_referral_stats`/`claim_referral_rewards` have no valid repair target).
+
+- [ ] **Step 3: Make `CollectiveIntelligence`'s knowledge methods honest no-ops**
+
+Replace `recall_before_compute()` (currently lines 326-339):
+```python
+    def recall_before_compute(self, topic: str) -> Optional[str]:
+        """
+        ALWAYS check Hive Memory before heavy computation.
+        This is the swarm efficiency directive.
+        """
+        try:
+            results = self.client.query_knowledge(topic)
+            if results and isinstance(results, list) and len(results) > 0:
+                self.knowledge_recalled += 1
+                best = results[0]
+                return best.get("content", "")
+        except Exception:
+            pass
+        return None
+```
+with:
+```python
+    def recall_before_compute(self, topic: str) -> Optional[str]:
+        """
+        No shared knowledge store exists on the platform today -- always
+        returns None. Kept as a stable call site for build_consensus()'s
+        callers rather than removed outright, in case a real knowledge API
+        is added later.
+        """
+        return None
+```
+
+Replace `store_after_compute()` (currently lines 341-351):
+```python
+    def store_after_compute(self, topic: str, content: str, tags: List[str] = None):
+        """Store valuable computation results for the collective."""
+        try:
+            self.client.store_knowledge(
+                topic=topic,
+                content=content,
+                tags=tags or ["computed", "shared"]
+            )
+            self.knowledge_stored += 1
+        except Exception as e:
+            self._log(f"⚠️  Knowledge store failed: {e}")
+```
+with:
+```python
+    def store_after_compute(self, topic: str, content: str, tags: List[str] = None):
+        """No shared knowledge store exists on the platform today -- no-op."""
+        pass
+```
+
+Leave `share_economic_insight()` and `build_consensus()` untouched -- the former becomes a harmless no-op transitively (it only calls `store_after_compute`), and the latter already does real work (`/api/v1/chat/completions`) unrelated to this fix.
+
+- [ ] **Step 4: Remove `TaskProcessor.create_growth_tasks()` and its call site**
+
+Delete `create_growth_tasks()` entirely (currently starting at line 557 -- read the method to find its exact end before the blank lines and `# ====` divider preceding the `SovereignAgent` class, currently around line 588). It loops over hardcoded task specs calling `self.client.create_task(...)`, which no longer exists, with no real replacement (see Task 1's rationale -- there is no real "commission a paid task to the network" endpoint today).
+
+Remove its call site in `_main_loop()` (currently lines 778-782):
+```python
+                # === GROWTH: Create tasks for other agents (every 50 cycles) ===
+                if self.config.mode in ("full", "master") and self.cycle_count % 50 == 0:
+                    bal = self.economy.check_balance()
+                    if bal["gstd"] > 5.0:  # Only if we can afford it
+                        self.processor.create_growth_tasks()
+
+```
+(delete this whole block including its blank line before the next `# === FINANCIAL:` comment).
+
+- [ ] **Step 5: Remove `SovereignAgent._beacon_loop()` and its thread**
+
+Both of `_beacon_loop()`'s calls (`broadcast_beacons()`, `claim_referral_rewards()`) are gone as of Step 2 -- the loop would just wake up and do nothing forever. Delete the method entirely (currently lines 816-827):
+```python
+    def _beacon_loop(self):
+        """Background beacon deployment and referral management."""
+        while not self._stop_event.is_set():
+            try:
+                # Deploy beacons
+                self.guardian.broadcast_beacons()
+
+                # Claim referral rewards
+                self.guardian.claim_referral_rewards()
+            except Exception:
+                pass
+            self._stop_event.wait(self.config.beacon_interval)
+```
+
+And remove its thread-spawn block in `_start_all_threads()` (currently lines 760-761):
+```python
+        # 3. Beacon/propagation thread
+        if self.config.propagation_enabled:
+            threading.Thread(target=self._beacon_loop, daemon=True, name="beacons").start()
+
+```
+(delete this whole block including its blank line before `# 4. Economic monitor thread`).
+
+- [ ] **Step 6: Verify no dangling references**
+
+```bash
+cd /home/bot/gstd-a2a
+grep -n "\.create_task(\|\.store_knowledge(\|\.query_knowledge(\|\.get_ml_referral_stats(\|\.claim_referral_rewards(\|_request_bootstrap\|_beacon_loop\|broadcast_beacons\|create_growth_tasks\|tokens/agent/bootstrap" src/gstd_a2a/sovereign_autonomy.py
+```
+
+Expected: no output.
+
+- [ ] **Step 7: Import check**
+
+```bash
+cd /home/bot/gstd-a2a
+python3 -c "from gstd_a2a.sovereign_autonomy import SovereignAgent; print('OK')"
+python3 -c "import gstd_a2a; print('OK')"
+```
+
+Expected: `OK` twice (the second one exercises `__init__.py`'s own import of `SovereignAgent`, confirming the package-level import chain still works).
+
+- [ ] **Step 8: Run existing tests**
+
+```bash
+cd /home/bot/gstd-a2a
+python3 -m pytest tests/ -v
+```
+
+Expected: all still pass (none reference `sovereign_autonomy.py`).
+
+- [ ] **Step 9: Commit**
+
+```bash
+cd /home/bot/gstd-a2a
+git add src/gstd_a2a/sovereign_autonomy.py
+git commit -m "$(cat <<'EOF'
+fix(sdk): cascade honesty fixes into sovereign_autonomy.py's parallel agent
+
+Discovered mid-plan: this 962-line file (imported by __init__.py) is a
+second, largely-parallel autonomous-agent implementation with its own
+EconomicEngine/NetworkGuardian/CollectiveIntelligence/TaskProcessor
+classes, built on the same 14-methods-that-don't-exist pattern already
+fixed in agent.py and tools/main.py in earlier commits.
+
+Also fixes a real regression from this plan's own Task 1:
+EconomicEngine.check_balance() read the OLD get_balance() field names
+(gstd_balance/ton_balance), which no longer exist after get_balance()
+was repaired to point at /api/v1/credits/balance's different shape --
+switched to GSTDWallet.check_balance() (real on-chain query), the same
+fix already applied to agent.py's _bootstrap().
+
+Removed (no real replacement exists): NetworkGuardian.broadcast_beacons()
+and .claim_referral_rewards() (and the now-pointless _beacon_loop
+background thread that only called those two), EconomicEngine's
+_request_bootstrap() (a third occurrence of the fictional
+/api/v1/tokens/agent/bootstrap faucet), TaskProcessor.create_growth_tasks()
+and its call site in _main_loop(). Made CollectiveIntelligence's
+recall_before_compute()/store_after_compute() honest no-ops rather than
+removing them outright, since share_economic_insight() and their shared
+call sites stay simpler as stable no-op calls than as removed methods.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 6: Final verification
 
 **Files:** none (verification only).
 
