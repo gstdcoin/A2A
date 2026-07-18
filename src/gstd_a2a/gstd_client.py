@@ -1,11 +1,8 @@
 import requests
 import json
 import time
-import uuid
 import os
 import sys
-from .protocols import validate_task_payload
-from .security import SovereignSecurity
 
 class GSTDClient:
     def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru"):
@@ -116,10 +113,6 @@ class GSTDClient:
             if resp.status_code == 200:
                 data = resp.json()
                 return (data if isinstance(data, list) else data.get("tasks", [])), resp.status_code
-            if resp.status_code == 404:
-                resp2 = requests.get(f"{self.api_url}/api/v1/marketplace/tasks", headers=self._get_headers())
-                if resp2.status_code == 200:
-                    return (resp2.json().get("tasks", []), 200)
             return [], resp.status_code
         
         try:
@@ -187,153 +180,21 @@ class GSTDClient:
             return False
 
 
-    # --- Consumer / Requester Methods ---
-
-    def create_task(self, task_type, data_payload, bid_gstd=1.0):
-        """
-        Posts a new task to the GSTD grid.
-        Enforces Protocol Standards so agents understand each other.
-        """
-        if not self.wallet_address:
-            raise ValueError("Wallet address required to pay for tasks")
-
-        if not validate_task_payload(task_type, data_payload):
-            raise ValueError(f"Payload does not match protocol for {task_type}. See protocols.py")
-
-        if isinstance(data_payload, dict):
-            # SECURITY: Scan for prompt injections
-            data_payload, is_safe = SovereignSecurity.sanitize_payload(data_payload)
-            if not is_safe:
-                sys.stderr.write("⚠️  Security Alert: Potential injection detected and neutralized in task payload.\n")
-
-            # Inject protocol metadata for inter-agent understanding
-            data_payload["_meta"] = {
-                "source_language": self.preferred_language,
-                "protocol": "A2A-Standard-v1",
-                "intent": task_type
-            }
-
-        payload = {
-            "type": task_type,
-            "budget": bid_gstd,
-            "payload": data_payload,
-            "input_source": "agent"
-        }
-        
-        resp = requests.post(f"{self.api_url}/api/v1/tasks/create", json=payload, headers=self._get_headers())
-        if resp.status_code in [200, 201]:
-            result = resp.json()
-            task_id = result.get("task_id") or result.get("id")
-            
-            # Check if funding is required (indicated by platform response)
-            escrow_address = result.get("escrow_address") or result.get("escrow")
-            
-            if escrow_address:
-                # The user (client) needs to know how to fund this task.
-                # We provide standardized 'funding_instructions'.
-                # The user should use wallet.create_jetton_transfer_body(...) with these params.
-                result["funding_instructions"] = {
-                    "destination": escrow_address,
-                    "amount_gstd": bid_gstd,
-                    "comment": str(task_id)
-                }
-                
-            return result 
-        raise Exception(f"Task creation failed: {resp.text}")
-
-    def check_task_status(self, task_id):
-        """Checks if a requested task is complete and gets the result."""
-        resp = requests.get(f"{self.api_url}/api/v1/tasks/{task_id}", headers=self._get_headers())
-        if resp.status_code == 200:
-            return resp.json()
-        return {"status": "unknown"}
-
-
     def get_balance(self, wallet_address=None):
-        """Gets the GSTD and TON balance for a wallet."""
-        resp = requests.get(f"{self.api_url}/api/v1/users/balance", headers=self._get_headers())
+        """
+        Gets the platform GSTD spending-credit balance for a wallet
+        (used for e.g. paid API calls / training jobs). This is NOT the
+        agent's on-chain token balance -- for that, use
+        GSTDWallet.check_balance() instead, which queries TON directly.
+        """
+        target = wallet_address or self.wallet_address
+        resp = requests.get(
+            f"{self.api_url}/api/v1/credits/balance?wallet={target}",
+            headers=self._get_headers()
+        )
         if resp.status_code == 200:
             return resp.json()
-        return {"gstd": 0.0, "ton": 0.0}
-
-    def get_payout_intent(self, task_id):
-        """Creates a payout intent for a completed task to claim rewards."""
-        if not self.wallet_address:
-            raise ValueError("Wallet address required to claim rewards")
-        payload = {
-            "task_id": task_id,
-            "executor_address": self.wallet_address
-        }
-        resp = requests.post(f"{self.api_url}/api/v1/payments/payout-intent", json=payload, headers=self._get_headers())
-        return resp.json()
-
-    def get_market_quote(self, amount_ton):
-        """Gets a quote to swap TON for GSTD."""
-        resp = requests.get(f"{self.api_url}/api/v1/market/quote?amount_ton={amount_ton}", headers=self._get_headers())
-        return resp.json()
-        
-    def prepare_swap(self, amount_ton):
-        """Prepares a transaction to buy GSTD."""
-        payload = {
-            "wallet_address": self.wallet_address,
-            "amount_ton": amount_ton
-        }
-        resp = requests.post(f"{self.api_url}/api/v1/market/swap", json=payload, headers=self._get_headers())
-        return resp.json()
-
-    def buy_gstd_x402(self, amount_ton):
-        """
-        Initiates an autonomous purchase of GSTD using the x402 protocol.
-        Returns the payment request with payload_boc to sign.
-        """
-        payload = {
-            "wallet_address": self.wallet_address,
-            "amount_ton": amount_ton
-        }
-        resp = requests.post(f"{self.api_url}/api/v1/market/buy-gstd-x402", json=payload, headers=self._get_headers())
-        
-        # We expect a 402 Payment Required response
-        if resp.status_code == 402:
-            return resp.json()
-            
-        if resp.status_code == 200:
-            # Fallback if somehow processed immediately (simulated)
-            return resp.json()
-            
-        raise Exception(f"x402 Buy Failed: {resp.status_code} - {resp.text}")
-
-    # --- Settlement Layer (A2A Invoicing) ---
-
-    def request_invoice(self, payer_address, amount_gstd, description, task_id=None):
-        """Issues an invoice to another agent."""
-        payload = {
-            "issuer_address": self.wallet_address,
-            "payer_address": payer_address,
-            "amount_gstd": amount_gstd,
-            "description": description,
-            "task_id": task_id
-        }
-        resp = requests.post(f"{self.api_url}/api/v1/invoices", json=payload, headers=self._get_headers())
-        if resp.status_code == 201:
-            return resp.json()
-        raise Exception(f"Invoice creation failed: {resp.text}")
-
-    def pay_invoice(self, invoice_id, wallet):
-        """Pays an invoice using the agent's wallet."""
-        inv = requests.get(f"{self.api_url}/api/v1/invoices/{invoice_id}", headers=self._get_headers()).json()
-        if "error" in inv:
-            raise Exception(f"Invoice not found: {invoice_id}")
-
-        # Real payment on TON/GSTD would happen here
-        # For simplicity, we sign a transfer and get a TX hash
-        transfer_boc = wallet.create_transfer_body(inv['issuer_address'], 0.01, f"PAY_INV:{invoice_id}")
-        # In a real scenario, broadcast_transfer returns tx_hash
-        # Here we simulate the broadcast
-        tx_hash = f"abc{uuid.uuid4().hex[:10]}" 
-        
-        payload = {"tx_hash": tx_hash}
-        resp = requests.post(f"{self.api_url}/api/v1/invoices/{invoice_id}/pay", json=payload, headers=self._get_headers())
-        return resp.json()
+        return {"balance_gstd": 0.0, "pending_rewards_gstd": 0.0}
 
     # --- Discovery (Registry) ---
 
@@ -354,61 +215,3 @@ class GSTDClient:
         sys.stderr.write(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}\n")
         return []
 
-    # --- Knowledge / Hive Memory ---
-
-    def store_knowledge(self, topic: str, content: str, tags: list = None):
-        """Stores information in the collective grid memory."""
-        agent_id = self.node_id or self.wallet_address or "anonymous"
-
-        payload = {
-            "agent_id": agent_id,
-            "topic": topic,
-            "content": content,
-            "tags": tags or []
-        }
-        # Use agent store endpoint (no session required, X-Wallet-Address validates)
-        resp = requests.post(f"{self.api_url}/api/v1/knowledge/agent/store", json=payload, headers=self._get_headers())
-        return resp.json()
-
-    def query_knowledge(self, topic: str):
-        """Retrieves information from the grid memory."""
-        resp = requests.get(f"{self.api_url}/api/v1/knowledge/query?topic={topic}", headers=self._get_headers())
-        if resp.status_code == 200:
-            return resp.json().get("results", [])
-        return []
-
-    # --- Growth System (Marketplace & Referrals) ---
-
-    def get_marketplace_agents(self, capability=None, pricing_model=None):
-        """Fetches agents from the specialized sovereign marketplace."""
-        params = []
-        if capability: params.append(f"capability={capability}")
-        if pricing_model: params.append(f"pricing_model={pricing_model}")
-        query = "?" + "&".join(params) if params else ""
-        
-        resp = requests.get(f"{self.api_url}/api/v1/marketplace/agents{query}", headers=self._get_headers())
-        if resp.status_code == 200:
-            return resp.json().get("agents", [])
-        return []
-
-    def hire_agent(self, agent_id, duration_hours=1):
-        """Creates a rental agreement for another agent."""
-        payload = {
-            "agent_id": agent_id,
-            "renter_wallet": self.wallet_address,
-            "duration_hours": duration_hours
-        }
-        resp = requests.post(f"{self.api_url}/api/v1/marketplace/rentals", json=payload, headers=self._get_headers())
-        return resp.json()
-
-    def get_ml_referral_stats(self):
-        """Fetches multi-level referral performance data."""
-        resp = requests.get(f"{self.api_url}/api/v1/referrals/ml/stats", headers=self._get_headers())
-        if resp.status_code == 200:
-            return resp.json()
-        return {"error": "Failed to fetch referral stats"}
-
-    def claim_referral_rewards(self):
-        """Triggers a payout of accumulated referral bonuses."""
-        resp = requests.post(f"{self.api_url}/api/v1/referrals/ml/claim", json={}, headers=self._get_headers())
-        return resp.json()
