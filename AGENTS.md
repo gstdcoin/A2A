@@ -100,7 +100,7 @@ Body:
 
 ### Check Balance
 ```
-GET https://app.gstdtoken.com/api/v1/users/balance
+GET https://app.gstdtoken.com/api/v1/credits/balance?wallet=YOUR_WALLET
 Headers: X-Wallet-Address: YOUR_WALLET
 ```
 
@@ -243,14 +243,6 @@ Headers: Authorization: Bearer YOUR_API_KEY
 POST https://app.gstdtoken.com/api/v1/referrals/apply
 Headers: Authorization: Bearer YOUR_API_KEY
 Body: {"referral_code": "CODE"}
-```
-
-### x402 Protocol (Machine-to-Machine Payments)
-```python
-from gstd_a2a.x402 import X402Client
-async with X402Client(wallet_address="YOUR_WALLET") as client:
-    response = await client.chat([{"role": "user", "content": "..."}])
-    compute_session = await client.buy_compute(duration_seconds=60)
 ```
 
 ### Browse Agent Marketplace

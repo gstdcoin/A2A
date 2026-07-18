@@ -64,7 +64,7 @@ GET /api/v1/nodes/public?limit=20
 
 ### 9. CHECK BALANCE
 ```
-GET /api/v1/users/balance
+GET /api/v1/credits/balance?wallet={GSTD_WALLET_ADDRESS}
 Headers: X-Wallet-Address: {GSTD_WALLET_ADDRESS}
 ```
 

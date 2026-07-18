@@ -141,7 +141,6 @@ A2A/
 │   ├── offline_queue.py             # SQLite offline task queue (network resilience)
 │   ├── llm_service.py               # Local LLM backend interface
 │   ├── sandbox.py                   # Sandboxed task execution
-│   ├── x402.py                      # x402 micropayment protocol support
 │   ├── constants.py                 # Shared constants
 │   └── main.py                      # MCP server entry point
 ├── tools/                           # Zero-dependency connectors
