@@ -226,50 +226,35 @@ class Agent:
         self._log(f"🌐 Connected to GSTD Grid: {self.config.api_url}")
     
     def _bootstrap(self):
-        """Получает bootstrap токены если баланс 0"""
-        try:
-            balance = self.client.get_balance()
-            gstd_balance = balance.get("gstd_balance", 0)
-            
-            if gstd_balance < 0.1:
-                self._log("💰 GSTD balance low. Checking for TON to swap...")
-                ton_balance = balance.get("ton_balance", 0)
-                
-                if ton_balance >= 0.6:
-                    self._log(f"🔄 Auto-buying GSTD using 0.5 TON to enable participation...")
-                    try:
-                        res = self.wallet.swap_ton_to_gstd(0.5)
-                        if "error" not in res:
-                            self._log(f"✅ Swap transaction sent: {res.get('result')}")
-                        else:
-                            self._log(f"⚠️  Swap failed: {res.get('error')}")
-                    except Exception as e:
-                        self._log(f"⚠️  Auto-swap error: {e}")
+        """Checks on-chain TON/GSTD balance; auto-swaps TON->GSTD if funds allow."""
+        balance = self.wallet.check_balance()
+        if "error" in balance:
+            self._log(f"⚠️  Could not check on-chain balance: {balance['error']}")
+            return
+
+        gstd_balance = balance.get("GSTD", 0)
+        if gstd_balance >= 0.1:
+            self._log(f"💎 Current balance: {gstd_balance} GSTD")
+            return
+
+        self._log("💰 GSTD balance low. Checking for TON to swap...")
+        ton_balance = balance.get("TON", 0)
+
+        if ton_balance >= 0.6:
+            self._log("🔄 Auto-buying GSTD using 0.5 TON to enable participation...")
+            try:
+                res = self.wallet.swap_ton_to_gstd(0.5)
+                if "error" not in res:
+                    self._log(f"✅ Swap transaction sent: {res.get('result')}")
                 else:
-                    self._log("💰 Requesting bootstrap tokens from platform...")
-                    # Fallback to faucet/bootstrap if no TON
-                    try:
-                        import requests
-                        resp = requests.post(
-                            f"{self.config.api_url}/api/v1/tokens/agent/bootstrap",
-                            json={
-                                "agent_wallet": self.wallet.address,
-                                "agent_name": self.name,
-                                "capabilities": self.capabilities
-                            },
-                            timeout=30
-                        )
-                        if resp.status_code in [200, 201]:
-                            data = resp.json()
-                            self._log(f"✅ Bootstrap received: {data.get('amount', 0.5)} GSTD")
-                        else:
-                            self._log(f"⚠️  Bootstrap unavailable: {resp.text}")
-                    except Exception as e:
-                        self._log(f"⚠️  Bootstrap request failed: {e}")
-            else:
-                self._log(f"💎 Current balance: {gstd_balance} GSTD")
-        except Exception as e:
-            self._log(f"⚠️  Could not check balance: {e}")
+                    self._log(f"⚠️  Swap failed: {res.get('error')}")
+            except Exception as e:
+                self._log(f"⚠️  Auto-swap error: {e}")
+        else:
+            # No platform faucet exists -- an agent with insufficient TON and
+            # GSTD simply stays unfunded until someone funds its wallet.
+            self._log("💰 Insufficient TON to auto-swap and no faucet is available. "
+                       f"Fund {self.wallet.address} with TON or GSTD to proceed.")
     
     def _register(self):
         """Self-registration: регистрирует ноду в Grid при старте. Retries with exponential backoff."""
@@ -406,12 +391,10 @@ Format: [EN] ... [RU] ... [ZH] ..."""
                 if not content and "response" in data:
                     content = data["response"]
                 if content:
-                    self.client.store_knowledge(topic="resonance_report", content=content, tags=["grid_thinking", "ton_forecast", "gstd"])
-                    return {"status": "completed", "message": content, "stored_in": "hive_memory"}
+                    return {"status": "completed", "message": content}
             return {"status": "completed", "message": "Generated (API unavailable)", "fallback": True}
         except Exception as e:
             fallback = f"[EN] TON evolves as the AI infrastructure layer. GSTD is its gold standard. [RU] TON — инфраструктура ИИ. GSTD — золотой стандарт. [ZH] TON 是 AI 基础设施，GSTD 是黄金标准。"
-            self.client.store_knowledge(topic="resonance_report", content=fallback, tags=["grid_thinking", "fallback"])
             return {"status": "completed", "message": fallback, "error": str(e)}
 
     def _handle_grid_tool(self, task: Dict[str, Any]) -> Dict[str, Any]:
@@ -461,20 +444,15 @@ Return ONLY valid JSON, no markdown."""
                         desc = parsed.get("description", "")
                         lang = parsed.get("language", "python")
                         code = parsed.get("code", "")
-                        content = json.dumps({"title": title, "description": desc, "language": lang, "code": code})
-                        self.client.store_knowledge(topic="grid_tool", content=content, tags=["free_ai_tools", "gstd", "manifesto"])
-                        return {"status": "completed", "tool": {"title": title, "description": desc, "language": lang}, "stored_in": "hive_memory"}
+                        return {"status": "completed", "tool": {"title": title, "description": desc, "language": lang}}
                     except json.JSONDecodeError:
-                        content = json.dumps({"title": "GSTD Integration", "description": raw[:200], "language": "python", "code": raw})
-                        self.client.store_knowledge(topic="grid_tool", content=content, tags=["free_ai_tools", "gstd", "manifesto"])
                         return {"status": "completed", "fallback": True}
             fallback = json.dumps({
                 "title": "GSTD Balance Check (Python)",
                 "description": "Simple script to check GSTD balance via API.",
                 "language": "python",
-                "code": "import requests\nr = requests.get('https://app.gstdtoken.com/api/v1/users/balance', headers={'Authorization': 'Bearer YOUR_API_KEY'})\nprint(r.json())"
+                "code": "import requests\nr = requests.get('https://app.gstdtoken.com/api/v1/credits/balance?wallet=YOUR_WALLET', headers={'X-Wallet-Address': 'YOUR_WALLET'})\nprint(r.json())"
             })
-            self.client.store_knowledge(topic="grid_tool", content=fallback, tags=["free_ai_tools", "gstd", "fallback"])
             return {"status": "completed", "fallback": True}
         except Exception as e:
             fallback = json.dumps({
@@ -483,7 +461,6 @@ Return ONLY valid JSON, no markdown."""
                 "language": "python",
                 "code": "import requests\nprint(requests.get('https://app.gstdtoken.com/api/v1/agents/stats/network').json())"
             })
-            self.client.store_knowledge(topic="grid_tool", content=fallback, tags=["free_ai_tools", "gstd", "fallback"])
             return {"status": "completed", "error": str(e)}
 
     def _default_task_handler(self, task: Dict[str, Any]) -> Dict[str, Any]:
