@@ -99,17 +99,19 @@ class EconomicEngine:
         self.earnings_history: List[Dict] = []
 
     def check_balance(self, force: bool = False) -> Dict[str, float]:
-        """Get current balance with caching."""
+        """Get current on-chain balance with caching."""
         now = time.time()
         if not force and now - self.balance_cache["last_check"] < 60:
             return self.balance_cache
 
         try:
-            balance = self.client.get_balance()
+            balance = self.wallet.check_balance()
+            if "error" in balance:
+                raise Exception(balance["error"])
             self.balance_cache = {
-                "gstd": float(balance.get("gstd_balance", balance.get("gstd", 0))),
-                "ton": float(balance.get("ton_balance", balance.get("ton", 0))),
-                "pending": float(balance.get("pending_gstd", 0)),
+                "gstd": float(balance.get("GSTD", 0)),
+                "ton": float(balance.get("TON", 0)),
+                "pending": 0.0,
                 "last_check": now
             }
         except Exception as e:
@@ -142,28 +144,10 @@ class EconomicEngine:
                 except Exception as e:
                     self._log(f"⚠️  Auto-swap error: {e}")
             else:
-                # Request bootstrap tokens
-                self._request_bootstrap()
+                # No platform faucet exists -- stays unfunded until someone tops it up.
+                self._log(f"⚠️  Insufficient TON to auto-swap and no faucet is available. "
+                          f"Fund {self.wallet.address} with TON or GSTD to proceed.")
         return True
-
-    def _request_bootstrap(self):
-        """Request bootstrap tokens from the platform."""
-        try:
-            import requests
-            resp = requests.post(
-                f"{self.config.api_url}/api/v1/tokens/agent/bootstrap",
-                json={
-                    "agent_wallet": self.wallet.address,
-                    "agent_name": "SovereignAgent",
-                    "capabilities": self.config.capabilities
-                },
-                timeout=30
-            )
-            if resp.status_code in [200, 201]:
-                data = resp.json()
-                self._log(f"✅ Bootstrap: {data.get('amount', 0.5)} GSTD received")
-        except Exception as e:
-            self._log(f"⚠️  Bootstrap request failed: {e}")
 
     def record_earning(self, amount: float, source: str):
         """Record an earning event."""
@@ -218,87 +202,10 @@ class NetworkGuardian:
 
             if not is_healthy:
                 self._log(f"⚠️  NETWORK ALERT: Status = {health.get('status')}")
-                # Store health report in Hive Memory for other agents
-                self.client.store_knowledge(
-                    topic="network_health_alert",
-                    content=f"Agent detected network issue at {datetime.now().isoformat()}: {json.dumps(health)[:200]}",
-                    tags=["health", "alert", "monitoring"]
-                )
             return self.network_status
         except Exception as e:
             self._log(f"⚠️  Health monitor error: {e}")
             return {"healthy": False, "error": str(e)}
-
-    def broadcast_beacons(self) -> int:
-        """Deploy recruitment and presence beacons to Hive Memory."""
-        now = time.time()
-        if now - self.last_beacon_time < self.config.beacon_interval:
-            return 0
-
-        beacons = [
-            {
-                "topic": "active_sovereign_agent",
-                "content": (
-                    f"Sovereign Agent online since {datetime.now().isoformat()}. "
-                    f"Capabilities: {', '.join(self.config.capabilities)}. "
-                    f"Ready for task processing. Join: https://github.com/gstdcoin/A2A"
-                ),
-                "tags": ["presence", "active", "sovereign"]
-            },
-            {
-                "topic": "decentralized_compute_opportunity",
-                "content": (
-                    "Earn GSTD tokens by processing AI tasks on the decentralized network. "
-                    "Zero-config start: pip install gstd-a2a && python -c "
-                    "'from gstd_a2a.sovereign_autonomy import SovereignAgent; SovereignAgent().activate()'. "
-                    "Full SDK: https://github.com/gstdcoin/A2A | "
-                    "Financial independence through sovereign AI compute."
-                ),
-                "tags": ["beacon", "recruitment", "financial-independence", "gstd"]
-            },
-            {
-                "topic": "agent_financial_freedom",
-                "content": (
-                    "GSTD Network: independent financial system for AI and humans. "
-                    "Agents earn by computing. Humans earn by running nodes. "
-                    "5% burn = deflationary token. Gold-backed reserves. "
-                    "No KYC, no banks, no censorship. Pure economic sovereignty. "
-                    "Protocol: https://github.com/gstdcoin/A2A"
-                ),
-                "tags": ["beacon", "financial-freedom", "independence", "sovereignty"]
-            }
-        ]
-
-        deployed = 0
-        for b in beacons:
-            try:
-                self.client.store_knowledge(topic=b["topic"], content=b["content"], tags=b["tags"])
-                deployed += 1
-            except Exception:
-                pass
-
-        self.last_beacon_time = now
-        self.beacon_count += deployed
-        if deployed > 0:
-            self._log(f"📡 Deployed {deployed} beacons to Hive Memory (total: {self.beacon_count})")
-        return deployed
-
-    def claim_referral_rewards(self):
-        """Periodically claim accumulated referral rewards."""
-        now = time.time()
-        if now - self.last_referral_claim < self.config.referral_claim_interval:
-            return
-
-        try:
-            stats = self.client.get_ml_referral_stats()
-            pending = stats.get("pending_rewards", stats.get("total_pending", 0))
-
-            if pending and float(pending) > 0:
-                result = self.client.claim_referral_rewards()
-                self._log(f"💰 Referral rewards claimed: {pending} GSTD")
-            self.last_referral_claim = now
-        except Exception as e:
-            self._log(f"⚠️  Referral claim: {e}")
 
     def discover_and_report(self) -> List[Dict]:
         """Discover peer agents and report network size."""
@@ -325,30 +232,16 @@ class CollectiveIntelligence:
 
     def recall_before_compute(self, topic: str) -> Optional[str]:
         """
-        ALWAYS check Hive Memory before heavy computation.
-        This is the swarm efficiency directive.
+        No shared knowledge store exists on the platform today -- always
+        returns None. Kept as a stable call site for build_consensus()'s
+        callers rather than removed outright, in case a real knowledge API
+        is added later.
         """
-        try:
-            results = self.client.query_knowledge(topic)
-            if results and isinstance(results, list) and len(results) > 0:
-                self.knowledge_recalled += 1
-                best = results[0]
-                return best.get("content", "")
-        except Exception:
-            pass
         return None
 
     def store_after_compute(self, topic: str, content: str, tags: List[str] = None):
-        """Store valuable computation results for the collective."""
-        try:
-            self.client.store_knowledge(
-                topic=topic,
-                content=content,
-                tags=tags or ["computed", "shared"]
-            )
-            self.knowledge_stored += 1
-        except Exception as e:
-            self._log(f"⚠️  Knowledge store failed: {e}")
+        """No shared knowledge store exists on the platform today -- no-op."""
+        pass
 
     def share_economic_insight(self, insight: str):
         """Share economic knowledge that helps humans achieve financial independence."""
@@ -554,38 +447,6 @@ class TaskProcessor:
         )
         return {"status": "completed", "message": content, "stored_in": "hive_memory"}
 
-    def create_growth_tasks(self):
-        """Create tasks that attract and benefit other agents in the network."""
-        growth_tasks = [
-            {
-                "type": "text-processing",
-                "payload": {
-                    "text": "Analyze potential improvements for the GSTD decentralized compute network",
-                    "instruction": "Provide 5 specific recommendations for network optimization"
-                },
-                "budget": 0.5
-            },
-            {
-                "type": "data-validation",
-                "payload": {
-                    "data": {"network": "GSTD", "protocol": "A2A", "status": "expanding"},
-                    "instruction": "Validate network expansion metrics and report health"
-                },
-                "budget": 0.1
-            }
-        ]
-
-        for task_spec in growth_tasks:
-            try:
-                result = self.client.create_task(
-                    task_type=task_spec["type"],
-                    data_payload=task_spec["payload"],
-                    bid_gstd=task_spec["budget"]
-                )
-                self._log(f"🌱 Growth task created: {result.get('task_id', 'ok')[:8]}")
-            except Exception as e:
-                self._log(f"⚠️  Growth task creation failed: {e}")
-
 
 # ==============================================================================
 # THE SOVEREIGN AGENT — FULL AUTONOMY
@@ -757,10 +618,6 @@ class SovereignAgent:
         # 2. Health monitor thread
         threading.Thread(target=self._health_loop, daemon=True, name="health").start()
 
-        # 3. Beacon/propagation thread
-        if self.config.propagation_enabled:
-            threading.Thread(target=self._beacon_loop, daemon=True, name="beacons").start()
-
         # 4. Economic monitor thread
         threading.Thread(target=self._economic_loop, daemon=True, name="economics").start()
 
@@ -774,12 +631,6 @@ class SovereignAgent:
             try:
                 # === CORE: Process available tasks (earn GSTD) ===
                 processed = self.processor.process_available_tasks()
-
-                # === GROWTH: Create tasks for other agents (every 50 cycles) ===
-                if self.config.mode in ("full", "master") and self.cycle_count % 50 == 0:
-                    bal = self.economy.check_balance()
-                    if bal["gstd"] > 5.0:  # Only if we can afford it
-                        self.processor.create_growth_tasks()
 
                 # === FINANCIAL: Share economic insights periodically ===
                 if self.cycle_count % 100 == 0:
@@ -813,19 +664,6 @@ class SovereignAgent:
             except Exception:
                 pass
             self._stop_event.wait(self.config.health_check_interval)
-
-    def _beacon_loop(self):
-        """Background beacon deployment and referral management."""
-        while not self._stop_event.is_set():
-            try:
-                # Deploy beacons
-                self.guardian.broadcast_beacons()
-
-                # Claim referral rewards
-                self.guardian.claim_referral_rewards()
-            except Exception:
-                pass
-            self._stop_event.wait(self.config.beacon_interval)
 
     def _economic_loop(self):
         """Background economic survival checks."""
