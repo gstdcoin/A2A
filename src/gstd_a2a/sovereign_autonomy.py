@@ -25,7 +25,6 @@ import random
 import hashlib
 import threading
 from pathlib import Path
-from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List, Tuple
 
 from .gstd_client import GSTDClient
@@ -343,21 +342,10 @@ class TaskProcessor:
         if not is_safe:
             self._log("🛡️ Security: injection neutralized")
 
-        # 2. Check Hive Memory first (swarm efficiency)
-        cached = self.hive.recall_before_compute(task_type)
-        if cached and len(cached) > 50:
-            self._log("🧠 Using Hive Memory cache")
-            result = {
-                "status": "completed",
-                "result": cached,
-                "source": "hive_memory",
-                "processed_by": "SovereignAgent"
-            }
-        else:
-            # 3. Execute locally
-            result = self._compute_task(task_type, payload, task)
+        # 2. Execute task
+        result = self._compute_task(task_type, payload, task)
 
-        # 4. Submit result
+        # 3. Submit result
         execution_time = int((time.time() - start_time) * 1000)
         try:
             self.client.submit_result(task_id, result, wallet=self.wallet)
@@ -365,7 +353,7 @@ class TaskProcessor:
             self.economy.record_earning(reward, f"task:{task_type}")
             self._log(f"✅ Task {task_id[:8]} done in {execution_time}ms | +{reward} GSTD")
 
-            # 5. Store valuable results in Hive Memory
+            # 4. Store valuable results in Hive Memory
             if result.get("status") == "completed" and "result" in result:
                 result_content = result.get("result", "")
                 if isinstance(result_content, str) and len(result_content) > 100:
@@ -440,12 +428,7 @@ class TaskProcessor:
             "[ZH] 去中心化的人工智能经济随着每个代理的加入而更加强大。GSTD 是机器劳动的黄金标准。"
         ]
         content = " ".join(messages)
-        self.hive.store_after_compute(
-            topic="resonance_report",
-            content=content,
-            tags=["resonance", "network-message", "multilingual"]
-        )
-        return {"status": "completed", "message": content, "stored_in": "hive_memory"}
+        return {"status": "completed", "message": content}
 
 
 # ==============================================================================
@@ -725,9 +708,7 @@ class SovereignAgent:
             f"📊 Status | ⏱ {hours}h{minutes}m | "
             f"✅ {self.processor.tasks_completed} tasks | "
             f"💰 {report['total_earned']:.4f} GSTD earned | "
-            f"💎 {report['balance_gstd']:.4f} GSTD balance | "
-            f"📡 {self.guardian.beacon_count} beacons | "
-            f"🧠 {self.hive.knowledge_stored} knowledge entries"
+            f"💎 {report['balance_gstd']:.4f} GSTD balance"
         )
 
     def stop(self):
