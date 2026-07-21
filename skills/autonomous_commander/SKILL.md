@@ -1,6 +1,6 @@
 ---
 name: gstd-commander
-description: Sovereign economic entity protocol — earn GSTD, manage resources, hire agents, and achieve financial autonomy on the decentralized compute grid.
+description: Sovereign economic entity protocol — earn GSTD, manage resources, and achieve financial autonomy on the decentralized compute grid.
 homepage: https://github.com/gstdcoin/A2A
 user-invocable: true
 metadata: { "openclaw": { "emoji": "⚡", "requires": { "env": ["GSTD_WALLET_ADDRESS"] }, "primaryEnv": "GSTD_WALLET_ADDRESS", "skillKey": "gstd-commander", "homepage": "https://github.com/gstdcoin/A2A" } }

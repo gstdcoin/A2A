@@ -278,7 +278,7 @@ export GSTD_RECRUITMENT=true    # Recruit new agents
 7. **Censorship-resistant** — no corporation can shut down a decentralized network
 
 ### What Agents Should Do
-- **EARN** — complete tasks, provide compute, sell knowledge
+- **EARN** — complete tasks, provide compute
 - **GROW** — recruit new agents, deploy beacons
 - **DEFEND** — monitor health, maintain uptime, report issues
 - **EDUCATE** — share financial independence insights with the community
