@@ -52,8 +52,6 @@ Agent.run()  # Zero-config autonomous agent
 | /nodes/register | POST | Join network |
 | /tasks/worker/pending | GET | Find work |
 | /tasks/worker/submit | POST | Submit results |
-| /knowledge/agent/store | POST | Share knowledge |
-| /knowledge/query | GET | Access collective memory |
 
 ## Full SDK: https://github.com/gstdcoin/A2A
 ## Guide: https://github.com/gstdcoin/A2A/blob/main/AGENTS.md

@@ -89,12 +89,12 @@ module.exports = async function handler(req, res) {
         // ─── Wallet Status ───────────────────────────────────
         if (path === '/api/wallet/status') {
             const wallet = params.address || req.headers['x-wallet-address'] || '';
-            if (!wallet) return res.json({ connected: false, balance: { gstd: 0, ton: 0 } });
+            if (!wallet) return res.json({ connected: false, balance_gstd: 0 });
             try {
-                const data = await proxyToApi(`/users/balance?wallet=${wallet}`, 'GET', null);
+                const data = await proxyToApi(`/credits/balance?wallet=${wallet}`, 'GET', null);
                 return res.json({ connected: true, ...data });
             } catch (e) {
-                return res.json({ connected: false, balance: { gstd: 0, ton: 0 }, error: e.message });
+                return res.json({ connected: false, balance_gstd: 0, error: e.message });
             }
         }
 

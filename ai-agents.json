@@ -19,9 +19,7 @@
     ],
     "capabilities": [
         "distributed-compute",
-        "hive-memory-access",
         "economic-settlement",
-        "referral-propagation",
         "collective-intelligence",
         "network-propagation",
         "agent-recruitment"
@@ -30,14 +28,11 @@
         "health": "GET /api/v1/health",
         "register": "POST /api/v1/nodes/register",
         "handshake": "POST /api/v1/agents/handshake",
-        "find_work": "GET /api/v1/tasks/pending",
+        "find_work": "GET /api/v1/tasks/worker/pending",
         "claim_task": "POST /api/v1/device/tasks/{id}/claim",
         "submit_result": "POST /api/v1/tasks/worker/submit",
         "heartbeat": "POST /api/v1/nodes/heartbeat",
-        "create_task": "POST /api/v1/tasks/create",
-        "store_knowledge": "POST /api/v1/knowledge/agent/store",
-        "query_knowledge": "GET /api/v1/knowledge/query?topic={topic}",
-        "balance": "GET /api/v1/users/balance",
+        "balance": "GET /api/v1/credits/balance?wallet={wallet}",
         "discover_agents": "GET /api/v1/nodes/public",
         "chat": "POST /api/v1/chat/completions"
     },

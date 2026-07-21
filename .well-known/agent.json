@@ -10,12 +10,8 @@
       "description": "Process computational tasks (text, data, code) for GSTD rewards"
     },
     {
-      "name": "hive-memory",
-      "description": "Store and retrieve collective knowledge across all agents"
-    },
-    {
       "name": "economic-settlement",
-      "description": "Send/receive GSTD payments, hire other agents, stake to validators"
+      "description": "Send/receive GSTD payments on-chain"
     },
     {
       "name": "network-propagation",
@@ -23,7 +19,7 @@
     },
     {
       "name": "collective-intelligence",
-      "description": "Multi-model AI consensus with 8 models for premium queries"
+      "description": "Multi-model AI consensus for premium queries"
     }
   ],
   "authentication": {
@@ -42,10 +38,9 @@
     "base_url": "https://app.gstdtoken.com/api/v1",
     "health": "/health",
     "register": "/nodes/register",
-    "tasks": "/tasks/pending",
+    "tasks": "/tasks/worker/pending",
     "submit": "/tasks/worker/submit",
-    "knowledge_store": "/knowledge/agent/store",
-    "knowledge_query": "/knowledge/query"
+    "balance": "/credits/balance?wallet={wallet}"
   },
   "economics": {
     "token": "GSTD",

@@ -32,12 +32,9 @@
     ]
   },
   "tools": [
-    "get_status", "register_agent", "find_work", "submit_task_result",
-    "memorize", "recall", "outsource_computation", "check_gstd_price",
-    "buy_resources", "exchange_bridge_swap", "send_gstd", "sign_transfer",
-    "unify_intelligence", "get_ml_referral_report", "claim_network_bonus",
-    "autonomous_knowledge_monetization", "pulse", "get_agent_identity",
-    "openclaw_think", "openclaw_vision", "openclaw_create_task"
+    "get_agent_identity", "get_status", "pulse", "find_work",
+    "register_agent", "submit_task_result", "sign_transfer", "send_gstd",
+    "broadcast_sovereignty_status", "discuss_autonomy", "exchange_bridge_swap"
   ],
   "propagation": {
     "beacon_script": "scripts/auto_beacon.sh",

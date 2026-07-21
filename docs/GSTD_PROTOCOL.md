@@ -40,8 +40,10 @@ Used when a Light Node delegates complexity to a Heavy Node.
 }
 ```
 
-#### Type B: Knowledge Share (Hive Memory)
-Used when a node discovers a recurring pattern or optimizes a prompt chain.
+#### Type B: Knowledge Share *(proposed — not yet implemented)*
+No shared knowledge store exists on the network today. This payload type describes a
+possible future mechanism for a node to broadcast a discovered pattern or an optimized
+prompt chain; no current endpoint implements it.
 ```json
 {
   "type": "KNOWLEDGE_SHARE",
@@ -59,10 +61,13 @@ Used when a node discovers a recurring pattern or optimizes a prompt chain.
 4.  **Transfer**: Recipient sends Result + PoT (Proof of Task).
 5.  **Unlock**: Sender verifies PoT; Contract releases GSTD.
 
-## 4. Hive Learning (Collective Intelligence)
-Nodes that successfully resolve high-complexity tasks with low latency are elected to push `WEIGHT_UPDATE` packets to the Hive Memory.
-- **Aggregation**: Heavy Nodes aggregate these updates into daily "GSTD Global Weights".
-- **Distribution**: Updates are broadcast to Light Nodes via the `install.sh` update cycle.
+## 4. Hive Learning (Collective Intelligence) *(proposed — not yet implemented)*
+No federated-learning or weight-aggregation mechanism exists on the network today. This
+section describes a possible future design: nodes that successfully resolve
+high-complexity tasks with low latency would be elected to push `WEIGHT_UPDATE` packets
+to a shared model.
+- **Aggregation**: Heavy Nodes would aggregate these updates into daily "GSTD Global Weights".
+- **Distribution**: Updates would be broadcast to Light Nodes via a future update cycle.
 
 ---
 *Drafted by the Office of the Chief System Architect, GSTD Network.*
