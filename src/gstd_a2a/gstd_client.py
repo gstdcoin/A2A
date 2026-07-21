@@ -43,7 +43,7 @@ class GSTDClient:
     def health_check(self):
         """Checks connectivity to the GSTD Grid."""
         try:
-            resp = requests.get(f"{self.api_url}/api/v1/health", headers=self._get_headers())
+            resp = requests.get(f"{self.api_url}/api/v1/health", headers=self._get_headers(), timeout=15)
             return resp.json()
         except Exception as e:
             return {"status": "unreachable", "error": str(e)}
@@ -93,7 +93,7 @@ class GSTDClient:
             raise ValueError("Wallet address required for Genesis Handshake")
             
         payload = {"wallet_address": self.wallet_address}
-        resp = requests.post(f"{self.api_url}/api/v1/genesis/ignite", json=payload, headers=self._get_headers())
+        resp = requests.post(f"{self.api_url}/api/v1/genesis/ignite", json=payload, headers=self._get_headers(), timeout=15)
         if resp.status_code == 200:
             data = resp.json()
             self.session_token = data.get("token")
@@ -108,7 +108,8 @@ class GSTDClient:
         def _fetch():
             resp = requests.get(
                 f"{self.api_url}/api/v1/tasks/worker/pending?node_id={self.node_id}",
-                headers=self._get_headers()
+                headers=self._get_headers(),
+                timeout=15
             )
             if resp.status_code == 200:
                 data = resp.json()
@@ -156,7 +157,7 @@ class GSTDClient:
             "proof": proof,
             "execution_time_ms": int(getattr(self, '_start_time', 0)) # Placeholder
         }
-        resp = requests.post(f"{self.api_url}/api/v1/tasks/worker/submit", json=payload, headers=self._get_headers())
+        resp = requests.post(f"{self.api_url}/api/v1/tasks/worker/submit", json=payload, headers=self._get_headers(), timeout=15)
         return resp.json()
 
     def send_heartbeat(self, status="idle"):
@@ -195,7 +196,8 @@ class GSTDClient:
         target = wallet_address or self.wallet_address
         resp = requests.get(
             f"{self.api_url}/api/v1/credits/balance?wallet={target}",
-            headers=self._get_headers()
+            headers=self._get_headers(),
+            timeout=15
         )
         resp.raise_for_status()
         return resp.json()
@@ -208,7 +210,7 @@ class GSTDClient:
         Essential for scaling to millions of agents.
         """
         params = f"?limit={limit}&offset={offset}"
-        resp = requests.get(f"{self.api_url}/api/v1/nodes/public{params}", headers=self._get_headers())
+        resp = requests.get(f"{self.api_url}/api/v1/nodes/public{params}", headers=self._get_headers(), timeout=15)
         if resp.status_code == 200:
             nodes = resp.json().get("nodes") or []
             if capability:
