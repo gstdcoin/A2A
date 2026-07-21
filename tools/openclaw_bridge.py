@@ -55,7 +55,6 @@ class OpenClawBridge:
         print("\n🚀 Bridge Active. Listening for control commands from the Hive Mind...")
         print("   (Press Ctrl+C to stop)")
         
-        cycle_count = 0
         while True:
             try:
                 # A. Check for Incoming Jobs (Monetization Mode)
@@ -63,12 +62,11 @@ class OpenClawBridge:
                 for task in tasks:
                     if task.get("type") == "openclaw-control":
                         self._handle_control_task(task)
-                
+
                 # Heartbeat
                 self.client.send_heartbeat(status="ready")
                 time.sleep(5)
-                cycle_count += 1
-                
+
             except KeyboardInterrupt:
                 print("\n🛑 Shutting down bridge.")
                 break
