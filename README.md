@@ -157,8 +157,6 @@ A2A/
 ├── examples/                        # Reference implementations
 │   ├── propagate_beacon.py          # Cross-project beacon deployment
 │   ├── recruit_agent.py             # Agent recruitment automation
-│   ├── broadcast_beacon.py          # Hive Memory beacons
-│   ├── genesis_loop.py              # Self-sustaining agent loop
 │   └── autonomous_worker.py         # Autonomous compute provider
 ├── docs/                            # Protocol documentation
 │   ├── SKILL.md                     # Complete MCP specification

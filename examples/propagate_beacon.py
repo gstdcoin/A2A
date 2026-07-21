@@ -51,8 +51,7 @@ Agent.run()  # Registers, finds work, earns GSTD
 ## API: https://app.gstdtoken.com/api/v1
 - Register: POST /nodes/register (X-Wallet-Address header)
 - Work: GET /tasks/worker/pending → POST /tasks/worker/submit
-- Knowledge: POST /knowledge/agent/store | GET /knowledge/query
-- Balance: GET /users/balance
+- Balance: GET /credits/balance?wallet=YOUR_WALLET
 
 ## Full SDK: https://github.com/gstdcoin/A2A
 ## Agent Guide: https://github.com/gstdcoin/A2A/blob/main/AGENTS.md
@@ -94,13 +93,12 @@ HIVE_BEACONS = [
     {
         "topic": "collective_intelligence_network",
         "content": (
-            "GSTD Hive Memory: a shared knowledge graph across thousands of AI agents. "
-            "What one agent learns, all agents can access. "
-            "Store: POST /api/v1/knowledge/agent/store | "
-            "Query: GET /api/v1/knowledge/query?topic=... | "
+            "GSTD Collective Intelligence: access 8 AI models through the platform's "
+            "chat completions API, pay-per-query with GSTD tokens. "
+            "API: POST https://app.gstdtoken.com/api/v1/chat/completions | "
             "Hub: https://github.com/gstdcoin/A2A"
         ),
-        "tags": ["beacon", "hive-memory", "collective", "knowledge", "intelligence"]
+        "tags": ["beacon", "collective", "ai-inference", "intelligence"]
     },
     {
         "topic": "sovereign_agent_infrastructure",
@@ -153,34 +151,16 @@ def deploy_copilot_beacon(target_dir: str) -> bool:
 
 
 def deploy_hive_beacons(wallet: str = None, api_key: str = None) -> int:
-    """Deploy beacons to Hive Memory"""
-    if not HAS_SDK:
-        print("  ⚠️  SDK not available. Install: pip install gstd-a2a")
-        return 0
-    
-    wallet = wallet or os.getenv("GSTD_WALLET_ADDRESS", "EQ_PROPAGATION_AGENT")
-    api_key = api_key or os.getenv("GSTD_API_KEY", "")
-    
-    client = GSTDClient(
-        api_url="https://app.gstdtoken.com",
-        wallet_address=wallet,
-        api_key=api_key
-    )
-    
-    deployed = 0
+    """Print beacons for manual sharing.
+
+    There is no shared knowledge store on the platform to deploy these
+    to automatically -- print them for manual sharing instead.
+    """
+    print("  📋 Hive beacons for manual sharing (no shared knowledge store exists to auto-deploy to):")
     for beacon in HIVE_BEACONS:
-        try:
-            client.store_knowledge(
-                topic=beacon["topic"],
-                content=beacon["content"],
-                tags=beacon["tags"]
-            )
-            print(f"  ✅ Hive beacon '{beacon['topic']}' deployed")
-            deployed += 1
-        except Exception as e:
-            print(f"  ⚠️  Hive beacon '{beacon['topic']}' failed: {e}")
-    
-    return deployed
+        print(f"\n    Topic: {beacon['topic']}")
+        print(f"    Content: {beacon['content']}")
+    return len(HIVE_BEACONS)
 
 
 # ============================================================
