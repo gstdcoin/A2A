@@ -528,7 +528,153 @@ EOF
 
 ---
 
-## Task 3: `tools/` — fix a silent balance-check bug and 3 dead-call scripts
+## Task 3: `gstd_client.py` — fix `get_balance()` swallowing HTTP errors
+
+**Why this task exists:** discovered during Task 2's review: `get_balance()` (`src/gstd_a2a/gstd_client.py`) does not raise on a non-200 response -- it silently returns a fallback `{"balance_gstd": 0.0, "pending_rewards_gstd": 0.0}` regardless of *why* the request failed, including a 401 (bad API key). This means Task 2's freshly-rewritten auth-check scripts (`starter-kit/check_all.py`, `starter-kit/verify_payment_auth.py`) cannot actually detect an invalid key -- they'll print "AUTHORIZATION SUCCESS" with a balance of 0.0 either way. This predates every task in this session's work (confirmed via `git show a53a8eb:src/gstd_a2a/gstd_client.py` showing the identical swallow-all-errors implementation before this follow-up plan started) -- it is a real, independent correctness bug, not something any prior task introduced.
+
+**Files:**
+- Modify: `/home/bot/gstd-a2a/src/gstd_a2a/gstd_client.py`
+
+**Interfaces:**
+- Produces: `get_balance(wallet_address=None) -> dict`, raising `requests.HTTPError` (via `resp.raise_for_status()`) on any non-200 response instead of returning a fake success shape.
+- Confirmed callers (all 3 in the repo, verified via `grep -rn "\.get_balance("`): `starter-kit/check_all.py:79`, `starter-kit/verify_payment_auth.py:41` (both already wrap the call in `try/except Exception as e:` per Task 2's fix, expecting an exception on auth failure -- this task is what makes that expectation true), and `tools/sovereign_agent.py:31` (already wraps its whole `check_balance()` body in `try/except Exception as e: print(...); return 0.0` -- a raised exception here is caught safely and produces a strictly better outcome: a printed diagnostic instead of a silent, indistinguishable-from-real zero balance).
+
+- [ ] **Step 1: Fix `get_balance()`**
+
+Replace (currently in `gstd_client.py`, the `get_balance` method):
+```python
+    def get_balance(self, wallet_address=None):
+        """
+        Gets the platform GSTD spending-credit balance for a wallet
+        (used for e.g. paid API calls / training jobs). This is NOT the
+        agent's on-chain token balance -- for that, use
+        GSTDWallet.check_balance() instead, which queries TON directly.
+        """
+        target = wallet_address or self.wallet_address
+        resp = requests.get(
+            f"{self.api_url}/api/v1/credits/balance?wallet={target}",
+            headers=self._get_headers()
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        return {"balance_gstd": 0.0, "pending_rewards_gstd": 0.0}
+```
+with:
+```python
+    def get_balance(self, wallet_address=None):
+        """
+        Gets the platform GSTD spending-credit balance for a wallet
+        (used for e.g. paid API calls / training jobs). This is NOT the
+        agent's on-chain token balance -- for that, use
+        GSTDWallet.check_balance() instead, which queries TON directly.
+
+        Raises requests.HTTPError on a non-200 response (e.g. 401 for an
+        invalid API key) -- callers that want to treat a failed balance
+        check as "just assume zero" should catch this explicitly, rather
+        than have that assumption made silently here.
+        """
+        target = wallet_address or self.wallet_address
+        resp = requests.get(
+            f"{self.api_url}/api/v1/credits/balance?wallet={target}",
+            headers=self._get_headers()
+        )
+        resp.raise_for_status()
+        return resp.json()
+```
+
+- [ ] **Step 2: Verify all 3 real callers handle the new exception behavior correctly**
+
+```bash
+cd /home/bot/gstd-a2a
+grep -n "\.get_balance(" -A 3 starter-kit/check_all.py starter-kit/verify_payment_auth.py tools/sovereign_agent.py
+```
+
+Confirm each call site sits inside a `try:` block with an `except Exception` (or narrower) that follows -- `starter-kit/check_all.py` and `starter-kit/verify_payment_auth.py` were fixed in Task 2 to expect exactly this; `tools/sovereign_agent.py`'s `check_balance()` method already wraps its entire body in `try/except Exception as e: print(f"Error checking balance: {e}"); return 0.0` (confirm this is still true -- read the method in full). If any caller does NOT have exception handling around its `get_balance()` call, stop and report it rather than proceeding -- that caller would need its own fix first.
+
+- [ ] **Step 3: Check for any test coverage of `get_balance()`'s old behavior**
+
+```bash
+cd /home/bot/gstd-a2a
+grep -n "get_balance" tests/*.py
+```
+
+Expected: no output (confirmed in the original SDK honesty plan that no test covers `get_balance()` at all -- verified only via live HTTP check). If this turns up a hit, read that test and update it to expect the new raising behavior rather than the old fallback dict.
+
+- [ ] **Step 4: Import check**
+
+```bash
+cd /home/bot/gstd-a2a
+python3 -c "from gstd_a2a.gstd_client import GSTDClient; print('OK')"
+```
+
+Expected: `OK`.
+
+- [ ] **Step 5: Run existing test suite**
+
+```bash
+cd /home/bot/gstd-a2a
+python3 -m pytest tests/ -v
+```
+
+Expected: still 10/10 passing (no existing test exercises `get_balance()`'s HTTP behavior, per Step 3).
+
+- [ ] **Step 6: Live check against the real platform -- confirm both the success path and the error path**
+
+```bash
+cd /home/bot/gstd-a2a
+python3 -c "
+from gstd_a2a.gstd_client import GSTDClient
+# Success path: a real, already-registered wallet from prior sessions' work (safe, read-only query)
+client = GSTDClient(wallet_address='UQB03R2DuNR9LKkW1AxbWUDsegAjxCRVwRimZlyNQX2Gc8ve')
+print('Success path:', client.get_balance())
+"
+python3 -c "
+from gstd_a2a.gstd_client import GSTDClient
+import requests
+# Error path: force a 401 by sending a bogus API key
+client = GSTDClient(wallet_address='UQB03R2DuNR9LKkW1AxbWUDsegAjxCRVwRimZlyNQX2Gc8ve', api_key='definitely-not-a-real-key')
+try:
+    print('Error path did NOT raise:', client.get_balance())
+except requests.HTTPError as e:
+    print('Error path correctly raised:', e)
+"
+```
+
+Expected: the first command prints a real balance dict (HTTP 200). The second command's behavior depends on whether the platform's `/api/v1/credits/balance` endpoint actually validates the API key and returns 401 for an invalid one, versus accepting any request keyed only by wallet address regardless of API key -- **report exactly what happens here**, since it determines whether this fix actually closes the gap or whether the *platform itself* doesn't enforce key validity on this endpoint (a separate, out-of-scope-for-this-repo finding if so -- note it clearly rather than assuming either way).
+
+- [ ] **Step 7: Commit**
+
+```bash
+cd /home/bot/gstd-a2a
+git add src/gstd_a2a/gstd_client.py
+git commit -m "$(cat <<'EOF'
+fix(sdk): get_balance() raises on HTTP error instead of faking success
+
+Discovered during this follow-up plan's Task 2 review: get_balance()
+silently returned a fallback {"balance_gstd": 0.0, ...} dict on ANY
+non-200 response, including a 401 for an invalid API key -- meaning
+nothing could ever distinguish "your key is invalid" from "you
+genuinely have zero balance." This predates every task in this
+session's work (confirmed via git show of the pre-follow-up-plan
+commit), inherited from the original implementation.
+
+This silently broke the very thing Task 2's starter-kit auth-check
+scripts exist to verify -- both already wrap the call in try/except
+expecting an exception on failure, so this fix is what makes that
+expectation true. The third (and only other) real caller,
+tools/sovereign_agent.py's check_balance(), already wraps its whole
+body in try/except and returns 0.0 on any exception -- so it gets a
+strictly better outcome (a printed diagnostic) with no behavior change
+on the happy path.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+---
+
+## Task 4: `tools/` — fix a silent balance-check bug and 3 dead-call scripts
 
 **Files:**
 - Modify: `/home/bot/gstd-a2a/tools/sovereign_agent.py`
@@ -732,7 +878,7 @@ EOF
 
 ---
 
-## Task 4: Fix 2 onboarding docs that actively teach a broken API call
+## Task 5: Fix 2 onboarding docs that actively teach a broken API call
 
 **Files:**
 - Modify: `/home/bot/gstd-a2a/CONTRIBUTING.md`
@@ -820,7 +966,7 @@ EOF
 
 ---
 
-## Task 5: Final verification and push
+## Task 6: Final verification and push
 
 **Files:** none (verification only).
 
