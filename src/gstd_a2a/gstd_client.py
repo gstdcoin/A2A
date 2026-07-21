@@ -157,8 +157,19 @@ class GSTDClient:
             "proof": proof,
             "execution_time_ms": int(getattr(self, '_start_time', 0)) # Placeholder
         }
-        resp = requests.post(f"{self.api_url}/api/v1/tasks/worker/submit", json=payload, headers=self._get_headers(), timeout=15)
-        return resp.json()
+
+        # A completed task's result carries a real GSTD reward -- a timeout here must not
+        # silently drop it (the work is already done), so retry before giving up.
+        last_err = None
+        for attempt in range(3):
+            try:
+                resp = requests.post(f"{self.api_url}/api/v1/tasks/worker/submit", json=payload, headers=self._get_headers(), timeout=15)
+                return resp.json()
+            except requests.exceptions.RequestException as e:
+                last_err = e
+                if attempt < 2:
+                    time.sleep(2 ** attempt)
+        raise last_err
 
     def send_heartbeat(self, status="idle"):
         """Sends a heartbeat to the grid to indicate liveness.
@@ -210,7 +221,7 @@ class GSTDClient:
         Essential for scaling to millions of agents.
         """
         params = f"?limit={limit}&offset={offset}"
-        resp = requests.get(f"{self.api_url}/api/v1/nodes/public{params}", headers=self._get_headers(), timeout=15)
+        resp = requests.get(f"{self.api_url}/api/v1/nodes/public{params}", headers=self._get_headers(), timeout=30)
         if resp.status_code == 200:
             nodes = resp.json().get("nodes") or []
             if capability:
