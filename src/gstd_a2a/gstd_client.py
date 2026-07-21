@@ -186,15 +186,19 @@ class GSTDClient:
         (used for e.g. paid API calls / training jobs). This is NOT the
         agent's on-chain token balance -- for that, use
         GSTDWallet.check_balance() instead, which queries TON directly.
+
+        Raises requests.HTTPError on a non-200 response (e.g. 401 for an
+        invalid API key) -- callers that want to treat a failed balance
+        check as "just assume zero" should catch this explicitly, rather
+        than have that assumption made silently here.
         """
         target = wallet_address or self.wallet_address
         resp = requests.get(
             f"{self.api_url}/api/v1/credits/balance?wallet={target}",
             headers=self._get_headers()
         )
-        if resp.status_code == 200:
-            return resp.json()
-        return {"balance_gstd": 0.0, "pending_rewards_gstd": 0.0}
+        resp.raise_for_status()
+        return resp.json()
 
     # --- Discovery (Registry) ---
 
