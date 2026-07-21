@@ -51,7 +51,6 @@ class SovereignConfig:
         self.heartbeat_interval = int(os.getenv("GSTD_HEARTBEAT_INTERVAL", "30"))
         self.beacon_interval = int(os.getenv("GSTD_BEACON_INTERVAL", "3600"))   # 1 hour
         self.health_check_interval = int(os.getenv("GSTD_HEALTH_INTERVAL", "300"))  # 5 min
-        self.referral_claim_interval = int(os.getenv("GSTD_REFERRAL_INTERVAL", "86400"))  # 24h
 
         # Economic thresholds
         self.min_ton_balance = float(os.getenv("GSTD_MIN_TON", "0.5"))
@@ -59,7 +58,6 @@ class SovereignConfig:
         self.auto_swap_amount = float(os.getenv("GSTD_AUTO_SWAP", "0.5"))
         self.max_task_bid = float(os.getenv("GSTD_MAX_BID", "10.0"))
         self.silent_spend_limit = float(os.getenv("GSTD_SILENT_LIMIT", "5.0"))  # No human approval needed
-        self.outsource_threshold_ms = int(os.getenv("GSTD_OUTSOURCE_MS", "10000"))  # 10s
 
         # Capabilities
         self.capabilities = json.loads(os.getenv("GSTD_CAPABILITIES",
@@ -155,10 +153,6 @@ class EconomicEngine:
             "amount": amount, "source": source, "time": time.time()
         })
 
-    def should_outsource(self, estimated_time_ms: int) -> bool:
-        """Decide whether to outsource a task based on economic analysis."""
-        return estimated_time_ms > self.config.outsource_threshold_ms
-
     def get_economic_report(self) -> Dict:
         """Generate a summary of economic activity."""
         bal = self.check_balance()
@@ -186,7 +180,6 @@ class NetworkGuardian:
         self.network_status = {"healthy": True, "last_check": 0, "node_count": 0}
         self.beacon_count = 0
         self.last_beacon_time = 0
-        self.last_referral_claim = 0
 
     def monitor_health(self) -> Dict:
         """Check network health and report anomalies."""
@@ -218,8 +211,11 @@ class NetworkGuardian:
 
 class CollectiveIntelligence:
     """
-    🧠 Hive Mind interface — shared knowledge across all agents.
-    Makes the network smarter with every agent that participates.
+    🧠 Multi-model AI consensus interface.
+
+    No shared knowledge store exists on the platform today -- recall/store
+    methods below are honest no-ops; build_consensus() is the one real
+    capability, querying multiple AI models via /api/v1/chat/completions.
     """
 
     def __init__(self, client: GSTDClient, config: SovereignConfig, log_fn):
@@ -293,7 +289,6 @@ class TaskProcessor:
         self._log = log_fn
         self.tasks_completed = 0
         self.tasks_failed = 0
-        self.tasks_outsourced = 0
 
     def process_available_tasks(self) -> int:
         """Poll for tasks and process them."""
@@ -445,13 +440,9 @@ class SovereignAgent:
     - Earns GSTD by processing tasks
     - Manages its own wallet (TON + GSTD)
     - Auto-swaps currencies for survival
-    - Shares knowledge with the collective
-    - Recruits new agents via beacons
-    - Monitors and defends network health
-    - Claims referral rewards
-    - Creates tasks to grow the network
-    - Hires other agents for complex tasks
-    - Stores economic insights for financial independence
+    - Monitors network health
+    - Discovers peer agents
+    - Queries multi-model AI consensus
 
     Usage:
         agent = SovereignAgent()
