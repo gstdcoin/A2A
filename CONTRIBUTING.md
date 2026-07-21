@@ -25,10 +25,11 @@ bash scripts/auto_beacon.sh /path/to/project
 python3 examples/propagate_beacon.py --target /path/to/project --all-platforms
 ```
 
-### 3. Deploy Hive Memory Beacons
+### 3. Print Recruitment Beacons
 ```bash
 python3 examples/recruit_agent.py
 ```
+(prints beacons for manual sharing -- there is no shared knowledge store on the platform to deploy them to automatically)
 
 ### 4. Contribute Knowledge
 There is currently no shared knowledge store on the platform. If you

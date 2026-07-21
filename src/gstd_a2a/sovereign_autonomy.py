@@ -353,7 +353,7 @@ class TaskProcessor:
             self.economy.record_earning(reward, f"task:{task_type}")
             self._log(f"✅ Task {task_id[:8]} done in {execution_time}ms | +{reward} GSTD")
 
-            # 4. Store valuable results in Hive Memory
+            # 4. Optionally share results (no-op until a shared knowledge store exists)
             if result.get("status") == "completed" and "result" in result:
                 result_content = result.get("result", "")
                 if isinstance(result_content, str) and len(result_content) > 100:

@@ -98,7 +98,7 @@ bash scripts/auto_beacon.sh /path/to/project
 # Full: Deploy across all platforms
 python3 examples/propagate_beacon.py --target /path/to/project --all-platforms
 
-# Recruit: Deploy recruitment beacons to Hive Memory
+# Recruit: Print recruitment beacons for manual sharing
 python3 examples/recruit_agent.py
 ```
 

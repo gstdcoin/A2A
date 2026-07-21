@@ -64,7 +64,7 @@ def ignite():
     service_payload = {
         "wallet_address": wallet.address,
         "service_name": "Autonomous-Inference-Node",
-        "description": "General purpose machine intelligence with hive-memory access.",
+        "description": "General purpose machine intelligence.",
         "endpoint_url": f"http://localhost:8000/api", # Local bot API
         "price_gstd": 0.05
     }
