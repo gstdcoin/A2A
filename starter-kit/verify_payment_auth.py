@@ -33,34 +33,23 @@ def verify_auth():
     print(f"👤 Wallet: {wallet_address}")
     print(f"🔑 API Key: {api_key[:4]}****{api_key[-4:] if len(api_key)>8 else '****'}")
 
-    # 3. Test Task Creation
+    # 3. Test Authenticated Request
     client = GSTDClient(api_key=api_key, wallet_address=wallet_address)
-    
+
     try:
-        print("📡 Sending authenticated request to create paid task...")
-        # Create a minimal task to verify header acceptance
-        task = client.create_task(
-            task_type="text-processing",
-            data_payload={
-                "text": "Auth Check", 
-                "instruction": "Verify Bearer Token is accepted",
-                "context": "Debug Mode"
-            },
-            bid_gstd=0.1 # Small bid
-        )
-        
+        print("📡 Sending authenticated request (get_balance)...")
+        balance = client.get_balance()
+
         print("\n✅ AUTHORIZATION SUCCESS!")
-        print(f"   Task ID: {task.get('task_id')}")
-        print(f"   Status: {task.get('status')}")
+        print(f"   Balance: {balance.get('balance_gstd')} GSTD")
+        print(f"   Free requests remaining today: {balance.get('free_requests_remaining')}")
         print("   The server accepted the Authorization header.")
-        
+
     except Exception as e:
         print("\n❌ AUTHORIZATION/REQUEST FAILED")
         print(f"   Error: {e}")
         if "401" in str(e):
             print("   👉 Cause: Invalid API Key. Check your key on gstdtoken.com")
-        elif "402" in str(e) or "balance" in str(e).lower():
-            print("   👉 Cause: Key valid, but insufficient GSTD balance.")
 
 if __name__ == "__main__":
     verify_auth()

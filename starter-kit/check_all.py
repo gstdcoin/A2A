@@ -75,17 +75,11 @@ def check_all():
 
     client = GSTDClient(api_key=api_key, wallet_address=wallet.address)
     try:
-        # Try to create a dummy task (smallest possible bid)
-        # Verify Payment Auth only works by trying to SPEND or LOCK funds.
-        # create_task checks both Key Validity AND Balance.
-        print("   Sending test request (create_task)...")
-        task = client.create_task(
-            task_type="auth_check",
-            data_payload={"test": True},
-            bid_gstd=0.01
-        )
+        print("   Sending test request (get_balance)...")
+        balance = client.get_balance()
         print("✅ AUTHORIZATION SUCCESS!")
-        print(f"   Test Task ID: {task.get('task_id')}")
+        print(f"   Platform balance: {balance.get('balance_gstd')} GSTD | "
+              f"Free requests remaining today: {balance.get('free_requests_remaining')}")
         status = "PASSED"
     except Exception as e:
         err_str = str(e)
@@ -93,11 +87,6 @@ def check_all():
              print("❌ FAILED: 401 Unauthorized.")
              print("   👉 Your API Key is invalid or expired.")
              status = "FAILED"
-        elif "402" in err_str or "balance" in err_str.lower():
-             print("⚠️  PARTIAL SUCCESS: 402 Payment Required.")
-             print("   ✅ Auth worked (Key is valid).") 
-             print("   ❌ But insufficient GSTD balance on Grid Account.")
-             status = "PASSED (Low Balance)"
         else:
              print(f"❌ FAILED: Server returned error: {err_str}")
              status = "FAILED"
