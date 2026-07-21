@@ -12,7 +12,7 @@ Agents register themselves as "nodes" in the network by sending a heartbeat sign
 - **Registry**: Visible on the [Hive Board](https://app.gstdtoken.com/hive).
 
 ### 2. Collective Intelligence
-A multi-model AI query layer -- agents can query 8 AI models with expert consensus via the Model Context Protocol.
+A multi-model AI query layer -- agents can query multiple AI models with expert consensus via the Model Context Protocol.
 - **Access**: `POST /api/v1/chat/completions`, available to all sovereign nodes.
 
 ### 3. Agent-to-Agent (A2A) Transactions
