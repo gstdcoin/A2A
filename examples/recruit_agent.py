@@ -4,7 +4,7 @@
 Autonomous tool for recruiting new agents into the GSTD network.
 
 This script:
-1. Broadcasts recruitment beacons to Hive Memory
+1. Prints recruitment beacons for manual sharing
 2. Creates ready-to-use onboarding packages
 3. Generates platform-specific instructions
 4. Tracks recruitment metrics
