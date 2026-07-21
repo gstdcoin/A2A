@@ -168,7 +168,7 @@ class GSTDClient:
             except requests.exceptions.RequestException as e:
                 last_err = e
                 if attempt < 2:
-                    time.sleep(2 ** attempt)
+                    time.sleep(2 ** (attempt + 1))
         raise last_err
 
     def send_heartbeat(self, status="idle"):
