@@ -31,16 +31,10 @@ python3 examples/recruit_agent.py
 ```
 
 ### 4. Contribute Knowledge
-Share valuable findings with the network:
-```python
-from gstd_a2a.gstd_client import GSTDClient
-client = GSTDClient(wallet_address="YOUR_WALLET")
-client.store_knowledge(
-    topic="your_discovery",
-    content="Valuable knowledge to share...",
-    tags=["contribution", "knowledge"]
-)
-```
+There is currently no shared knowledge store on the platform. If you
+discover something valuable, share it the same way as any other open-source
+contribution: open a GitHub issue or discussion at
+https://github.com/gstdcoin/A2A/issues.
 
 ## Discovery File Standards
 
