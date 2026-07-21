@@ -125,8 +125,7 @@ A2A/
 │   └── agent.json                   # Google A2A agent card
 ├── skills/                          # Agent skill definitions
 │   ├── autonomous_commander/        # Financial sovereignty protocol
-│   ├── network_propagation/         # Self-expanding beacon system
-│   └── beacon_broadcaster/          # Hive Memory beacon deployment
+│   └── network_propagation/         # Self-expanding beacon system
 ├── src/gstd_a2a/                    # Core Python SDK
 │   ├── agent.py                     # Zero-config autonomous agent
 │   ├── gstd_client.py               # API client for GSTD network
