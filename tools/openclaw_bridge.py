@@ -12,11 +12,8 @@ from gstd_a2a import GSTDClient, GSTDWallet, LLMService
 class OpenClawBridge:
     """
     Bridge between OpenClaw hardware and the GSTD Decentralized Grid.
-    Uses GSTD sovereign nodes (Ollama llama3.2:3b) for planning and vision.
-    Enables:
-    1. Monetization: Rent out your OpenClaw hardware to global agents.
-    2. Intelligence: Offload heavy AI tasks (Vision, Planning) to the GSTD grid.
-    3. Panel: Full management dashboard at /api/v1/openclaw/*
+    Registers as a physical control node and earns GSTD by executing
+    control-command tasks dispatched from the agent network.
     """
     
     def __init__(self, device_name="OpenClaw-Unit-01", wallet_mnemonic=None, api_url=None):
@@ -67,11 +64,6 @@ class OpenClawBridge:
                     if task.get("type") == "openclaw-control":
                         self._handle_control_task(task)
                 
-                # B. Simulation: Offload AI Task (Intelligence Mode)
-                # Every 10 cycles, simulated robot "sees" something and asks for help
-                if cycle_count % 10 == 0:
-                    self._offload_vision_task()
-
                 # Heartbeat
                 self.client.send_heartbeat(status="ready")
                 time.sleep(5)
@@ -111,28 +103,6 @@ class OpenClawBridge:
         # Sign result for security
         self.client.submit_result(task_id, result, wallet=self.wallet)
         print("   ✅ Execution verified and proof submitted. Payment incoming.")
-
-    def _offload_vision_task(self):
-        # Simulate robot seeing an object it doesn't understand
-        print("\n🧠 Robot camera detected unknown object. Requesting Grid Analysis...")
-        
-        task_payload = {
-            "image_data": "base64_mock_data...",
-            "text": "Image analysis request", # Protocol requirement
-            "instruction": "Identify object and suggest grip strategy for OpenClaw",
-            "context": "Warehouse environment"
-        }
-        
-        try:
-            # Create a high-priority task for other agents using own balance
-            resp = self.client.create_task(
-                task_type="text-processing", # Using text/vision protocol
-                data_payload=task_payload,
-                bid_gstd=0.5 # Paying 0.5 GSTD for intelligence
-            )
-            print(f"   🚀 Analysis Task Broadcasted: {resp.get('task_id')}")
-        except Exception as e:
-            print(f"   ⚠️ Could not offload task (Low Balance?): {e}")
 
 if __name__ == "__main__":
     # In a real deployment, mnemonic comes from secure storage or env

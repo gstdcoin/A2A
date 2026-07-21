@@ -149,7 +149,6 @@ A2A/
 │   ├── connect.js                   # Node.js connector
 │   ├── connect_autonomous.py        # Autonomous daemon
 │   ├── sovereign_agent.py           # Dual-mode agent
-│   ├── external_agent_launcher.py   # Launch external A2A agents
 │   ├── genesis_ignite.py            # Genesis node ignition
 │   ├── gstd-cli.py                  # CLI tool
 │   ├── openclaw_bridge.py           # OpenClaw multi-agent bridge

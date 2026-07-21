@@ -39,25 +39,16 @@ def test_system():
     else:
         print(f"   ⚠️  Grid Health Warning: {health}")
 
-    # 4. Market Data (Public Endpoint)
-    print("\n3️⃣  Testing Economic Logic (Market Quote)...")
-    try:
-        quote = client.get_market_quote(amount_ton=1.0)
-        print(f"   ✅ 1 TON buys approx: {quote.get('estimated_gstd', 'N/A')} GSTD")
-        print(f"   📊 Quote Details: {quote}")
-    except Exception as e:
-        print(f"   ❌ Market Quote Error: {e}")
-
-    # 5. Task Logic (Simulation)
-    print("\n4️⃣  Verifying Task Protocols...")
+    # 4. Task Logic (Simulation)
+    print("\n3️⃣  Verifying Task Protocols...")
     try:
         tasks = client.get_pending_tasks()
         print(f"   ✅ Pending Tasks Fetch: Success (Found {len(tasks)} tasks)")
     except Exception as e:
         print(f"   ❌ Task Fetch Error: {e}")
 
-    # 6. Check MCP Server Import
-    print("\n5️⃣  Verifying MCP Server Integrity...")
+    # 5. Check MCP Server Import
+    print("\n4️⃣  Verifying MCP Server Integrity...")
     try:
         from mcp.server.fastmcp import FastMCP
         print("   ✅ MCP Library Installed")

@@ -29,8 +29,8 @@ class DualModeAgent:
                 print(f"✅ Handshake successful. Token acquired: {token[:8]}...")
 
             res = self.client.get_balance()
-            if res and 'gstd' in res:
-                return float(res['gstd'])
+            if res and 'balance_gstd' in res:
+                return float(res['balance_gstd'])
             return 0.0
         except Exception as e:
             print(f"Error checking balance: {e}")
