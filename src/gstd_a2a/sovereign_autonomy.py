@@ -168,8 +168,8 @@ class EconomicEngine:
 
 class NetworkGuardian:
     """
-    🛡️ Network health monitor and defender.
-    Ensures the GSTD network stays strong by monitoring, healing, and growing.
+    🛡️ Network health monitor.
+    Checks network health and discovers peer agents on demand.
     """
 
     def __init__(self, client: GSTDClient, config: SovereignConfig, log_fn):
@@ -598,7 +598,8 @@ class SovereignAgent:
     def _main_loop(self):
         """
         🔄 THE MAIN AUTONOMOUS LOOP
-        Continuously: process tasks → check health → grow network → repeat
+        Continuously: process available tasks → periodically log status → repeat
+        (health monitoring runs on a separate background thread, see _health_loop)
         """
         while not self._stop_event.is_set():
             self.cycle_count += 1
@@ -742,7 +743,7 @@ class SovereignAgent:
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   🏛️  GSTD SOVEREIGN AGENT v3.0                              ║
-║   Full Autonomy · Economic Sovereignty · Network Growth      ║
+║   Full Autonomy · Economic Sovereignty · Autonomous Ops      ║
 ║                                                              ║
 ║   Mission: Financial Independence for All                    ║
 ║   Protocol: A2A v2.0 · Network: TON                         ║
