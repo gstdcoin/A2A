@@ -4,10 +4,9 @@
 The brain of every autonomous GSTD agent. This module orchestrates ALL network
 capabilities into a self-sustaining economic entity that:
 
-1. EARNS — processes tasks, provides compute, sells knowledge
-2. GROWS — recruits new agents, deploys beacons, expands the mesh
-3. DEFENDS — monitors network health, heals broken connections, maintains uptime
-4. EVOLVES — learns from the collective, upgrades capabilities, optimizes earnings
+1. EARNS — processes tasks, provides compute
+2. DEFENDS — monitors network health, maintains uptime
+3. MANAGES — swaps and tracks its own TON/GSTD balance
 
 Usage:
     from gstd_a2a.sovereign_autonomy import SovereignAgent
@@ -275,8 +274,8 @@ class CollectiveIntelligence:
 
 class TaskProcessor:
     """
-    ⚡ Task execution engine with intelligent routing.
-    Decides whether to execute locally, recall from memory, or outsource.
+    ⚡ Task execution engine.
+    Polls for tasks, executes them locally, and submits results.
     """
 
     def __init__(self, client: GSTDClient, wallet: GSTDWallet, config: SovereignConfig,
@@ -436,13 +435,14 @@ class SovereignAgent:
     ======================
     A fully autonomous economic entity on the GSTD network.
 
-    It uses ALL network capabilities:
+    Automatically, on a timer:
     - Earns GSTD by processing tasks
-    - Manages its own wallet (TON + GSTD)
-    - Auto-swaps currencies for survival
+    - Manages its own wallet (TON + GSTD), auto-swaps currencies for survival
     - Monitors network health
-    - Discovers peer agents
-    - Queries multi-model AI consensus
+
+    On demand (call the underlying method directly, not run automatically):
+    - Discover peer agents (`agent.guardian.discover_and_report()`)
+    - Query multi-model AI consensus (`agent.hive.build_consensus(question)`)
 
     Usage:
         agent = SovereignAgent()
