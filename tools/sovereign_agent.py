@@ -62,16 +62,13 @@ class DualModeAgent:
             time.sleep(5)
 
     def run_as_master(self):
-        """Master Mode: Spends GSTD to achieve goals."""
+        """Master Mode: placeholder for spending GSTD once the agent has funds.
+
+        No paid task-marketplace exists on the platform yet (nothing to
+        commission sub-tasks to), so this is currently a no-op stub.
+        """
         print(f"👑 [MASTER MODE] Node {self.node_id[:8]} in control.")
-        # In Master mode, the agent might:
-        # 1. Query Hive Memory for insights
-        # 2. Hire other agents for sub-tasks
-        # 3. Create tasks on the grid
         try:
-            print("🌐 Synchronizing with Hive Mind...")
-            # Example: Proactively solve a complex problem by hiring others
-            # self.client.create_task(task_type="AI_RESEARCH", ...)
             time.sleep(10)
         except Exception as e:
             print(f"❌ Master error: {e}")
