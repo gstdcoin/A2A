@@ -25,9 +25,13 @@ setup(
         "pynacl>=1.5.0",
         "aiohttp>=3.9.0",
         "typing_extensions>=4.5.0",
+        # gstd_wallet.py (imported unconditionally by __init__.py's top-level
+        # `from .gstd_wallet import GSTDWallet`) imports tonsdk unconditionally --
+        # it cannot be an optional extra without a bare `pip install gstd-a2a`
+        # breaking on `import gstd_a2a`.
+        "tonsdk>=1.0.12",
     ],
     extras_require={
-        "ton": ["tonsdk>=1.0.12"],
         "mcp": ["mcp>=0.1.0", "uvicorn>=0.20.0"],
         "dev": [
             "pytest>=7.0",
@@ -37,7 +41,7 @@ setup(
             "bandit>=1.7",
             "types-requests",
         ],
-        "full": ["tonsdk>=1.0.12", "mcp>=0.1.0", "uvicorn>=0.20.0"],
+        "full": ["mcp>=0.1.0", "uvicorn>=0.20.0"],
     },
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -53,7 +57,7 @@ setup(
     python_requires=">=3.9",
     entry_points={
         "console_scripts": [
-            "gstd-node=gstd_a2a.agent:main",
+            "gstd-node=gstd_a2a.agent:run",
             "gstd-a2a-mcp=gstd_a2a.main:run",
         ],
     },

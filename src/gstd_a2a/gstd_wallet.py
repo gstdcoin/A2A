@@ -34,16 +34,18 @@ class GSTDWallet:
         }
 
     def save(self, path: str):
-        """Save wallet mnemonic to JSON file."""
+        """Save wallet mnemonic to JSON file. Accepts ~ in the path."""
         import json
-        with open(path, "w") as f:
+        import os
+        with open(os.path.expanduser(path), "w") as f:
             json.dump({"mnemonic": " ".join(self.mnemonics), "address": self.address}, f, indent=2)
 
     @classmethod
     def load(cls, path: str):
-        """Load wallet from JSON file."""
+        """Load wallet from JSON file. Accepts ~ in the path."""
         import json
-        with open(path) as f:
+        import os
+        with open(os.path.expanduser(path)) as f:
             data = json.load(f)
         mnemonic = data.get("mnemonic") or data.get("mnemonic_phrase")
         return cls(mnemonic=mnemonic)
@@ -79,7 +81,7 @@ class GSTDWallet:
             "params": {"address": self.address}
         }
         try:
-            resp = requests.post(ton_api_url, json=payload).json()
+            resp = requests.post(ton_api_url, json=payload, timeout=10).json()
             balance = int(resp.get("result", 0)) / 1e9
             
             # 2. Check GSTD Balance

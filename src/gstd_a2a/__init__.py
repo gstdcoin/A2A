@@ -23,10 +23,11 @@ from .finetune_worker import FineTuneWorker
 from .metacognition import MetacognitiveEvaluator
 from .node_health import NodeHealth
 from .offline_queue import OfflineQueue
+from .llm_service import LLMService
 
 __all__ = [
     "GSTDClient", "GSTDWallet", "Agent", "SovereignAgent",
     "TrainingNode", "FineTuneWorker", "MetacognitiveEvaluator",
-    "NodeHealth", "OfflineQueue",
+    "NodeHealth", "OfflineQueue", "LLMService",
     "__version__",
 ]

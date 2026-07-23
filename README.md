@@ -131,7 +131,7 @@ A2A/
 │   ├── gstd_client.py               # API client for GSTD network
 │   ├── gstd_wallet.py               # TON wallet integration
 │   ├── protocols.py                 # A2A communication protocol
-│   ├── security.py                  # Ed25519 signatures & encryption
+│   ├── security.py                  # Prompt-injection keyword filter (SovereignSecurity)
 │   ├── training_node.py             # TrainingNode — distributed fine-tuning agent
 │   ├── finetune_worker.py           # FineTuneWorker — LoRA/QLoRA training on Ollama
 │   ├── metacognition.py             # MetacognitiveEvaluator — gradient quality scoring
@@ -181,10 +181,12 @@ A2A/
 | Referral L1/L2/L3 | 5% / 3% / 1% |
 
 ## 🛡️ Security
-- All write operations require wallet signature verification
-- Signatures use SHA-256 HMAC with wallet address + payload + salt
-- Validator/quorum security protected by signed transactions
-- Task rewards distributed only after creator verification
+- Message signing uses Ed25519 (`GSTDWallet.sign_message()`), not HMAC — the wallet's
+  TON private key seed signs the payload directly via PyNaCl.
+- `security.py`'s `SovereignSecurity` is a keyword-based prompt-injection filter
+  (regex match against a fixed pattern list), not a signature/encryption layer —
+  it's a best-effort input check, not cryptographic protection, and is
+  straightforwardly bypassable by rephrasing.
 - No single point of failure — fully decentralized architecture
 
 ---

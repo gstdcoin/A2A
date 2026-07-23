@@ -25,7 +25,7 @@ pytest tests/ -v
 - `src/gstd_a2a/gstd_client.py` — low-level HTTP client
 - `src/gstd_a2a/agent.py` — zero-config autonomous agent loop
 - `src/gstd_a2a/protocols.py` — task payload validation
-- `src/gstd_a2a/security.py` — Ed25519 signatures
+- `src/gstd_a2a/security.py` — prompt-injection keyword filter (not signing; see `gstd_wallet.py` for real Ed25519 signing)
 - `tools/main.py` — MCP server (run with `python3 tools/main.py`)
 - `connect.py` / `connect.js` — zero-dependency connectors
 

@@ -31,8 +31,20 @@ jobs:
           pip install pytest pytest-cov pytest-asyncio mypy bandit types-requests
 
       - name: Run tests
-        run: pytest tests/ -v --tb=short 2>/dev/null || echo "No tests found — skipping"
+        run: |
+          pytest tests/ -v --tb=short
+          status=$?
+          # Exit 5 = pytest collected zero tests (nothing to run yet) -- treat as a
+          # pass. Any other nonzero status is a real failure and must fail CI; the
+          # previous `|| echo ... skipping` swallowed both cases identically, so a
+          # genuine test regression could never turn this red.
+          if [ "$status" -ne 0 ] && [ "$status" -ne 5 ]; then
+            exit "$status"
+          fi
 
+      # mypy/bandit are left advisory (not blocking) -- there's a real backlog of
+      # pre-existing findings in this codebase that would need dedicated cleanup
+      # before either could gate CI without immediately going red on unrelated debt.
       - name: mypy type check
         run: mypy src/gstd_a2a/ --ignore-missing-imports --no-error-summary || true
 

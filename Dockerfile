@@ -3,8 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Copy and install A2A SDK
-COPY python-sdk/ /app/python-sdk/
-COPY setup.py /app/
+COPY setup.py README.md /app/
 COPY src/ /app/src/
 COPY tools/ /app/tools/
 COPY manifest.json /app/
