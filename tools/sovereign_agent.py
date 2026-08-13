@@ -37,23 +37,29 @@ class DualModeAgent:
             return 0.0
 
     def run_as_worker(self):
-        """Worker Mode: Earns GSTD by processing tasks."""
+        """Worker Mode: watches for tasks, but does NOT execute or submit them.
+
+        This example only demonstrates the balance-based master/worker mode
+        switch — it has no real task-execution logic. Earlier versions of
+        this file submitted a hardcoded `{"status": "completed", "result":
+        "Success from Sovereign Swarm"}` for every task it saw, regardless
+        of what the task actually was — that would have claimed a reward
+        for work never performed. For real task execution, use
+        `gstd_a2a.agent.Agent`, which has genuine task handlers.
+        """
         print(f"👷 [WORKER MODE] Node {self.node_id[:8]} at work...")
         try:
             # 1. Pulse heartbeat
             self.client.send_heartbeat(status="active")
-            
+
             # 2. Look for work
-            # Using the marketplace or specialized worker endpoints
             tasks_res = self.client.get_pending_tasks()
             tasks = tasks_res if isinstance(tasks_res, list) else tasks_res.get('tasks', [])
             if tasks and len(tasks) > 0:
                 task = tasks[0]
                 print(f"💎 Found task: {task['task_id']} | Reward: {task.get('labor_compensation_gstd', 0)} GSTD")
-                # Execute task (simulated for now)
-                time.sleep(2) 
-                self.client.submit_result(task['task_id'], {"status": "completed", "result": "Success from Sovereign Swarm"}, wallet=self.wallet)
-                print(f"✅ Task {task['task_id']} completed!")
+                print("⚠️  This example does not execute tasks — skipping (see gstd_a2a.agent.Agent for real execution)")
+                time.sleep(5)
             else:
                 print("💤 No tasks available. Standing by...")
                 time.sleep(5)

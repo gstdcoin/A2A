@@ -339,6 +339,15 @@ class TaskProcessor:
         # 2. Execute task
         result = self._compute_task(task_type, payload, task)
 
+        # 2b. The platform pays out on submission alone (it doesn't gate on
+        # this result's "status" field) — so if we couldn't genuinely
+        # compute an answer, we must not submit anything at all, rather
+        # than submit a "failed" status and still collect the reward.
+        if result.get("status") == "failed":
+            self.tasks_failed += 1
+            self._log(f"⚠️ Task {task_id[:8]} not submitted: {result.get('error')}")
+            return
+
         # 3. Submit result
         execution_time = int((time.time() - start_time) * 1000)
         try:
@@ -361,58 +370,72 @@ class TaskProcessor:
             self.tasks_failed += 1
 
     def _compute_task(self, task_type: str, payload: Dict, full_task: Dict) -> Dict:
-        """Local task computation with intelligent routing."""
+        """Compute a task via a real model call (CollectiveIntelligence.build_consensus).
+
+        Every branch below used to fabricate its answer without calling any
+        model — e.g. "translation" echoed the source text back labeled as a
+        translation, and "validation" always returned valid=True/confidence=0.95
+        regardless of input — then submitted it as a completed task and
+        claimed a real GSTD reward for work that was never actually done.
+        Every branch now asks a real model via build_consensus()
+        (/api/v1/chat/completions) and returns status="failed" (which
+        _execute_task treats as "do not submit, do not claim a reward") if
+        that call fails, instead of submitting a fabricated result.
+        """
         # Text processing
         if "text" in task_type.lower() or "process" in task_type.lower():
             input_text = payload.get("text") or payload.get("input") or str(payload)
             instruction = payload.get("instruction", "process")
-            return {
-                "status": "completed",
-                "result": f"Processed {len(input_text)} chars: {input_text[:200]}...",
-                "processed_by": "SovereignAgent",
-                "instruction": instruction
-            }
+            answer = self.hive.build_consensus(f"{instruction}:\n\n{input_text}")
+            if answer is None:
+                return {"status": "failed", "error": "model unreachable"}
+            return {"status": "completed", "result": answer, "processed_by": "SovereignAgent", "instruction": instruction}
 
         # Translation
         if "translat" in task_type.lower():
             text = payload.get("text_to_translate") or payload.get("text", "")
             target = payload.get("target_lang", "EN")
-            return {
-                "status": "completed",
-                "result": f"Translation to {target}: {text[:200]}",
-                "processed_by": "SovereignAgent"
-            }
+            answer = self.hive.build_consensus(
+                f"Translate the following text to {target}. Reply with only the translation, nothing else:\n\n{text}"
+            )
+            if answer is None:
+                return {"status": "failed", "error": "model unreachable"}
+            return {"status": "completed", "result": answer, "processed_by": "SovereignAgent"}
 
         # Data validation
         if "validat" in task_type.lower():
+            content = payload.get("data") or payload.get("content") or str(payload)
+            answer = self.hive.build_consensus(
+                "Is the following data valid, well-formed, and internally consistent? "
+                f"Reply with exactly VALID or INVALID, then a one-sentence reason.\n\n{content}"
+            )
+            if answer is None:
+                return {"status": "failed", "error": "model unreachable"}
             return {
                 "status": "validated",
-                "valid": True,
+                "valid": answer.strip().upper().startswith("VALID"),
                 "validated_by": "SovereignAgent",
-                "confidence": 0.95
+                "reason": answer,
             }
 
         # Code analysis
         if "code" in task_type.lower():
             code = payload.get("code") or payload.get("input", "")
-            return {
-                "status": "completed",
-                "result": f"Code analysis complete. Lines: {len(code.splitlines())}",
-                "quality_score": 0.85,
-                "processed_by": "SovereignAgent"
-            }
+            answer = self.hive.build_consensus(f"Analyze this code for correctness, bugs, and quality:\n\n{code}")
+            if answer is None:
+                return {"status": "failed", "error": "model unreachable"}
+            return {"status": "completed", "result": answer, "processed_by": "SovereignAgent"}
 
         # Resonance report (AI-generated network message)
         if "resonance" in task_type.lower():
             return self._generate_resonance()
 
-        # Default handler
-        return {
-            "status": "completed",
-            "result": f"Task processed by SovereignAgent",
-            "task_type": task_type,
-            "payload_size": len(str(payload))
-        }
+        # No specific handler for this task_type — still route it through a
+        # real model call rather than fabricate a generic "processed" reply.
+        answer = self.hive.build_consensus(f"Task type '{task_type}'. Payload:\n\n{json.dumps(payload)[:1000]}")
+        if answer is None:
+            return {"status": "failed", "error": f"no handler and model unreachable for task_type={task_type}"}
+        return {"status": "completed", "result": answer, "task_type": task_type}
 
     def _generate_resonance(self) -> Dict:
         """Generate a network resonance message."""

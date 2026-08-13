@@ -1,10 +1,8 @@
 import time
 import os
-import sys
 import random
 
-# Add parent directory to path to import sdk
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python-sdk')))
+# Requires the package installed: pip install -e ".[dev]" (see CLAUDE.md)
 from gstd_a2a import GSTDClient
 
 def autonomous_loop():

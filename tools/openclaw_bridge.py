@@ -79,25 +79,18 @@ class OpenClawBridge:
         print(f"   Task ID: {task_id}")
         print(f"   Command: {payload.get('command')}")
         print(f"   Params:  {payload.get('parameters')}")
-        
-        # --- PHYSICAL EXECUTION WOULD GO HERE ---
+
+        # --- PHYSICAL EXECUTION IS NOT IMPLEMENTED IN THIS BRIDGE ---
         # e.g., openclaw.move_to(x, y, z)
-        print("   ⚙️  Actuating hardware...")
-        time.sleep(2) # Simulate movement physics
-        # ----------------------------------------
-        
-        result = {
-            "status": "success",
-            "telemetry": {
-                "final_position": {"x": 10, "y": 20, "z": 5},
-                "battery": "98%"
-            },
-            "executed_by": self.device_name
-        }
-        
-        # Sign result for security
-        self.client.submit_result(task_id, result, wallet=self.wallet)
-        print("   ✅ Execution verified and proof submitted. Payment incoming.")
+        # This used to sleep(2) then submit fabricated telemetry
+        # ({"final_position": {"x": 10, "y": 20, "z": 5}, "battery": "98%"})
+        # as if a real robot had actually moved, and call submit_result() to
+        # claim a real GSTD payment for it. The platform pays out on
+        # submission alone, so that claimed a reward for a command that was
+        # never actually sent to any hardware. Do not submit a result until
+        # this actually drives real hardware and reports real telemetry.
+        print("   ⚠️  No hardware driver wired up — not executing, not submitting a result")
+        # --------------------------------------------------------------
 
 if __name__ == "__main__":
     # In a real deployment, mnemonic comes from secure storage or env
