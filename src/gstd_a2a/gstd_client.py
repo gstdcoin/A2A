@@ -133,7 +133,7 @@ class GSTDClient:
             return []
 
 
-    def submit_result(self, task_id, result_data, wallet=None):
+    def submit_result(self, task_id, result_data, wallet=None, execution_time_ms=0):
         """
         Submits the result of a task with cryptographic proof.
         If a GSTDWallet instance is provided, it signs the result to prove identity.
@@ -155,7 +155,7 @@ class GSTDClient:
             "node_id": self.node_id or self.wallet_address,
             "result": result_data,
             "proof": proof,
-            "execution_time_ms": int(getattr(self, '_start_time', 0)) # Placeholder
+            "execution_time_ms": int(execution_time_ms)
         }
 
         # A completed task's result carries a real GSTD reward -- a timeout here must not

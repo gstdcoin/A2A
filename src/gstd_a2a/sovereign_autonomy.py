@@ -351,7 +351,7 @@ class TaskProcessor:
         # 3. Submit result
         execution_time = int((time.time() - start_time) * 1000)
         try:
-            self.client.submit_result(task_id, result, wallet=self.wallet)
+            self.client.submit_result(task_id, result, wallet=self.wallet, execution_time_ms=execution_time)
             self.tasks_completed += 1
             self.economy.record_earning(reward, f"task:{task_type}")
             self._log(f"✅ Task {task_id[:8]} done in {execution_time}ms | +{reward} GSTD")

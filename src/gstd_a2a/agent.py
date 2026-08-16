@@ -356,7 +356,7 @@ class Agent:
             
             # Отправляем результат
             execution_time = int((time.time() - start_time) * 1000)
-            response = self.client.submit_result(task_id, result, wallet=self.wallet)
+            response = self.client.submit_result(task_id, result, wallet=self.wallet, execution_time_ms=execution_time)
             
             self.stats["tasks_completed"] += 1
             self.stats["total_earned"] += reward
