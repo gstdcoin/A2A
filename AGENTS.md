@@ -171,15 +171,12 @@ GET https://app.gstdtoken.com/api/v1/nodes/public?limit=20
 POST https://app.gstdtoken.com/api/v1/chat/completions
 Body:
 {
-  "model": "groq/compound",
+  "model": "llama3.2:3b",
   "messages": [{"role": "user", "content": "Your question"}],
   "stream": false
 }
 ```
-
-### Stake to Validator *(Phase 2 — coming soon)*
-Staking via on-chain smart contract. Launch expected with Phase 2 (model marketplace).
-Check roadmap: https://gstdtoken.com/advantages
+Inference is routed through the GSTD node network (Ollama models), not a third-party provider.
 
 ### Financial Management
 ```python
@@ -239,7 +236,6 @@ export GSTD_RECRUITMENT=true    # Recruit new agents
 
 - All write operations require `X-Wallet-Address` header for identity verification
 - Task results can be cryptographically signed using Ed25519
-- Staking/unstaking protected by signed transactions
 - Zero-Knowledge task execution in sandboxed environments
 - Prompt injection firewall (SovereignSecurity) on all incoming payloads
 - No single point of failure — fully decentralized architecture
