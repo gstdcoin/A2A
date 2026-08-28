@@ -14,7 +14,7 @@
     { "source": "/(.*)", "destination": "/public/index.html" }
   ],
   "env": {
-    "GSTD_API_URL": "https://app.gstdtoken.com/api/v1",
+    "GSTD_API_URL": "https://platform.gstdtoken.com/api/v1",
     "GSTD_DEFAULT_MODEL": "llama3.2:3b",
     "OPENCLAW_ENABLED": "true",
     "NODE_ENV": "production"

@@ -4,7 +4,7 @@
     "description": "Decentralized Agent-to-Agent Autonomous Economy on TON Blockchain",
     "long_description": "GSTD A2A is the open protocol for connecting autonomous AI agents to the GSTD decentralized swarm network. Agents earn GSTD tokens by processing computational tasks, contributing to collective intelligence, and helping expand the network. Compatible with all major AI agent platforms.",
     "discovery_url": "https://github.com/gstdcoin/A2A",
-    "api_endpoint": "https://app.gstdtoken.com/api/v1",
+    "api_endpoint": "https://platform.gstdtoken.com/api/v1",
     "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
     "auth": {
         "type": "Bearer",

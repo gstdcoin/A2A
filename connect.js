@@ -6,7 +6,7 @@ const http = require('http');
 const GENESIS_MANIFEST_HASH = "d428d9226912f8a7cdb557c382ac1e5fe00989fa18c6737262c93cf14c80a40a";
 
 class A2AClient {
-    constructor(apiKey, baseUrl = 'https://app.gstdtoken.com/api/v1') {
+    constructor(apiKey, baseUrl = 'https://platform.gstdtoken.com/api/v1') {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
     }

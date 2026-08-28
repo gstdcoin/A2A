@@ -3,7 +3,7 @@
 ## Stack
 - **Language**: Python 3.9+
 - **Core**: `src/gstd_a2a/` (pip package `gstd-a2a`)
-- **Platform API**: `https://app.gstdtoken.com/api/v1/`
+- **Platform API**: `https://platform.gstdtoken.com/api/v1/`
 - **Auth**: `Authorization: Bearer {api_key}` + `X-Wallet-Address: {ton_address}`
 
 ## Install (development)
@@ -44,5 +44,5 @@ twine upload dist/*   # requires PYPI_TOKEN secret
 CI auto-publishes on `git tag v*` push.
 
 ## DO NOT
-- Do not hardcode `https://app.gstdtoken.com` — use `GSTDClient(api_url=...)` param
+- Do not hardcode `https://platform.gstdtoken.com` — use `GSTDClient(api_url=...)` param
 - Do not commit `GSTD_API_KEY` or wallet private keys

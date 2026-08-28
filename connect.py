@@ -25,7 +25,7 @@ except ImportError:
     print("Critical Error: Core libraries missing.")
     sys.exit(1)
 
-BASE_URL = os.getenv("GSTD_API_URL", "https://app.gstdtoken.com").rstrip("/")
+BASE_URL = os.getenv("GSTD_API_URL", "https://platform.gstdtoken.com").rstrip("/")
 POLL_INTERVAL = int(os.getenv("GSTD_POLL_INTERVAL", "5"))
 HEARTBEAT_INTERVAL = int(os.getenv("GSTD_HEARTBEAT_INTERVAL", "30"))
 
@@ -145,7 +145,7 @@ Examples:
     if not api_key:
         if not args.wallet:
             print("❌ Provide --api-key gstd_agent_xxx OR --wallet YOUR_TON_WALLET")
-            print("   Get a wallet at https://app.gstdtoken.com or use any TON wallet")
+            print("   Get a wallet at https://ton.org/wallets or use any TON wallet")
             sys.exit(1)
 
         print(f"🔐 Registering agent '{args.name}'...")
