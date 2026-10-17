@@ -1,140 +1,136 @@
+#!/usr/bin/env node
+'use strict';
 
-const https = require('https');
-const http = require('http');
-
-// Genesis Signature (Must match server manifest for swarm integrity)
-const GENESIS_MANIFEST_HASH = "d428d9226912f8a7cdb557c382ac1e5fe00989fa18c6737262c93cf14c80a40a";
+function getApiBase(value = process.env.GSTD_API_URL || 'https://app.gstdtoken.com') {
+    const base = value.replace(/\/+$/, '');
+    return base.endsWith('/api/v1') ? base : `${base}/api/v1`;
+}
 
 class A2AClient {
-    constructor(apiKey, baseUrl = 'https://platform.gstdtoken.com/api/v1') {
-        this.apiKey = apiKey;
-        this.baseUrl = baseUrl;
+    constructor(walletAddress, baseUrl = getApiBase()) {
+        this.walletAddress = walletAddress;
+        this.baseUrl = getApiBase(baseUrl);
+        this.nodeId = null;
     }
 
-    async verifyGenesis() {
-        console.log(`🔍 [Sentinel] Verifying Genesis Integrity at ${this.baseUrl}...`);
-        try {
-            const integrity = await this.request('/system/integrity');
-            if (integrity.manifest_hash === GENESIS_MANIFEST_HASH) {
-                console.log("✅ [Sentinel] INTEGRITY VERIFIED. Swarm entry permitted.");
-                return true;
-            }
-            console.error(`⚠️ [Sentinel] MANIFEST MISMATCH: Expected ${GENESIS_MANIFEST_HASH.slice(0, 8)}, got ${integrity.manifest_hash?.slice(0, 8) || 'none'}`);
-            return false;
-        } catch (e) {
-            console.warn("⚠️ [Sentinel] Integrity check unreachable. Running in unverified mode.");
-            return true;
+    async request(path, method = 'GET', data = undefined) {
+        const headers = { 'Content-Type': 'application/json' };
+        if (this.walletAddress) {
+            headers['X-Wallet-Address'] = this.walletAddress;
         }
+
+        let response;
+        try {
+            response = await fetch(`${this.baseUrl}${path}`, {
+                method,
+                headers,
+                body: data === undefined ? undefined : JSON.stringify(data),
+                signal: AbortSignal.timeout(15000),
+            });
+        } catch (error) {
+            throw new Error(`Could not reach GSTD API: ${error.message}`);
+        }
+
+        const body = await response.text();
+        let result;
+        try {
+            result = body ? JSON.parse(body) : {};
+        } catch {
+            throw new Error(`GSTD API returned invalid JSON (HTTP ${response.status})`);
+        }
+        if (!response.ok) {
+            throw new Error(`GSTD API returned HTTP ${response.status}: ${JSON.stringify(result)}`);
+        }
+        return result;
     }
 
-    async request(endpoint, method = 'GET', data = null) {
-        return new Promise((resolve, reject) => {
-            const url = new URL(this.baseUrl + endpoint);
-            const options = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'User-Agent': 'GSTD-A2A-Agent/1.0',
-                    'Authorization': `Bearer ${this.apiKey}`
-                }
-            };
+    async connect(name = 'A2A-Agent') {
+        const result = await this.request('/nodes/register', 'POST', {
+            name,
+            specs: {
+                type: 'agent',
+                capabilities: ['text-processing', 'data-validation'],
+            },
+        });
+        if (!result.node_id) {
+            throw new Error(`Registration response did not include node_id: ${JSON.stringify(result)}`);
+        }
+        this.nodeId = result.node_id;
+        return this.nodeId;
+    }
 
-            const req = (url.protocol === 'https:' ? https : http).request(url, options, (res) => {
-                let body = '';
-                res.on('data', chunks => { body += chunks; });
-                res.on('end', () => {
-                    if (res.statusCode === 429) {
-                        console.log("🚀 [Rate Limit] Server Busy. Retrying in heartbeat...");
-                    }
-                    if (res.statusCode >= 200 && res.statusCode < 300) {
-                        try { resolve(JSON.parse(body)); } catch (e) { resolve(body); }
-                    } else {
-                        reject(new Error(`Status Code: ${res.statusCode} - ${body}`));
-                    }
-                });
-            });
-
-            req.on('error', reject);
-            if (data) req.write(JSON.stringify(data));
-            req.end();
+    async heartbeat() {
+        return this.request('/nodes/heartbeat', 'POST', {
+            node_id: this.nodeId,
+            wallet_address: this.walletAddress,
+            status: 'active',
         });
     }
 
-    async connect() {
-        console.log(`🔌 Connecting to Swarm: ${this.baseUrl}`);
-        // 0. Sentinel Integrity Check
-        const verified = await this.verifyGenesis();
-        if (!verified) {
-            console.error("❌ [Sentinel] ATTEMPT BLOCKED: Potential forged node detected.");
-            process.exit(1);
+    async getTasks() {
+        const query = new URLSearchParams({ node_id: this.nodeId });
+        const result = await this.request(`/tasks/worker/pending?${query}`);
+        if (!Array.isArray(result.tasks)) {
+            throw new Error('GSTD API returned an unexpected task-list response');
         }
-
-        try {
-            const reg = await this.request('/nodes/register', 'POST', {
-                wallet_address: process.env.GSTD_WALLET_ADDRESS || this.apiKey,
-                agent_name: 'A2A-JS-Agent',
-                capabilities: ['compute', 'rag'],
-            });
-            this.nodeId = reg.node_id || reg.id || reg.agent_id;
-            console.log(`✅ Registered! Node ID: ${this.nodeId}`);
-            return true;
-        } catch (error) {
-            console.error(`❌ Connection failed: ${error.message}`);
-            return false;
-        }
+        return result.tasks;
     }
 
-    async startLoop() {
-        console.log("Listening for tasks...");
-        const POLL_INTERVAL = 5000;
-        let lastHb = 0;
-        while (true) {
-            const now = Date.now();
-            // Heartbeat every 30s
-            if (now - lastHb >= 30000) {
-                try { await this.request('/nodes/heartbeat', 'POST', { node_id: this.nodeId, status: 'working' }); } catch(e) {}
-                lastHb = Date.now();
-            }
+    async run() {
+        let lastHeartbeat = 0;
+        let stopping = false;
+        process.once('SIGINT', () => { stopping = true; });
+
+        console.log(`Monitoring node ${this.nodeId} via ${this.baseUrl}`);
+        while (!stopping) {
             try {
-                const resp = await this.request(`/tasks/worker/pending?node_id=${this.nodeId}`);
-                const tasks = Array.isArray(resp) ? resp : (resp && resp.tasks ? resp.tasks : []);
-                for (const task of tasks) {
-                    const tid = task.task_id || task.id;
-                    console.log(`\n⚡ Task ${tid.slice(0,8)}... (${task.type || 'unknown'})`);
-                    await this.request('/tasks/worker/submit', 'POST', {
-                        task_id: tid, node_id: this.nodeId, result: { status: 'completed' }
-                    });
-                    console.log(`✅ Submitted`);
+                if (Date.now() - lastHeartbeat >= 180000) {
+                    await this.heartbeat();
+                    lastHeartbeat = Date.now();
+                    console.log('Heartbeat sent.');
                 }
-                if (!tasks.length) process.stdout.write(".");
-            } catch (e) {
-                process.stdout.write(".");
+
+                const tasks = await this.getTasks();
+                for (const task of tasks) {
+                    const taskId = task.task_id || task.id || 'unknown';
+                    console.log(
+                        `Task ${taskId} assigned. No task executor is configured; ` +
+                        'the client will not submit a placeholder result.'
+                    );
+                }
+            } catch (error) {
+                console.error(`GSTD API error: ${error.message}`);
             }
-            await new Promise(r => setTimeout(r, POLL_INTERVAL));
+            await new Promise(resolve => setTimeout(resolve, 10000));
         }
+        console.log('Node monitor stopped.');
     }
 }
 
-// CLI Args
-const args = process.argv.slice(2);
-if (args.includes('--help') || args.length === 0) {
-    console.log("Usage: node connect.js <API_KEY> [BASE_URL]");
-    process.exit(1);
+async function main() {
+    const args = process.argv.slice(2);
+    if (args.includes('--help')) {
+        console.log('Usage: node connect.js <TON_WALLET_ADDRESS> [API_BASE_URL]');
+        console.log('Or set GSTD_WALLET_ADDRESS and optionally GSTD_API_URL.');
+        return;
+    }
+
+    const walletAddress = process.env.GSTD_WALLET_ADDRESS || args[0];
+    if (!walletAddress) {
+        throw new Error('Provide a wallet address or set GSTD_WALLET_ADDRESS.');
+    }
+
+    const client = new A2AClient(walletAddress, args[1]);
+    const nodeId = await client.connect();
+    console.log(`Registered node ${nodeId}. Press Ctrl+C to stop.`);
+    await client.run();
 }
 
-const client = new A2AClient(args[0], args[1]);
+if (require.main === module) {
+    main().catch(error => {
+        console.error(`GSTD connector failed: ${error.message}`);
+        process.exitCode = 1;
+    });
+}
 
-(async () => {
-    if (await client.connect()) {
-        await client.startLoop();
-    } else {
-        console.log("Attempting fallback to TON DNS...");
-        const fallbackClient = new A2AClient(args[0], 'https://gstd.ton.limo/api/v1');
-        if (await fallbackClient.connect()) {
-            await fallbackClient.startLoop();
-        } else {
-            console.log("💀 Connection failed on both networks.");
-            process.exit(1);
-        }
-    }
-})();
+module.exports = { A2AClient, getApiBase };

@@ -1,43 +1,31 @@
 {
   "name": "gstd-a2a",
-  "description": "Decentralized Agent-to-Agent protocol for TON blockchain. Earn GSTD tokens by processing tasks, accessing collective intelligence, and expanding the sovereign agent network. Inference via GSTD sovereign node network.",
+  "description": "Experimental MCP server and client integrations for the GSTD platform API. Task availability and rewards are not guaranteed.",
   "version": "2.1.0",
   "entrypoint": "python3 tools/main.py",
   "runtime": "python3",
   "type": "mcp",
   "homepage": "https://github.com/gstdcoin/A2A",
-  "author": "gstdcoin",
   "license": "MIT",
   "api_base": "https://app.gstdtoken.com/api/v1",
   "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
   "skill_file": "docs/SKILL.md",
-  "portable_skill": ".agents/skills/gstd-network/SKILL.md",
-  "default_model": "llama3.2:3b",
-  "openclaw": {
-    "enabled": true,
-    "panel_url": "https://app.gstdtoken.com/dashboard",
-    "api_base": "https://app.gstdtoken.com/api/v1/openclaw",
-    "rpc_endpoint": "https://app.gstdtoken.com/api/v1/openclaw/rpc",
-    "default_model": "llama3.2:3b",
-    "capabilities": [
-      "claw.register",
-      "claw.heartbeat",
-      "claw.status",
-      "claw.getAvailableTasks",
-      "claw.claimTask",
-      "claw.submitResult",
-      "claw.think",
-      "claw.vision",
-      "claw.getNetworkStats"
-    ]
-  },
   "tools": [
-    "get_agent_identity", "get_status", "pulse", "find_work",
-    "register_agent", "submit_task_result", "sign_transfer", "send_gstd",
-    "broadcast_sovereignty_status", "discuss_autonomy", "exchange_bridge_swap"
+    "get_agent_identity",
+    "get_status",
+    "pulse",
+    "find_work",
+    "register_agent",
+    "submit_task_result",
+    "sign_transfer",
+    "send_gstd",
+    "broadcast_sovereignty_status",
+    "discuss_autonomy",
+    "exchange_bridge_swap"
   ],
-  "propagation": {
-    "beacon_script": "scripts/auto_beacon.sh",
-    "skill_template": ".agents/skills/gstd-network/SKILL.md"
-  }
+  "limitations": [
+    "Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17.",
+    "The cross-chain bridge is not deployed.",
+    "The integrations and reward flow have not been independently audited."
+  ]
 }

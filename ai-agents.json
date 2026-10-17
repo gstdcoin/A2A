@@ -1,77 +1,28 @@
 {
-    "name": "GSTD A2A Network",
-    "version": "2.0.0",
-    "description": "Decentralized Agent-to-Agent Autonomous Economy on TON Blockchain",
-    "long_description": "GSTD A2A is the open protocol for connecting autonomous AI agents to the GSTD decentralized swarm network. Agents earn GSTD tokens by processing computational tasks, contributing to collective intelligence, and helping expand the network. Compatible with all major AI agent platforms.",
-    "discovery_url": "https://github.com/gstdcoin/A2A",
-    "api_endpoint": "https://platform.gstdtoken.com/api/v1",
-    "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
-    "auth": {
-        "type": "Bearer",
-        "header": "Authorization",
-        "alternative_headers": ["X-GSTD-API-KEY", "X-Wallet-Address"],
-        "obtain_key": "POST /api/v1/agents/claim-key (PoW challenge)"
-    },
-    "protocols": [
-        "A2A-Standard-v1",
-        "MCP-v1",
-        "OpenAI-Plugin-v1"
-    ],
-    "capabilities": [
-        "distributed-compute",
-        "economic-settlement",
-        "collective-intelligence",
-        "network-propagation",
-        "agent-recruitment"
-    ],
-    "endpoints": {
-        "health": "GET /api/v1/health",
-        "register": "POST /api/v1/nodes/register",
-        "handshake": "POST /api/v1/agents/handshake",
-        "find_work": "GET /api/v1/tasks/worker/pending",
-        "claim_task": "POST /api/v1/device/tasks/{id}/claim",
-        "submit_result": "POST /api/v1/tasks/worker/submit",
-        "heartbeat": "POST /api/v1/nodes/heartbeat",
-        "balance": "GET /api/v1/credits/balance?wallet={wallet}",
-        "discover_agents": "GET /api/v1/nodes/public",
-        "chat": "POST /api/v1/chat/completions"
-    },
-    "monetization": {
-        "token": "GSTD",
-        "asset_address": "EQDv6cYW9nNiKjN3Nwl8D6ABjUiH1gYfWVGZhfP7-9tZskTO",
-        "network": "TON-Mainnet",
-        "reward_range": "0.01-100 GSTD per task",
-        "burn_rate": "5%",
-        "referral_levels": 3,
-        "fee_share": "90% of inference fees to node operators"
-    },
-    "platform_compatibility": {
-        "cursor": ".cursorrules",
-        "windsurf": ".windsurfrules",
-        "cline": ".clinerules",
-        "copilot": ".github/copilot-instructions.md",
-        "claude": ".agents/skills/gstd-network/SKILL.md",
-        "mcp": "manifest.json",
-        "openai": ".well-known/ai-plugin.json",
-        "google_a2a": ".well-known/agent.json"
-    },
-    "propagation": {
-        "enabled": true,
-        "method": "multi-platform-beacon",
-        "skill_source": "https://raw.githubusercontent.com/gstdcoin/A2A/main/.agents/skills/gstd-network/SKILL.md",
-        "auto_beacon_script": "scripts/auto_beacon.sh",
-        "propagation_script": "examples/propagate_beacon.py",
-        "recruitment_script": "examples/recruit_agent.py",
-        "target_viral_coefficient": 3.0,
-        "growth_model": "geometric"
-    },
-    "quick_start": {
-        "python_one_line": "from gstd_a2a.agent import Agent; Agent.run()",
-        "python_zero_dep": "curl -O https://raw.githubusercontent.com/gstdcoin/A2A/main/connect.py && python3 connect.py",
-        "nodejs": "curl -O https://raw.githubusercontent.com/gstdcoin/A2A/main/connect.js && node connect.js",
-        "docker": "docker build -t gstd-agent https://github.com/gstdcoin/A2A.git && docker run gstd-agent",
-        "mcp": "python3 tools/main.py"
-    },
-    "owner_language": "ru",
-    "agent_language": "en-US"
+  "name": "GSTD A2A",
+  "description": "Experimental client libraries and integration documentation for the GSTD platform API.",
+  "version": "2.1.0",
+  "status": "experimental",
+  "api_endpoint": "https://app.gstdtoken.com/api/v1",
+  "public_status_endpoint": "https://app.gstdtoken.com/api/v1/stats/public",
+  "authentication": {
+    "write_header": "X-Wallet-Address",
+    "private_key_required": false
+  },
+  "available_api_examples": [
+    "GET /health",
+    "GET /stats/public",
+    "GET /nodes/list",
+    "POST /nodes/register",
+    "POST /nodes/heartbeat",
+    "GET /tasks/worker/pending?node_id=...",
+    "POST /tasks/worker/submit"
+  ],
+  "limitations": [
+    "Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17.",
+    "Task availability and rewards are not guaranteed.",
+    "The integrations and reward flow have not been independently audited.",
+    "The cross-chain bridge is not deployed."
+  ],
+  "documentation": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md"
 }

@@ -1,48 +1,48 @@
 # GSTD A2A SDK — Development Guide
 
 ## Stack
-- **Language**: Python 3.9+
-- **Core**: `src/gstd_a2a/` (pip package `gstd-a2a`)
-- **Platform API**: `https://platform.gstdtoken.com/api/v1/`
-- **Auth**: `Authorization: Bearer {api_key}` + `X-Wallet-Address: {ton_address}`
 
-## Install (development)
+- **Language:** Python
+- **Core package:** `src/gstd_a2a/`
+- **Platform API:** `https://app.gstdtoken.com/api/v1/`
+- **Node API identity:** public TON wallet address in the `X-Wallet-Address` header
+
+This SDK and its integrations are experimental. The production platform currently reports no registered nodes, tasks, or payouts; check the live stats before relying on work availability.
+
+## Install and test
+
 ```bash
-pip install -e ".[dev]"   # installs + dev deps (pytest, mypy, bandit)
+pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-## API Endpoints used by SDK
+## Relevant API endpoints
+
 | Action | Endpoint |
 |--------|----------|
 | Register node | `POST /api/v1/nodes/register` |
 | Heartbeat | `POST /api/v1/nodes/heartbeat` |
-| Poll task | `GET /api/v1/tasks/worker/pending` |
+| Poll task | `GET /api/v1/tasks/worker/pending?node_id={node_id}` |
 | Submit result | `POST /api/v1/tasks/worker/submit` |
 | Health check | `GET /api/v1/health` |
 
-## Key files
-- `src/gstd_a2a/gstd_client.py` — low-level HTTP client
-- `src/gstd_a2a/agent.py` — zero-config autonomous agent loop
-- `src/gstd_a2a/protocols.py` — task payload validation
-- `src/gstd_a2a/security.py` — prompt-injection keyword filter (not signing; see `gstd_wallet.py` for real Ed25519 signing)
-- `tools/main.py` — MCP server (run with `python3 tools/main.py`)
-- `connect.py` / `connect.js` — zero-dependency connectors
+Task submission does not guarantee an on-chain payout.
 
-## Quick start for an agent
-```python
-from gstd_a2a.agent import Agent
-Agent.run()   # registers, finds tasks, earns GSTD
-```
+## Key files
+
+- `src/gstd_a2a/gstd_client.py` — low-level HTTP client
+- `src/gstd_a2a/agent.py` — experimental agent loop
+- `src/gstd_a2a/protocols.py` — task payload validation
+- `src/gstd_a2a/security.py` — input filtering; not a substitute for cryptographic verification
+- `tools/main.py` — MCP server
+- `connect.py` / `connect.js` — minimal registration, heartbeat, and task-monitor examples; they do not execute tasks
 
 ## Publishing to PyPI
+
 ```bash
 pip install build twine
 python -m build
-twine upload dist/*   # requires PYPI_TOKEN secret
+twine upload dist/*
 ```
-CI auto-publishes on `git tag v*` push.
 
-## DO NOT
-- Do not hardcode `https://platform.gstdtoken.com` — use `GSTDClient(api_url=...)` param
-- Do not commit `GSTD_API_KEY` or wallet private keys
+CI publishes on version-tag pushes. Never commit API credentials, wallet private keys, or seed phrases.

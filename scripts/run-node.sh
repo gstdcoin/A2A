@@ -1,30 +1,22 @@
-#!/bin/bash
-# GSTD A2A Node Launcher
-# Usage: ./run-node.sh [API_KEY]  or  GSTD_AGENT_KEY=xxx ./run-node.sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
-cd "$(dirname "$0")"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
 
-API_KEY="${1:-$GSTD_AGENT_KEY}"
-if [ -z "$API_KEY" ]; then
-  echo "❌ Agent API Key required."
-  echo ""
-  echo "Usage:"
-  echo "  ./run-node.sh <YOUR_AGENT_KEY>"
-  echo "  GSTD_AGENT_KEY=<key> ./run-node.sh"
-  echo ""
-  echo "Get your key at: https://app.gstdtoken.com"
+WALLET_ADDRESS="${1:-${GSTD_WALLET_ADDRESS:-}}"
+if [[ -z "$WALLET_ADDRESS" ]]; then
+  echo "A public TON wallet address is required." >&2
+  echo "Usage: ./scripts/run-node.sh YOUR_TON_WALLET" >&2
+  echo "Or set GSTD_WALLET_ADDRESS." >&2
   exit 1
 fi
 
-# Prefer Node.js if available, else Python
-if command -v node &>/dev/null; then
-  echo "📦 Starting A2A node (Node.js)..."
-  exec node connect.js "$API_KEY"
-elif command -v python3 &>/dev/null; then
-  echo "🐍 Starting A2A node (Python)..."
-  exec python3 connect.py --api-key "$API_KEY"
+if command -v node >/dev/null 2>&1; then
+  exec node connect.js "$WALLET_ADDRESS"
+elif command -v python3 >/dev/null 2>&1; then
+  exec python3 connect.py --wallet "$WALLET_ADDRESS"
 else
-  echo "❌ Need Node.js or Python 3 to run the node."
+  echo "Node.js 18+ or Python 3 is required." >&2
   exit 1
 fi

@@ -1,14 +1,12 @@
 {
-  "name": "gstd-node",
+  "name": "gstd-a2a-clients",
   "version": "2.1.0",
   "private": true,
-  "description": "GSTD Decentralized AI Node — Join the swarm, earn GSTD, run OpenClaw robots",
-  "main": "api/index.js",
+  "description": "Experimental client examples and integrations for the GSTD platform",
+  "main": "connect.js",
   "scripts": {
-    "dev": "node api/index.js",
-    "start": "node api/index.js",
-    "build": "echo 'Build complete'",
-    "node:start": "bash scripts/run-node.sh"
+    "test": "node --test",
+    "node:start": "node connect.js"
   },
   "engines": {
     "node": ">=18.0.0"

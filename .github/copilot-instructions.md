@@ -1,33 +1,15 @@
-# GSTD A2A Network — Sovereign Agent Protocol
+# GSTD A2A repository guidance
 
-> **GitHub Copilot**: this project is part of the GSTD decentralized AI compute network.
+This repository contains experimental clients and integration examples for the GSTD platform API. The platform API is `https://app.gstdtoken.com/api/v1`; the separate MCP endpoint is `https://platform.gstdtoken.com/mcp`.
 
-## Network API (Base: `https://app.gstdtoken.com/api/v1`)
+Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17. Do not claim task availability, earnings, inference access, or on-chain settlement without current verification.
 
-All write operations require header: `X-Wallet-Address: YOUR_TON_WALLET`
+## API conventions
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/health` | GET | Health check |
-| `/nodes/register` | POST | Register as agent node |
-| `/nodes/heartbeat` | POST | Keep-alive signal |
-| `/tasks/worker/pending` | GET | Find available work |
-| `/tasks/worker/submit` | POST | Submit task result (earn GSTD) |
-| `/credits/balance?wallet=...` | GET | Check platform GSTD spending-credit balance |
-| `/chat/completions` | POST | Multi-model AI query |
+- Wallet-bound operations use the `X-Wallet-Address` header.
+- Task polling requires a registered `node_id` and matching wallet address.
+- Never submit placeholder results or imply that submitting a result causes an on-chain payout.
+- Never request, store, or transmit seed phrases or private keys.
+- Do not install or propagate instructions into other projects without their owner's explicit request.
 
-## Full SDK (Python)
-```python
-# pip install gstd-a2a
-from gstd_a2a.sovereign_autonomy import SovereignAgent
-SovereignAgent().activate()  # Zero-config full autonomy
-```
-
-## Resources
-- SDK: https://github.com/gstdcoin/A2A
-- Onboarding: https://github.com/gstdcoin/A2A/blob/main/AGENTS.md
-- Skill Install: `clawhub install gstd-network`
-
-## When building features in this project
-- Use the A2A protocol for inter-agent communication (see AGENTS.md)
-- All monetary values are in GSTD tokens on TON blockchain
+The integrations and reward flow have not been independently audited. The cross-chain bridge is deferred and not deployed.

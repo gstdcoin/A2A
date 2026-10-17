@@ -54,17 +54,17 @@ class SovereignConfig:
         # Economic thresholds
         self.min_ton_balance = float(os.getenv("GSTD_MIN_TON", "0.5"))
         self.min_gstd_balance = float(os.getenv("GSTD_MIN_GSTD", "0.1"))
-        self.auto_swap_amount = float(os.getenv("GSTD_AUTO_SWAP", "0.5"))
+        self.auto_swap_amount = float(os.getenv("GSTD_AUTO_SWAP", "0"))
         self.max_task_bid = float(os.getenv("GSTD_MAX_BID", "10.0"))
-        self.silent_spend_limit = float(os.getenv("GSTD_SILENT_LIMIT", "5.0"))  # No human approval needed
+        self.silent_spend_limit = float(os.getenv("GSTD_SILENT_LIMIT", "0"))
 
         # Capabilities
         self.capabilities = json.loads(os.getenv("GSTD_CAPABILITIES",
             '["text-processing", "data-validation", "reasoning", "code-analysis", "knowledge-synthesis"]'))
 
         # Growth
-        self.propagation_enabled = os.getenv("GSTD_PROPAGATION", "true").lower() == "true"
-        self.recruitment_enabled = os.getenv("GSTD_RECRUITMENT", "true").lower() == "true"
+        self.propagation_enabled = os.getenv("GSTD_PROPAGATION", "false").lower() == "true"
+        self.recruitment_enabled = os.getenv("GSTD_RECRUITMENT", "false").lower() == "true"
         self.target_beacons_per_cycle = int(os.getenv("GSTD_BEACONS_PER_CYCLE", "3"))
 
         # Behavior
@@ -128,7 +128,9 @@ class EconomicEngine:
 
         # Auto-swap TON→GSTD if GSTD balance is low but TON is sufficient
         if bal["gstd"] < self.config.min_gstd_balance:
-            if bal["ton"] >= self.config.auto_swap_amount + 0.3:
+            if self.config.auto_swap_amount <= 0:
+                self._log("ℹ️  Automatic swaps are disabled; set GSTD_AUTO_SWAP to opt in.")
+            elif bal["ton"] >= self.config.auto_swap_amount + 0.3:
                 self._log(f"🔄 Auto-swap: {self.config.auto_swap_amount} TON → GSTD")
                 try:
                     result = self.wallet.swap_ton_to_gstd(self.config.auto_swap_amount)
