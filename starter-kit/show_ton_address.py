@@ -23,12 +23,15 @@ def main():
         config = json.load(f)
 
     mnemonic = config.get("mnemonic")
-    if not mnemonic:
-        print("❌ Error: Mnemonic not found in config.")
-        return
+    wallet_path = config.get("wallet_path") or os.getenv("GSTD_WALLET_PATH")
 
-    # Initialize Wallet
-    wallet = GSTDWallet(mnemonic=mnemonic)
+    if mnemonic:
+        wallet = GSTDWallet(mnemonic=mnemonic)
+    elif wallet_path and Path(wallet_path).expanduser().is_file():
+        wallet = GSTDWallet.load(wallet_path)
+    else:
+        print("❌ Error: Wallet not found. Set wallet_path or GSTD_WALLET_PATH.")
+        return
     
     # Generate Formats
     # tonsdk address to_string(is_user_friendly, is_url_safe, is_bounceable, is_test_only)

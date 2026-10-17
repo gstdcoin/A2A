@@ -26,12 +26,16 @@ def check_all():
     # --- STEP 2: Wallet & Balance ---
     print("\n[2/4] Checking Wallet & Balances...")
     mnemonic = config.get("mnemonic")
-    if not mnemonic:
-        print("❌ FAILED: Mnemonic key missing in config.")
-        return
-    
+    wallet_path = config.get("wallet_path") or os.getenv("GSTD_WALLET_PATH")
+
     try:
-        wallet = GSTDWallet(mnemonic=mnemonic)
+        if mnemonic:
+            wallet = GSTDWallet(mnemonic=mnemonic)
+        elif wallet_path and Path(wallet_path).expanduser().is_file():
+            wallet = GSTDWallet.load(wallet_path)
+        else:
+            print("❌ FAILED: Wallet not found. Set wallet_path or GSTD_WALLET_PATH.")
+            return
         print(f"   Address: {wallet.address}")
         
         # Check Balances

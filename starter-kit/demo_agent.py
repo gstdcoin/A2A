@@ -37,8 +37,16 @@ def run_agent():
     with open(config_path, "r") as f:
         config = json.load(f)
 
-    # Initialize Client & Wallet
-    wallet = GSTDWallet(mnemonic=config['mnemonic'])
+    # Load new private wallet files; accept legacy config phrases for migration.
+    mnemonic = config.get('mnemonic')
+    wallet_path = config.get('wallet_path') or os.getenv("GSTD_WALLET_PATH")
+    if mnemonic:
+        wallet = GSTDWallet(mnemonic=mnemonic)
+    elif wallet_path and Path(wallet_path).expanduser().is_file():
+        wallet = GSTDWallet.load(wallet_path)
+    else:
+        print("❌ Error: No wallet configured. Set wallet_path or GSTD_WALLET_PATH.")
+        return
     
     # API Key priority: config -> env -> default
     auth_key = (

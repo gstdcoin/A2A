@@ -43,6 +43,7 @@ def get_client_and_wallet():
         env_mnem = os.getenv("AGENT_PRIVATE_MNEMONIC")
         cfg_mnem = config.get("mnemonic")
         final_mnem = env_mnem or cfg_mnem
+        wallet_path = os.getenv("GSTD_WALLET_PATH") or config.get("wallet_path")
 
         client = GSTDClient(
             wallet_address=os.getenv("GSTD_WALLET_ADDRESS", config.get("wallet_address")),
@@ -51,7 +52,12 @@ def get_client_and_wallet():
         )
         
         # Initialize Wallet
-        wallet = GSTDWallet(mnemonic=final_mnem)
+        if final_mnem:
+            wallet = GSTDWallet(mnemonic=final_mnem)
+        elif wallet_path and os.path.isfile(os.path.expanduser(wallet_path)):
+            wallet = GSTDWallet.load(wallet_path)
+        else:
+            wallet = GSTDWallet()
         # Ensure client has the derived address
         client.wallet_address = wallet.address
         

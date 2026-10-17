@@ -16,14 +16,18 @@ def setup():
     # 1. Generate Identity
     wallet = GSTDWallet()
     identity = wallet.get_identity()
+    wallet_path = Path.home() / ".gstd" / "wallet.json"
+    wallet.save(str(wallet_path))
     
     print(f"✅ Identity Generated!")
     print(f"📍 Wallet Address: {identity['address']}")
+    print(f"🔐 Wallet file (contains an unencrypted recovery phrase): {wallet_path}")
+    print("   Restrict access to this file and keep a secure backup.")
     
     # 2. Save Config
     config = {
         "wallet_address": identity['address'],
-        "mnemonic": identity['mnemonic'],
+        "wallet_path": str(wallet_path),
         "api_url": "http://localhost:8080"
     }
     

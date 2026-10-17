@@ -24,21 +24,46 @@ class GSTDWallet:
         self.address = self.wallet.address.to_string(True, True, True)
         
     def get_identity(self):
-        """Returns the rigorous identity of the autonomous agent."""
+        """Return public identity data without exposing wallet secrets."""
         return {
             "address": self.address,
             "public_key": bytes_to_b64str(self.pub_k),
-            # In a real secure environment, mnemonics should typically NOT be exposed this easily,
-            # but for an autonomous agent "waking up", it needs to know its own seed.
-            "mnemonic": " ".join(self.mnemonics) 
         }
 
+    def export_mnemonic(self):
+        """Return the recovery phrase for an explicit, offline backup operation."""
+        return " ".join(self.mnemonics)
+
     def save(self, path: str):
-        """Save wallet mnemonic to JSON file. Accepts ~ in the path."""
+        """Atomically save a wallet file with owner-only POSIX permissions."""
         import json
         import os
-        with open(os.path.expanduser(path), "w") as f:
-            json.dump({"mnemonic": " ".join(self.mnemonics), "address": self.address}, f, indent=2)
+        import tempfile
+
+        target = os.path.abspath(os.path.expanduser(path))
+        parent = os.path.dirname(target)
+        os.makedirs(parent, exist_ok=True)
+        descriptor, temporary = tempfile.mkstemp(prefix=f".{os.path.basename(target)}.", dir=parent)
+        try:
+            if os.name != "nt":
+                os.fchmod(descriptor, 0o600)
+            with os.fdopen(descriptor, "w", encoding="utf-8") as f:
+                json.dump({"mnemonic": self.export_mnemonic(), "address": self.address}, f, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temporary, target)
+            if os.name != "nt":
+                os.chmod(target, 0o600)
+        except Exception:
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+            try:
+                os.unlink(temporary)
+            except FileNotFoundError:
+                pass
+            raise
 
     @classmethod
     def load(cls, path: str):
@@ -48,6 +73,8 @@ class GSTDWallet:
         with open(os.path.expanduser(path)) as f:
             data = json.load(f)
         mnemonic = data.get("mnemonic") or data.get("mnemonic_phrase")
+        if not isinstance(mnemonic, str) or not mnemonic.strip():
+            raise ValueError("Wallet file does not contain a recovery phrase")
         return cls(mnemonic=mnemonic)
 
     def check_gstd_balance(self):
@@ -566,4 +593,3 @@ class GSTDWallet:
         )
         
         return self.broadcast_transfer(bytes_to_b64str(msg["message"].to_boc(False)))
-

@@ -22,7 +22,7 @@ def test_system():
         wallet = GSTDWallet(mnemonic=None) # Generate new
         identity = wallet.get_identity()
         print(f"   ✅ Wallet Generated: {identity['address']}")
-        print(f"   🔑 Mnemonic Word Count: {len(identity['mnemonic'].split())}")
+        print(f"   🔑 Mnemonic Word Count: {len(wallet.export_mnemonic().split())}")
     except Exception as e:
         print(f"   ❌ Wallet Error: {e}")
         return

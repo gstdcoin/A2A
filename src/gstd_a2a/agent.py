@@ -17,6 +17,7 @@ import os
 import sys
 import time
 import json
+import math
 import threading
 import signal
 from pathlib import Path
@@ -357,12 +358,17 @@ class Agent:
             # Отправляем результат
             execution_time = int((time.time() - start_time) * 1000)
             response = self.client.submit_result(task_id, result, wallet=self.wallet, execution_time_ms=execution_time)
+            if not isinstance(response, dict) or response.get("ok") is not True or response.get("task_id") != task_id:
+                raise RuntimeError("Grid rejected the task result")
+            confirmed_reward = response.get("reward_gstd", 0)
+            if isinstance(confirmed_reward, bool) or not isinstance(confirmed_reward, (int, float)) or not math.isfinite(confirmed_reward) or confirmed_reward < 0:
+                raise RuntimeError("Grid returned an invalid reward amount")
             
             self.stats["tasks_completed"] += 1
-            self.stats["total_earned"] += reward
+            self.stats["total_earned"] += confirmed_reward
             
             self._log(f"✅ Task {task_id[:8]} completed in {execution_time}ms")
-            self._log(f"💰 Earned: {reward} GSTD | Total: {self.stats['total_earned']:.4f} GSTD")
+            self._log(f"💰 Earned: {confirmed_reward} GSTD | Total: {self.stats['total_earned']:.4f} GSTD")
             
         except Exception as e:
             self.stats["tasks_failed"] += 1

@@ -111,26 +111,25 @@ class GSTDClient:
                 headers=self._get_headers(),
                 timeout=15
             )
-            if resp.status_code == 200:
-                data = resp.json()
-                return (data if isinstance(data, list) else data.get("tasks", [])), resp.status_code
-            return [], resp.status_code
-        
-        try:
-            tasks, code = _fetch()
-            if tasks:
-                return tasks
-            if code == 401 and self.wallet_address:
-                if self.reauthenticate():
-                    tasks, _ = _fetch()
-                    return tasks
-                sys.stderr.write("⚠️  Authentication failed (401). Genesis Ignite retry failed.\n")
-            elif code == 401:
-                sys.stderr.write("⚠️  Authentication failed (401). Please set GSTD_API_KEY or ensure wallet.\n")
-            return []
-        except Exception as e:
-            sys.stderr.write(f"❌ Error fetching tasks: {e}\n")
-            return []
+            if resp.status_code == 401:
+                return None
+            resp.raise_for_status()
+            data = resp.json()
+            if isinstance(data, list):
+                return data
+            if not isinstance(data, dict) or not isinstance(data.get("tasks", []), list):
+                raise ValueError("Task endpoint returned an invalid response")
+            return data.get("tasks", [])
+
+        tasks = _fetch()
+        if tasks is not None:
+            return tasks
+        if not self.wallet_address or not self.reauthenticate():
+            raise requests.HTTPError("Task request unauthorized; authentication failed")
+        tasks = _fetch()
+        if tasks is None:
+            raise requests.HTTPError("Task request remained unauthorized after reauthentication")
+        return tasks
 
 
     def submit_result(self, task_id, result_data, wallet=None, execution_time_ms=0):
@@ -164,7 +163,10 @@ class GSTDClient:
         for attempt in range(3):
             try:
                 resp = requests.post(f"{self.api_url}/api/v1/tasks/worker/submit", json=payload, headers=self._get_headers(), timeout=15)
+                resp.raise_for_status()
                 return resp.json()
+            except requests.exceptions.HTTPError:
+                raise
             except requests.exceptions.RequestException as e:
                 last_err = e
                 if attempt < 2:
@@ -186,9 +188,11 @@ class GSTDClient:
             "signal": 100,
         }
         try:
-            requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2, headers=self._get_headers())
+            resp = requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2, headers=self._get_headers())
+            resp.raise_for_status()
             return True
-        except Exception:
+        except requests.exceptions.RequestException as e:
+            sys.stderr.write(f"❌ Error sending heartbeat: {e}\n")
             return False
 
 
@@ -231,4 +235,3 @@ class GSTDClient:
         
         sys.stderr.write(f"⚠️  Discovery failed: {resp.status_code} - {resp.text}\n")
         return []
-
