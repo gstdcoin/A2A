@@ -97,8 +97,8 @@ class SwarmClient:
             log.warning("Health check failed: %s", e)
             return False
 
-    def register_node(self, use_registry=True):
-        """Register as node. use_registry=True uses /registry/join (Unified Identity)."""
+    def register_node(self, use_registry=False):
+        """Register as node via /nodes/register. use_registry=True targets /registry/join, which the live platform does not serve."""
         specs = {
             "capabilities": ["compute", "data-processing", "inference"],
             "type": "swarm",
@@ -116,10 +116,6 @@ class SwarmClient:
             }
             url = f"{self.api_url}/api/v1/registry/join"
         else:
-            log.warning(
-                "[DEPRECATION] POST /nodes/register is deprecated. Use registry/join. "
-                "Support until 2026-03-18. Set use_registry=True (default)."
-            )
             payload = {"name": f"Swarm-Node-{self.device_id[:12]}", "specs": specs}
             url = f"{self.api_url}/api/v1/nodes/register?wallet_address={self.wallet}"
         r = requests.post(url, json=payload, headers=self._headers(), timeout=15)
