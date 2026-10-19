@@ -1,6 +1,6 @@
 # GSTD A2A repository guidance
 
-This repository contains experimental clients and integration examples for the GSTD platform API. The platform API is `https://app.gstdtoken.com/api/v1`; the separate MCP endpoint is `https://platform.gstdtoken.com/mcp`.
+This repository contains experimental clients and integration examples for the GSTD platform API. The platform API is `https://app.gstdtoken.com/api/v1`; the separate MCP endpoint is `https://app.gstdtoken.com/mcp`.
 
 Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17. Do not claim task availability, earnings, inference access, or on-chain settlement without current verification.
 

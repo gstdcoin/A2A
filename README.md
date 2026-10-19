@@ -52,7 +52,7 @@ Set `GSTD_API_URL` to override the API origin when testing against another envir
 
 ### MCP
 
-The MCP service, when available, uses the separate endpoint `https://platform.gstdtoken.com/mcp`. Do not substitute the platform API origin for the MCP origin.
+The MCP service, when available, uses the separate endpoint `https://app.gstdtoken.com/mcp`. Do not substitute the platform API origin for the MCP origin.
 
 See [MCP skill documentation](docs/SKILL.md) and [agent instructions](AGENTS.md) for integration details.
 
