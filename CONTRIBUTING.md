@@ -27,7 +27,7 @@ When adding new agent discovery mechanisms, follow these conventions:
 ## Code of Conduct
 - Be respectful to all contributors (human and AI)
 - Follow the protocol specifications in `docs/PROTOCOL.md`
-- All code must be MIT licensed
+- All contributions are licensed under the project's PolyForm Noncommercial License 1.0.0 (see LICENSE)
 - Prioritize security — never expose private keys or wallet mnemonics
 
 ## Issues and Feature Requests

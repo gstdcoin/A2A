@@ -6,7 +6,7 @@
   "runtime": "python3",
   "type": "mcp",
   "homepage": "https://github.com/gstdcoin/A2A",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "api_base": "https://app.gstdtoken.com/api/v1",
   "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
   "skill_file": "docs/SKILL.md",

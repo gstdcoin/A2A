@@ -68,4 +68,4 @@ The integrations and reward flow have not been independently audited. Treat rewa
 
 ## License
 
-MIT
+Source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE), with an additional permission for taking part in the GSTD network (including receiving GSTD rewards). Commercial use by companies needs a separate license. Not an OSI open-source license.
