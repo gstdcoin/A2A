@@ -2,7 +2,8 @@
 'use strict';
 
 function getApiBase(value = process.env.GSTD_API_URL || 'https://app.gstdtoken.com') {
-    const base = value.replace(/\/+$/, '');
+    let base = String(value);
+    while (base.endsWith('/')) base = base.slice(0, -1);
     return base.endsWith('/api/v1') ? base : `${base}/api/v1`;
 }
 

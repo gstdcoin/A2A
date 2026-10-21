@@ -3,16 +3,75 @@ import json
 import time
 import os
 import sys
+import hashlib
+from pathlib import Path
+from nacl.signing import SigningKey
+
+
+class _NodeIdentityMismatch(RuntimeError):
+    pass
+
 
 class GSTDClient:
-    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru"):
+    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru", node_identity_path=None):
         self.api_url = api_url.rstrip('/')
         self.wallet_address = wallet_address
         self.private_key = private_key
         self.api_key = api_key or os.getenv("GSTD_API_KEY")
         self.session_token = None
-        self.node_id = None
+        self.node_id = wallet_address
         self.preferred_language = preferred_language
+        self.node_identity_path = Path(
+            node_identity_path
+            or os.getenv("GSTD_NODE_IDENTITY_FILE")
+            or Path.home() / ".config" / "gstd" / "node-ed25519.key"
+        ).expanduser()
+        self._node_signing_key = None
+
+    def _get_node_signing_key(self):
+        """Load or atomically create the Ed25519 identity used by paid node APIs."""
+        if self._node_signing_key is not None:
+            return self._node_signing_key
+
+        path = self.node_identity_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            descriptor = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        except FileExistsError:
+            seed_hex = path.read_text(encoding="ascii").strip()
+            seed = bytes.fromhex(seed_hex)
+            if len(seed) != 32:
+                raise ValueError("GSTD node identity file must contain a 32-byte Ed25519 seed")
+            self._node_signing_key = SigningKey(seed)
+            return self._node_signing_key
+
+        signing_key = SigningKey.generate()
+        try:
+            with os.fdopen(descriptor, "w", encoding="ascii") as identity_file:
+                identity_file.write(signing_key.encode().hex())
+                identity_file.flush()
+                os.fsync(identity_file.fileno())
+            if os.name != "nt":
+                os.chmod(path, 0o600)
+        except Exception:
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                pass
+            raise
+        self._node_signing_key = signing_key
+        return signing_key
+
+    def _node_auth_headers(self, node_id):
+        signing_key = self._get_node_signing_key()
+        timestamp = str(int(time.time() * 1000))
+        message = hashlib.sha256(f"{node_id}:{timestamp}".encode("utf-8")).digest()
+        signature = signing_key.sign(message).signature.hex()
+        return {
+            "X-GSTD-Node-Id": node_id,
+            "X-GSTD-Node-Ts": timestamp,
+            "X-GSTD-Node-Sig": signature,
+        }
         
     def _get_headers(self):
         """Auto-inject API key and wallet into every request (SS-Auth)."""
@@ -29,6 +88,8 @@ class GSTDClient:
         if self.wallet_address:
             headers["X-GSTD-Target-Wallet"] = self.wallet_address
             headers["X-Wallet-Address"] = self.wallet_address
+        if self.node_id:
+            headers.update(self._node_auth_headers(self.node_id))
         return headers
 
     def reauthenticate(self):
@@ -52,8 +113,13 @@ class GSTDClient:
         """Registers the agent as a compute node. Retries with exponential backoff on failure."""
         if not self.wallet_address:
             raise ValueError("Wallet address required for registration")
+        self.node_id = self.node_id or self.wallet_address
+        node_identity = self._get_node_signing_key()
 
         payload = {
+            "node_id": self.node_id,
+            "node_pubkey": node_identity.verify_key.encode().hex(),
+            "wallet_address": self.wallet_address,
             "name": device_name,
             "specs": {
                 "type": "agent",
@@ -73,9 +139,15 @@ class GSTDClient:
                 )
                 if resp.status_code in [200, 201]:
                     data = resp.json()
-                    self.node_id = data.get("node_id") or data.get("id") or data.get("ID")
+                    registered_node_id = data.get("node_id")
+                    if registered_node_id != self.node_id:
+                        raise _NodeIdentityMismatch(
+                            "Registration returned a node_id different from the signed identity"
+                        )
                     return data
                 last_err = Exception(f"Registration failed ({resp.status_code}): {resp.text}")
+            except _NodeIdentityMismatch:
+                raise
             except Exception as e:
                 last_err = e
 
