@@ -1,11 +1,13 @@
 """Basic unit tests for GSTDClient — no network calls, no secrets required."""
 import sys
 import os
+import hashlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import pytest
 import requests
+from nacl.signing import VerifyKey
 from gstd_a2a.gstd_client import GSTDClient
 
 
@@ -73,6 +75,59 @@ class TestGSTDClientTaskPayload:
         client = GSTDClient()
         client.node_id = 'node-abc'
         assert client.node_id == 'node-abc'
+
+
+class TestGSTDClientNodeIdentity:
+    def test_identity_is_persistent_and_headers_prove_key_ownership(self, tmp_path):
+        identity_path = tmp_path / 'node-ed25519.key'
+        client = GSTDClient(wallet_address='EQtest', node_identity_path=identity_path)
+
+        first = client._node_auth_headers('EQtest')
+        second = client._node_auth_headers('EQtest')
+
+        assert identity_path.exists()
+        assert first['X-GSTD-Node-Id'] == 'EQtest'
+        timestamp = first['X-GSTD-Node-Ts']
+        message = hashlib.sha256(f"EQtest:{timestamp}".encode('utf-8')).digest()
+        public_key = client._get_node_signing_key().verify_key.encode()
+        VerifyKey(public_key).verify(message, bytes.fromhex(first['X-GSTD-Node-Sig']))
+        second_message = hashlib.sha256(
+            f"EQtest:{second['X-GSTD-Node-Ts']}".encode('utf-8')
+        ).digest()
+        VerifyKey(public_key).verify(second_message, bytes.fromhex(second['X-GSTD-Node-Sig']))
+
+        restarted = GSTDClient(wallet_address='EQtest', node_identity_path=identity_path)
+        assert restarted._get_node_signing_key().verify_key.encode() == public_key
+
+    def test_registration_binds_the_persistent_public_key(self, monkeypatch, tmp_path):
+        identity_path = tmp_path / 'node-ed25519.key'
+        client = GSTDClient(wallet_address='EQtest', node_identity_path=identity_path)
+        captured = {}
+
+        def post(*args, **kwargs):
+            captured.update(kwargs)
+            return StubResponse(200, {'node_id': 'EQtest'})
+
+        monkeypatch.setattr('gstd_a2a.gstd_client.requests.post', post)
+
+        assert client.register_node()['node_id'] == 'EQtest'
+        assert captured['json']['node_id'] == 'EQtest'
+        assert captured['json']['node_pubkey'] == client._get_node_signing_key().verify_key.encode().hex()
+
+    def test_registration_rejects_a_different_server_identity(self, monkeypatch, tmp_path):
+        client = GSTDClient(wallet_address='EQtest', node_identity_path=tmp_path / 'node-ed25519.key')
+        calls = []
+
+        def post(*args, **kwargs):
+            calls.append(1)
+            return StubResponse(200, {'node_id': 'different-node'})
+
+        monkeypatch.setattr('gstd_a2a.gstd_client.requests.post', post)
+
+        with pytest.raises(RuntimeError, match='different from the signed identity'):
+            client.register_node()
+        assert len(calls) == 1
+        assert client.node_id == 'EQtest'
 
 
 class TestGSTDClientResponses:
