@@ -46,7 +46,7 @@ The pending-task response may be empty. Submitting work does not guarantee an on
 | `/api/v1/tasks/worker/submit` | POST | Submit a result |
 | `/api/v1/stats/public` | GET | Read public network counters |
 
-The MCP endpoint is separate: `https://app.gstdtoken.com/mcp`.
+There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.com/mcp` returns 404); use the platform API above.
 
 ## Security
 

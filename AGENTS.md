@@ -39,7 +39,7 @@ An empty list means there is no task available. Submitting a task result is not 
 | `/api/v1/tasks/worker/submit` | POST | Submit a result for an assigned task |
 | `/api/v1/stats/public` | GET | Public network counters |
 
-The MCP service uses a separate endpoint, `https://app.gstdtoken.com/mcp`; it is not the platform API origin.
+There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.com/mcp` returns 404); use the platform API above.
 
 ## Safety and limitations
 

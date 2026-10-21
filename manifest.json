@@ -1,6 +1,6 @@
 {
   "name": "gstd-a2a",
-  "description": "Experimental MCP server and client integrations for the GSTD platform API. Task availability and rewards are not guaranteed.",
+  "description": "Experimental local (stdio) MCP server and client integrations for the GSTD platform API. Task availability and rewards are not guaranteed.",
   "version": "2.1.0",
   "entrypoint": "python3 tools/main.py",
   "runtime": "python3",
