@@ -1,6 +1,6 @@
 {
   "name": "gstd-a2a-clients",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "Experimental client examples and integrations for the GSTD platform",
   "main": "connect.js",

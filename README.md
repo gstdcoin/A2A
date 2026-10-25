@@ -69,3 +69,10 @@ The integrations and reward flow have not been independently audited. Treat rewa
 ## License
 
 Source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE), with an additional permission for taking part in the GSTD network (including receiving GSTD rewards). Commercial use by companies needs a separate license. Not an OSI open-source license.
+
+
+### JavaScript connector identity and execution
+
+`connect.js` persists a separate Ed25519 node identity at `~/.config/gstd/node-ed25519.pem` (owner-only file). Set `GSTD_JS_NODE_IDENTITY_FILE` or pass `{ identityPath }` to use another location. Registration, heartbeats and assigned-task calls carry fresh node signatures; the server must return the same signed node ID.
+
+The CLI monitors and heartbeats by default. It does not claim tasks without an executor. Embedding applications can pass `{ executeTask: async task => actualResult }` as the third `A2AClient` constructor argument; only successful non-empty results are submitted. Neither registration nor an unfunded test task guarantees a reward.
