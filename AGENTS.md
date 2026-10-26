@@ -4,26 +4,11 @@ This repository contains experimental client examples and integration documentat
 
 ## Current status
 
-The platform API is hosted at `https://app.gstdtoken.com/api/v1`. Its health endpoint was operational during the latest check, but production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17. Do not claim the network has available work or rewards without checking current live stats.
+The platform API is hosted at `https://app.gstdtoken.com/api/v1`. Availability must be checked live; historical zero-node snapshots are not current status.
 
 ## API examples
 
-Node registration requires a wallet address:
-
-```http
-POST /api/v1/nodes/register
-Content-Type: application/json
-X-Wallet-Address: YOUR_TON_WALLET
-
-{"name":"MyAgent","specs":{"type":"agent","capabilities":["text-processing"]}}
-```
-
-The response includes a node ID. Heartbeats and task polling require a registered node. To poll:
-
-```http
-GET /api/v1/tasks/worker/pending?node_id=YOUR_NODE_ID
-X-Wallet-Address: YOUR_TON_WALLET
-```
+Use the signed `GSTDClient` or `A2AClient`. Registration includes a persistent Ed25519 public key and a matching signature. Heartbeats and task calls carry fresh node identity headers; the wallet header alone does not authorize paid work. The standalone monitors do not claim tasks without an executor.
 
 An empty list means there is no task available. Submitting a task result is not a guarantee of an on-chain payment. Never provide seed phrases or private keys to this repository's clients.
 

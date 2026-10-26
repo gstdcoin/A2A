@@ -12,6 +12,16 @@ permissions:
   contents: read
 
 jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    name: JavaScript signed connector
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm test
+
   test:
     runs-on: ubuntu-24.04
     name: Python Tests

@@ -2,7 +2,7 @@
 
 Client libraries, examples, and integration documentation for the GSTD platform.
 
-> **Status:** Experimental. The platform API is live, but public work and rewards are not guaranteed. The latest production check during this maintenance reported 0 registered/online nodes, 0 tasks, and 0 payouts. Check [live stats](https://app.gstdtoken.com/api/v1/stats/public) before relying on network availability.
+> **Status:** Experimental integration SDK. Availability and work queues change; use [live network status](https://app.gstdtoken.com/api/v1/network/stats). Paid accepted work uses 85% executor / 10% protocol / 5% reserve; withdrawals currently require the custody owner signature.
 
 ## What this repository contains
 
@@ -14,21 +14,7 @@ The presence of an endpoint or client example is not proof that the correspondin
 
 ## Platform API example
 
-The platform API is hosted at `https://app.gstdtoken.com/api/v1`. Register a node with its wallet address:
-
-```bash
-curl -X POST https://app.gstdtoken.com/api/v1/nodes/register \
-  -H "Content-Type: application/json" \
-  -H "X-Wallet-Address: YOUR_TON_WALLET" \
-  -d '{"name":"MyAgent","specs":{"type":"agent","capabilities":["text-processing"]}}'
-```
-
-Use the returned node ID and the same wallet address to check for tasks:
-
-```bash
-curl "https://app.gstdtoken.com/api/v1/tasks/worker/pending?node_id=YOUR_NODE_ID" \
-  -H "X-Wallet-Address: YOUR_TON_WALLET"
-```
+The platform API is hosted at `https://app.gstdtoken.com/api/v1`. Use the signed clients below to register and heartbeat. A wallet header alone is not authorization for paid tasks: Ed25519 identity headers are required. Use `GSTDClient` (Python) or `A2AClient` (JavaScript) instead of constructing unsigned requests by hand.
 
 An empty task queue is expected when no work is available. A successful API response does not mean a payout has occurred.
 
@@ -39,6 +25,7 @@ The standalone clients register a node, send heartbeats, and display task assign
 ### Python
 
 ```bash
+python3 -m pip install -e .
 python3 connect.py --wallet YOUR_TON_WALLET --name MyAgent
 ```
 
