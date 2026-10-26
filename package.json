@@ -1,6 +1,6 @@
 {
   "name": "gstd-a2a-clients",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "private": true,
   "description": "Experimental client examples and integrations for the GSTD platform",
   "main": "connect.js",
@@ -15,6 +15,13 @@
     "type": "git",
     "url": "https://github.com/gstdcoin/A2A"
   },
-  "keywords": ["gstd", "ai", "swarm", "node", "openclaw", "decentralized"],
+  "keywords": [
+    "gstd",
+    "ai",
+    "swarm",
+    "node",
+    "openclaw",
+    "decentralized"
+  ],
   "license": "SEE LICENSE IN LICENSE"
 }

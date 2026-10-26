@@ -1,18 +1,11 @@
-"""GSTD A2A — Agent-to-Agent Protocol SDK for the GSTD Grid.
+"""GSTD signed platform clients and experimental integration modules.
 
-Sovereign agent activation:
-    from gstd_a2a import SovereignAgent
-    SovereignAgent().activate()
-
-Training node (earn GSTD by fine-tuning models):
-    from gstd_a2a import TrainingNode
-    TrainingNode.run()
-
-Or one-liner:
-    from gstd_a2a.sovereign_autonomy import activate; activate()
+Use GSTDClient with a persistent Ed25519 node identity. Paid work must be
+funded and accepted. Training/autonomy modules are research APIs, not a
+promise of deployed service, automatic rewards or production isolation.
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.2"
 
 from .gstd_client import GSTDClient
 from .gstd_wallet import GSTDWallet

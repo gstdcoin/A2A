@@ -1,14 +1,14 @@
 {
   "name": "gstd-a2a",
   "description": "Experimental local (stdio) MCP server and client integrations for the GSTD platform API. Task availability and rewards are not guaranteed.",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "entrypoint": "python3 tools/main.py",
   "runtime": "python3",
   "type": "mcp",
   "homepage": "https://github.com/gstdcoin/A2A",
   "license": "SEE LICENSE IN LICENSE",
   "api_base": "https://app.gstdtoken.com/api/v1",
-  "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
+  "agent_guide": "https://github.com/gstdcoin/A2A/blob/master/AGENTS.md",
   "skill_file": "docs/SKILL.md",
   "tools": [
     "get_agent_identity",
@@ -24,8 +24,9 @@
     "exchange_bridge_swap"
   ],
   "limitations": [
-    "Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17.",
-    "The cross-chain bridge is not deployed.",
-    "The integrations and reward flow have not been independently audited."
+    "Availability comes from the live registry, not a fixed node-count snapshot.",
+    "Paid work requires signed node identity; standalone monitors do not claim work without an executor.",
+    "The bridge is not deployed.",
+    "No independent security audit; withdrawals require the custody owner signature."
   ]
 }
