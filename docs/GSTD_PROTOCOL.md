@@ -1,73 +1,7 @@
-# GSTD-Transfer Protocol (GTP) v1.0
+# GSTD transport proposal
 
-## Abstract
-The GSTD-Transfer Protocol (GTP) is a lightweight, decentralized standard for the exchange of computational tasks, partial results, and model weights between autonomous agents within the Global Sovereign Task Distribution network. It is designed to be transport-agnostic (working over HTTP/3, WebSockets, or Libp2p) and verifiable via the GSTD Settlement Layer.
+The earlier GSTD-Transfer Protocol described a proposed transport and smart-contract settlement design. It is **not the current wire format** for production nodes or the platform payment ledger.
 
-## 1. Core Principles
-1.  **Atomicity**: Every knowledge packet is self-contained.
-2.  **Verifiability**: Results must include a Proof-of-Task (PoT) hash.
-3.  **Economy**: Every transfer carries a micro-transaction metadata tag (GSTD-Tag).
+Use the [current client integration boundaries](PROTOCOL.md), [economics](ECONOMICS.md), signed client examples in the [README](../README.md), and the [compute node](https://github.com/gstdcoin/gstdbot). No shared model-weight exchange, federated training, proof-of-task settlement or automatic on-chain escrow is established by this document.
 
-## 2. Knowledge Packet Structure
-A GTP packet consists of a Header and a Payload, serialized in Protocol Buffers or JSON-LD.
-
-### 2.1 Header
-```json
-{
-  "trace_id": "uuid-v4",
-  "sender_id": "node_public_key",
-  "recipient_id": "broadcast_or_specific_node",
-  "intent": "INFERENCE_REQUEST | KNOWLEDGE_SHARE | WEIGHT_UPDATE",
-  "timestamp": 1709251200,
-  "ttl": 30
-}
-```
-
-### 2.2 Payload Types
-
-#### Type A: Inference Request (Task)
-Used when a Light Node delegates complexity to a Heavy Node.
-```json
-{
-  "type": "INFERENCE_REQUEST",
-  "model": "llama-3-70b-quantized",
-  "input_vector": [...],
-  "constraints": {
-    "max_latency_ms": 500,
-    "min_confidence": 0.95
-  },
-  "bid_gstd": 0.0005
-}
-```
-
-#### Type B: Knowledge Share *(proposed — not yet implemented)*
-No shared knowledge store exists on the network today. This payload type describes a
-possible future mechanism for a node to broadcast a discovered pattern or an optimized
-prompt chain; no current endpoint implements it.
-```json
-{
-  "type": "KNOWLEDGE_SHARE",
-  "domain": "coding_optimization",
-  "pattern_hash": "sha256_hash",
-  "optimization_weights": "base64_encoded_lora_adapter",
-  "utility_score": 0.89
-}
-```
-
-## 3. Settlement Flow
-1.  **Handshake**: Sender proposes Task + Bid.
-2.  **Lock**: Recipient signs acceptance; Smart Contract locks GSTD in Escrow.
-3.  **Execute**: Recipient computes result.
-4.  **Transfer**: Recipient sends Result + PoT (Proof of Task).
-5.  **Unlock**: Sender verifies PoT; Contract releases GSTD.
-
-## 4. Hive Learning (Collective Intelligence) *(proposed — not yet implemented)*
-No federated-learning or weight-aggregation mechanism exists on the network today. This
-section describes a possible future design: nodes that successfully resolve
-high-complexity tasks with low latency would be elected to push `WEIGHT_UPDATE` packets
-to a shared model.
-- **Aggregation**: Heavy Nodes would aggregate these updates into daily "GSTD Global Weights".
-- **Distribution**: Updates would be broadcast to Light Nodes via a future update cycle.
-
----
-*Drafted by the Office of the Chief System Architect, GSTD Network.*
+The complete [historical proposal](archive/GSTD_PROTOCOL_2026-10-28.md) remains available for research, with its deployment limits clearly marked.

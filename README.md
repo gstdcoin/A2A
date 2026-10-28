@@ -39,9 +39,11 @@ Set `GSTD_API_URL` to override the API origin when testing against another envir
 
 ### MCP
 
-The MCP service is not currently deployed (`https://app.gstdtoken.com/mcp` returns 404). Use the platform API at `https://app.gstdtoken.com/api/v1`.
+`tools/main.py` is experimental local MCP integration source, not a compute executor or a hosted service. Review local wallet-capable tools before use. The platform MCP service is not currently deployed (`https://app.gstdtoken.com/mcp` returns 404). Use the platform API at `https://app.gstdtoken.com/api/v1`.
 
 See [MCP skill documentation](docs/SKILL.md) and [agent instructions](AGENTS.md) for integration details.
+
+The old [`swarm/` prototype](swarm/README.md) is retired: it produced placeholder results and did not implement signed worker authentication. Use the canonical node for actual compute. Current [protocol](docs/PROTOCOL.md) and [economics](docs/ECONOMICS.md) replace older archived designs.
 
 ## Security and token economics
 

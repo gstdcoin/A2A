@@ -1,16 +1,8 @@
 #!/usr/bin/env python3
-"""
-GSTD Swarm Client — Linux-клиент для участника роя
-Подключается к сети GSTD, регистрируется как нода, получает и выполняет задачи.
-Поддерживает Fleet Commands (standby/resume) через WebSocket.
+"""Retired legacy worker. CLI and execution fail closed.
 
-Использование:
-    export GSTD_API_KEY="your_key"
-    export GSTD_WALLET="EQ..."  # или извлекается из API key
-    python swarm_client.py
-
-Или:
-    python swarm_client.py --api-key KEY --wallet EQ...
+Unsigned registration and placeholder outputs are retained below only as historical
+source; follow swarm/README.md for the supported node and signed client paths.
 """
 
 import argparse
@@ -23,6 +15,14 @@ import sys
 import threading
 import time
 import uuid
+
+RETIRED_MESSAGE = (
+    "Legacy swarm client is retired: unsigned placeholder execution is disabled. "
+    "Use https://gstdtoken.com/nodes for real compute, or the signed clients in the repository README."
+)
+if __name__ == "__main__":
+    print(RETIRED_MESSAGE, file=sys.stderr)
+    raise SystemExit(2)
 
 try:
     import requests
@@ -52,6 +52,7 @@ class SwarmClient:
         device_id=None,
         use_websocket=True,
     ):
+        raise RuntimeError(RETIRED_MESSAGE)
         self.api_url = (api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")).rstrip("/")
         self.api_key = api_key or os.getenv("GSTD_API_KEY")
         self.wallet = wallet or os.getenv("GSTD_WALLET")
@@ -181,6 +182,7 @@ class SwarmClient:
         return False
 
     def _execute_task(self, task):
+        raise RuntimeError(RETIRED_MESSAGE)
         task_id = task.get("task_id", "")
         if not task_id:
             log.warning("Task missing task_id, skipping")
@@ -276,6 +278,7 @@ class SwarmClient:
                 time.sleep(5)
 
     def run(self):
+        raise RuntimeError(RETIRED_MESSAGE)
         if not self.health_check():
             log.error("Platform unreachable. Check GSTD_API_URL and network.")
             return 1
