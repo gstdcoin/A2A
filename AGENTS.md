@@ -20,9 +20,13 @@ An empty list means there is no task available. Submitting a task result is not 
 | `/api/v1/nodes/register` | POST | Register a node |
 | `/api/v1/nodes/heartbeat` | POST | Refresh node status |
 | `/api/v1/nodes/list` | GET | Public node list |
-| `/api/v1/tasks/worker/pending?node_id=...` | GET | Poll for an assigned task |
-| `/api/v1/tasks/worker/submit` | POST | Submit a result for an assigned task |
+| `/api/v1/tasks/poll` | POST | Canonical compute-node task polling; signed node identity and explicit capabilities/resources |
+| `/api/v1/tasks/complete` | POST | Canonical signed, idempotent completion and funded acceptance |
+| `/api/v1/tasks/worker/pending?node_id=...` | GET | Signed SDK compatibility polling used by the current clients |
+| `/api/v1/tasks/worker/submit` | POST | SDK compatibility alias for the canonical completion handler |
 | `/api/v1/stats/public` | GET | Public network counters |
+
+Current SDK clients still use the compatibility routes above. They are implemented routes, not unsigned alternatives: node signatures and wallet binding remain required. Do not claim that changing a URL migrates the request/response contract or proves a reward.
 
 There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.com/mcp` returns 404); use the platform API above.
 
