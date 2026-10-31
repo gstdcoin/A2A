@@ -57,7 +57,7 @@ The integrations and reward flow have not been independently audited. Treat rewa
 
 ## License
 
-Source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE), with an additional permission for taking part in the GSTD network (including receiving GSTD rewards). Commercial use by companies needs a separate license. Not an OSI open-source license.
+First-party SDK code and examples are offered under [Apache License 2.0](LICENSE). Individuals and companies may build commercial applications without a GSTD obligation merely from using this SDK. Paid network services and separately licensed core software retain their own terms. Third-party rights and earlier release licenses remain unchanged; see [licensing scope and provenance limits](LICENSING.md).
 
 
 ### JavaScript connector identity and execution

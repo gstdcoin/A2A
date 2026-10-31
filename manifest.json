@@ -6,7 +6,7 @@
   "runtime": "python3",
   "type": "mcp",
   "homepage": "https://github.com/gstdcoin/A2A",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "Apache-2.0",
   "api_base": "https://app.gstdtoken.com/api/v1",
   "agent_guide": "https://github.com/gstdcoin/A2A/blob/master/AGENTS.md",
   "skill_file": "docs/SKILL.md",
