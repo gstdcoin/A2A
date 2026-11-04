@@ -28,6 +28,8 @@ An empty list means there is no task available. Submitting a task result is not 
 
 Current SDK clients still use the compatibility routes above. They are implemented routes, not unsigned alternatives: node signatures and wallet binding remain required. Do not claim that changing a URL migrates the request/response contract or proves a reward.
 
+The isolated [local MCP connector](gstd-agent-connector/README.md) defaults to discovery only and can optionally send consented free inference with zero spending authority.
+
 There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.com/mcp` returns 404); use the platform API above.
 
 ## Safety and limitations

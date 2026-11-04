@@ -1,28 +1,29 @@
 {
-  "name": "GSTD A2A client integrations",
-  "description": "Experimental client tools and documentation for the GSTD platform API. Task availability and rewards are not guaranteed.",
-  "url": "https://github.com/gstdcoin/A2A",
-  "version": "2.1.0",
-  "status": "experimental",
-  "api": {
-    "base_url": "https://app.gstdtoken.com/api/v1",
-    "public_status": "/stats/public",
-    "health": "/health",
-    "node_list": "/nodes/list"
-  },
-  "authentication": {
-    "write_header": "X-Wallet-Address",
-    "note": "Never provide seed phrases or private keys."
-  },
-  "limitations": [
-    "Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17.",
-    "Task submission does not guarantee an on-chain payment.",
-    "The integrations and reward flow have not been independently audited.",
-    "The cross-chain bridge is not deployed."
+  "name": "gstd-agent-connector",
+  "version": "0.1.0",
+  "status": "free-only owner-controlled connector",
+  "type": "mcp",
+  "runtime": "node >=18",
+  "entrypoint": "node gstd-agent-connector/dist/server.mjs",
+  "build": "cd gstd-agent-connector && npm ci && npm run build",
+  "transport": "stdio",
+  "hosted_endpoint": null,
+  "source": "https://github.com/gstdcoin/A2A/tree/master/gstd-agent-connector",
+  "api_base": "https://app.gstdtoken.com/api/v1",
+  "openapi": "https://app.gstdtoken.com/agent-openapi.json",
+  "tools": [
+    "gstd_status",
+    "gstd_models"
   ],
-  "discovery": {
-    "github": "https://github.com/gstdcoin/A2A",
-    "agent_guide": "https://github.com/gstdcoin/A2A/blob/main/AGENTS.md",
-    "skill_file": "https://raw.githubusercontent.com/gstdcoin/A2A/main/.agents/skills/gstd-network/SKILL.md"
-  }
+  "optional_tools": [
+    "gstd_free_inference"
+  ],
+  "permissions": {
+    "wallet_signing": false,
+    "spending_gstd": false,
+    "node_administration": false,
+    "inference_default": false
+  },
+  "provider_authentication": "persistent signed Ed25519 node identity; not wallet-header-only",
+  "documentation": "https://github.com/gstdcoin/A2A/blob/master/gstd-agent-connector/README.md"
 }

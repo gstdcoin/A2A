@@ -1,0 +1,22 @@
+{
+  "name": "gstd-agent-connector",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Owner-controlled, free-only GSTD discovery and MCP connector",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "zod": "4.6.7"
+  },
+  "scripts": {
+    "test": "node --test checks/*.check.mjs",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

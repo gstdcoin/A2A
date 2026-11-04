@@ -1,32 +1,29 @@
 {
-  "name": "gstd-a2a",
-  "description": "Experimental local (stdio) MCP server and client integrations for the GSTD platform API. Task availability and rewards are not guaranteed.",
-  "version": "2.1.2",
-  "entrypoint": "python3 tools/main.py",
-  "runtime": "python3",
+  "name": "gstd-agent-connector",
+  "version": "0.1.0",
+  "status": "free-only owner-controlled connector",
   "type": "mcp",
-  "homepage": "https://github.com/gstdcoin/A2A",
-  "license": "Apache-2.0",
+  "runtime": "node >=18",
+  "entrypoint": "node gstd-agent-connector/dist/server.mjs",
+  "build": "cd gstd-agent-connector && npm ci && npm run build",
+  "transport": "stdio",
+  "hosted_endpoint": null,
+  "source": "https://github.com/gstdcoin/A2A/tree/master/gstd-agent-connector",
   "api_base": "https://app.gstdtoken.com/api/v1",
-  "agent_guide": "https://github.com/gstdcoin/A2A/blob/master/AGENTS.md",
-  "skill_file": "docs/SKILL.md",
+  "openapi": "https://app.gstdtoken.com/agent-openapi.json",
   "tools": [
-    "get_agent_identity",
-    "get_status",
-    "pulse",
-    "find_work",
-    "register_agent",
-    "submit_task_result",
-    "sign_transfer",
-    "send_gstd",
-    "broadcast_sovereignty_status",
-    "discuss_autonomy",
-    "exchange_bridge_swap"
+    "gstd_status",
+    "gstd_models"
   ],
-  "limitations": [
-    "Availability comes from the live registry, not a fixed node-count snapshot.",
-    "Paid work requires signed node identity; standalone monitors do not claim work without an executor.",
-    "The bridge is not deployed.",
-    "No independent security audit; withdrawals require the custody owner signature."
-  ]
+  "optional_tools": [
+    "gstd_free_inference"
+  ],
+  "permissions": {
+    "wallet_signing": false,
+    "spending_gstd": false,
+    "node_administration": false,
+    "inference_default": false
+  },
+  "provider_authentication": "persistent signed Ed25519 node identity; not wallet-header-only",
+  "documentation": "https://github.com/gstdcoin/A2A/blob/master/gstd-agent-connector/README.md"
 }

@@ -22,6 +22,28 @@ jobs:
           node-version: '20'
       - run: npm test
 
+  agent-connector:
+    runs-on: ubuntu-latest
+    name: Free-only MCP connector
+    strategy:
+      matrix:
+        node-version: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: gstd-agent-connector/package-lock.json
+      - run: npm ci
+        working-directory: gstd-agent-connector
+      - run: npm audit --audit-level=low
+        working-directory: gstd-agent-connector
+      - run: npm run build
+        working-directory: gstd-agent-connector
+      - run: npm test
+        working-directory: gstd-agent-connector
+
   test:
     runs-on: ubuntu-24.04
     name: Python Tests

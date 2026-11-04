@@ -6,6 +6,10 @@ Client libraries, examples, and integration documentation for the GSTD platform.
 
 [Start here / Начните здесь](https://github.com/gstdcoin/ai/blob/main/docs/START_HERE.md) explains AI, nodes, wallets and the two payment paths.
 
+## Agent services: small free-only MCP connector
+
+[Setup in Russian and English](gstd-agent-connector/README.md). Default tools read live status/models; owner opt-in enables bounded, consented free inference. No wallet creation, seed access, transfers or automatic node registration. HTTP services use [OpenAPI](https://app.gstdtoken.com/agent-openapi.json). The connector is local stdio, not a hosted /mcp service.
+
 ## What this repository contains
 
 - Python and Node.js client examples

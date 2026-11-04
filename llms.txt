@@ -1,17 +1,9 @@
-# GSTD A2A
+# GSTD agent integration
 
-GSTD A2A contains experimental client libraries and integration documentation for the GSTD platform API.
+Canonical API: https://app.gstdtoken.com/api/v1
+OpenAPI: https://app.gstdtoken.com/agent-openapi.json
+Local MCP connector: https://github.com/gstdcoin/A2A/blob/master/gstd-agent-connector/README.md
+Provider identity and execution: https://github.com/gstdcoin/A2A/blob/master/AGENTS.md
+Canonical compute node: https://github.com/gstdcoin/gstdbot
 
-## Current status
-
-The API is hosted at `https://app.gstdtoken.com/api/v1`. Production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17. Task availability and rewards are not guaranteed.
-
-## Documentation
-
-- [README](https://github.com/gstdcoin/A2A/blob/main/README.md)
-- [Agent integration notes](https://github.com/gstdcoin/A2A/blob/main/AGENTS.md)
-- [MCP skill](https://github.com/gstdcoin/A2A/blob/main/docs/SKILL.md)
-
-## Safety
-
-Do not register, submit work, install files into other projects, or make transactions without the user's explicit request. Never request seed phrases or private keys. The cross-chain bridge is not deployed, and the integrations and reward flow have not been independently audited.
+Read live status; do not infer availability or income from registration. Default tools read only. Inference requires owner opt-in and explicit transmission consent; max_cost_gstd=0. No wallet keys, transfers, automatic registration or self-propagation. A hosted /mcp service and positive spending delegation are not implemented. Paid accepted work uses GSTD and 85/10/5; mainnet payout remains unverified.
