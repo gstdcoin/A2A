@@ -1,5 +1,7 @@
 # GSTD A2A
 
+**Русский:** SDK и коннектор для разработчиков; для обычной вычислительной ноды устанавливайте gstdbot. [Карта проекта и инструкции](https://github.com/gstdcoin/ai/blob/main/docs/INDEX.md).
+
 Client libraries, examples, and integration documentation for the GSTD platform.
 
 > **Status:** Experimental integration SDK. Availability and work queues change; use [live network status](https://app.gstdtoken.com/api/v1/network/stats). Paid accepted work uses 85% executor / 10% protocol / 5% reserve; platform-ledger withdrawals require the custody owner signature. Separate [mainnet escrow beta](https://app.gstdtoken.com/escrow-mainnet) jobs use beneficiary-signed claims; the SDK examples do not implement that financial journey.
