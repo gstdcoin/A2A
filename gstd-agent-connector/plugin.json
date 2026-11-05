@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "gstd-agent-connector",
-  "version": "0.1.0",
-  "description": "Read GSTD network status and models; optionally use explicitly consented free-only inference.",
+  "version": "0.2.0",
+  "description": "Owner-controlled GSTD discovery, free inference and bounded signed platform-balance allowances",
   "homepage": "https://app.gstdtoken.com",
   "repository": "https://github.com/gstdcoin/A2A",
   "license": "Apache-2.0"

@@ -69,7 +69,7 @@ Content-Type: application/json
 
 Для вычислительного исполнителя используйте [каноническую ноду](https://github.com/gstdcoin/gstdbot) на собственном оборудовании, постоянную Ed25519-идентичность и публичный адрес выплат. Бесплатный запрос через коннектор не создаёт награду. Оплаченная принятая работа делится 85/10/5.
 
-Платные запросы остаются отдельными: [баланс платформы](https://app.gstdtoken.com/payments) или [mainnet escrow · бета](https://app.gstdtoken.com/escrow-mainnet). Ограниченное делегирование **положительного** бюджета и автономные blockchain-подписи здесь не реализованы. Первый реальный mainnet-цикл всё ещё требует средств и подписей владельцев.
+Платные запросы остаются отдельными: [баланс платформы](https://app.gstdtoken.com/payments) или [mainnet escrow · бета](https://app.gstdtoken.com/escrow-mainnet). Ограниченное делегирование обеспеченного баланса описано ниже. Автономные blockchain-подписи не предоставляются. Первый реальный mainnet-цикл всё ещё требует средств и подписей владельцев.
 
 `/mcp` на платформе не является развёрнутым MCP-сервисом. Этот коннектор использует локальный stdio; web/mobile-хосту без локальных процессов нужен HTTP/OpenAPI-клиент либо отдельно размещённый проверенный MCP-сервер. Старые Python MCP/wallet-инструменты в репозитории — отдельный экспериментальный код; новый коннектор их не импортирует.
 
@@ -81,6 +81,20 @@ To enable `gstd_free_inference`, the owner sets `GSTD_AGENT_ALLOW_INFERENCE=1`, 
 
 HTTP services can use the public OpenAPI and POST /api/v1/agents/infer with the JSON above. Never attach credentials: the route rejects wallet, session and enterprise-key headers. Existing inference quotas still apply.
 
-Canonical node software executes funded jobs; installing or running this consumer connector does not earn tokens. Positive spending delegation, transfers and blockchain signing are excluded. Paid ledger and per-job escrow workflows remain separate; a real mainnet payout is still unverified.
+Canonical node software executes funded jobs; installing or running this consumer connector does not earn tokens. Optional bounded platform-balance allowances are described below. Transfers and blockchain signing are excluded. Paid ledger and per-job escrow workflows remain separate; a real mainnet payout is still unverified.
 
 The portable plugin manifest and `mcp.json` describe a **local** server. The self-contained build requires Node.js and includes third-party notices. No public plugin-directory submission, account installation or hosted MCP endpoint is claimed.
+
+## Платный доступ без повторных подписей / Bounded paid access
+
+1. Откройте https://app.gstdtoken.com/ru/agent-access (English: /agent-access), подключите TON mainnet кошелёк и выполните вход.
+2. Выберите точную модель и конкретных исполнителей, общий бюджет (до 1000 GSTD), максимум за запрос и срок (до 7 дней). Кошелёк подписывает текст разрешения; это не перевод TON.
+3. Разрешение принимает непустые ответы указанной модели автоматически. Это доверие выбранному оператору, а не криптографическое доказательство качества или фактически запущенных весов модели. Не отправляйте секреты.
+4. Скачайте приватный gstd-agent-grant.json. Не присылайте его агенту, не коммитьте, не публикуйте и не кладите в общую папку. Настройте путь в MCP-сервере: GSTD_AGENT_GRANT_FILE=/absolute/private/path/gstd-agent-grant.json. В конфигурации хранится только путь, не токен.
+5. Доступны gstd_spending_status, gstd_paid_inference, gstd_paid_receipt. Для платного вызова нужны request_id (8–100 букв/цифр/_/-), точная модель, allow_network:true, строковый предел max_cost_gstd, например "0.005". Сохраните request_id до отправки. После таймаута проверяйте receipt; не отправляйте новый ID автоматически.
+6. Локальный максимум из файла дополнительно ограничивает запрос; сервер атомарно ограничивает общий бюджет, попытки, модели, исполнителей и срок. Перезапуск Codex лимит не сбрасывает. Возврат возвращает денежный лимит, но не попытку.
+7. На странице можно отозвать разрешение. Новые резервирования блокируются; уже зарезервированное задание может завершиться. Текст ответа хранится приватно 10 минут; платёжная квитанция остаётся без повторного списания.
+
+Лимит не пополняет баланс. Требуется обеспеченный депозит GSTD в существующий баланс платформы. Промокредиты и невыверенные старые балансы не расходуются. Оплата распределяется 85/10/5. При сбое, пустом ответе или несовпадении модели резерв возвращается. Вывод, подписи TON и per-job escrow остаются отдельными операциями владельцев. Этот механизм не делает ledger автономным от платформы; это контролируемое делегирование расходов внутри неё. Реальный mainnet денежный цикл всё ещё требует токенов и отдельной проверки.
+
+English: Create a permission at /agent-access with a verified mainnet wallet. Sign the exact policy once, download the private credential, and set only its absolute file path in GSTD_AGENT_GRANT_FILE. The file contains token and a local string max_cost_gstd cap. Do not paste it into a conversation. Paid tools enforce persistent server budgets, exact models, executor payout snapshots, request limits and expiry. Record request_id before sending; uncertain outcomes require receipt lookup, not a new request. Revocation blocks new reservations, while existing reservations may finish. This spends backed platform credits only: no seed access, TON signing, withdrawals, or on-chain allowance contract. Responses are automatically accepted by the signed policy, not cryptographically verified for quality. Mainnet settlement remains separately unverified.

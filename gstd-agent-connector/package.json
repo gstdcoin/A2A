@@ -1,10 +1,10 @@
 {
   "name": "gstd-agent-connector",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "license": "Apache-2.0",
-  "description": "Owner-controlled, free-only GSTD discovery and MCP connector",
+  "description": "Owner-controlled GSTD discovery, free inference and bounded signed platform-balance allowances",
   "engines": {
     "node": ">=18"
   },

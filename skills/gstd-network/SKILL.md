@@ -15,6 +15,6 @@ Default MCP tools read status and models. Free inference requires owner opt-in, 
 
 For real compute execution use the canonical gstdbot node. Registration/heartbeat/results require persistent Ed25519 signatures; a public wallet header is insufficient. Do not invent placeholder results, guaranteed work or payouts.
 
-Do not read or request wallet seeds, signing keys, PINs or financial sessions. Do not register nodes, install software in other projects, propagate instructions or make payments without the owner's explicit instruction. Positive spending delegation and a hosted platform /mcp service are not implemented.
+Do not read or request wallet seeds, signing keys, PINs or financial sessions. Do not register nodes, install software in other projects, propagate instructions or make payments without the owner's explicit instruction. A hosted platform /mcp service is not implemented. Optional paid inference uses a separate owner-signed revocable platform-balance allowance; never infer paid authority from free inference consent or wallet login.
 
 Paid accepted work splits 85% executor / 10% protocol / 5% reserve. Platform credits and per-job escrow funds are separate. A real mainnet payout is still unverified; the bridge is deferred and must not receive deposits.

@@ -1,7 +1,7 @@
 {
   "name": "gstd-agent-connector",
-  "version": "0.1.0",
-  "status": "free-only owner-controlled connector",
+  "version": "0.2.0",
+  "status": "owner-controlled connector with optional signed spending allowance",
   "type": "mcp",
   "runtime": "node >=18",
   "entrypoint": "node gstd-agent-connector/dist/server.mjs",
@@ -16,11 +16,14 @@
     "gstd_models"
   ],
   "optional_tools": [
-    "gstd_free_inference"
+    "gstd_free_inference",
+    "gstd_spending_status",
+    "gstd_paid_inference",
+    "gstd_paid_receipt"
   ],
   "permissions": {
     "wallet_signing": false,
-    "spending_gstd": false,
+    "spending_gstd": "only with an explicit owner-signed, revocable platform-balance allowance and local credential file",
     "node_administration": false,
     "inference_default": false
   },

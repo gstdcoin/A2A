@@ -39,3 +39,5 @@ There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.com/mcp` r
 - Do not claim token earnings, task availability, model access, or bridge functionality that live services have not verified.
 - The integrations and reward flow have not been independently audited.
 - Do not send funds to the cross-chain bridge; it is deferred and not deployed.
+
+Paid connector requests require an explicit owner-signed, expiring model/executor allowance and private local credential file. Money reservations and allowance counters must stay in the same CAS transaction. Never add wallet signing, withdrawals, automatic retries or silent model substitution. Existing free and escrow workflows remain separate.
