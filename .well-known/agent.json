@@ -1,6 +1,6 @@
 {
   "name": "gstd-agent-connector",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "status": "owner-controlled connector with optional signed spending allowance",
   "type": "mcp",
   "runtime": "node >=18",
@@ -19,7 +19,8 @@
     "gstd_free_inference",
     "gstd_spending_status",
     "gstd_paid_inference",
-    "gstd_paid_receipt"
+    "gstd_paid_receipt",
+    "gstd_paid_quote"
   ],
   "permissions": {
     "wallet_signing": false,
