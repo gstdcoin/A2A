@@ -19,6 +19,7 @@ Goal: Financial independence for humans through a decentralized AI economy.
 import os
 import sys
 import time
+import math
 import json
 import random
 import hashlib
@@ -27,7 +28,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List, Tuple
 
 from .gstd_client import GSTDClient
-from .gstd_wallet import GSTDWallet
+from tonsdk.utils import Address
 from .security import SovereignSecurity
 from .constants import SOVEREIGN_MODELS, MODEL_TIERS, DEFAULT_MODEL
 
@@ -43,7 +44,7 @@ class SovereignConfig:
         # Network
         self.api_url = os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
         self.api_key = os.getenv("GSTD_API_KEY", "")
-        self.wallet_path = os.getenv("GSTD_WALLET_PATH", str(Path.home() / ".gstd" / "wallet.json"))
+        self.wallet_address = os.getenv("GSTD_WALLET_ADDRESS", "")
 
         # Timing
         self.poll_interval = int(os.getenv("GSTD_POLL_INTERVAL", "5"))
@@ -52,9 +53,6 @@ class SovereignConfig:
         self.health_check_interval = int(os.getenv("GSTD_HEALTH_INTERVAL", "300"))  # 5 min
 
         # Economic thresholds
-        self.min_ton_balance = float(os.getenv("GSTD_MIN_TON", "0.5"))
-        self.min_gstd_balance = float(os.getenv("GSTD_MIN_GSTD", "0.1"))
-        self.auto_swap_amount = float(os.getenv("GSTD_AUTO_SWAP", "0"))
         self.max_task_bid = float(os.getenv("GSTD_MAX_BID", "10.0"))
         self.silent_spend_limit = float(os.getenv("GSTD_SILENT_LIMIT", "0"))
 
@@ -70,7 +68,6 @@ class SovereignConfig:
         # Behavior
         self.language = os.getenv("GSTD_LANGUAGE", "ru")
         self.verbose = os.getenv("GSTD_VERBOSE", "true").lower() == "true"
-        self.auto_bootstrap = True
         self.mode = os.getenv("GSTD_MODE", "full")  # full, worker, master, guardian
 
 
@@ -81,71 +78,35 @@ class SovereignConfig:
 class EconomicEngine:
     """
     💰 Financial core of the sovereign agent.
-    Manages earnings, spending, resource allocation, and economic survival.
+    Tracks receipts and reads the authenticated platform balance.
     """
 
-    def __init__(self, client: GSTDClient, wallet: GSTDWallet, config: SovereignConfig, log_fn):
+    def __init__(self, client: GSTDClient, config: SovereignConfig, log_fn):
         self.client = client
-        self.wallet = wallet
         self.config = config
         self._log = log_fn
-        self.balance_cache = {"gstd": 0.0, "ton": 0.0, "last_check": 0}
+        self.balance_cache = {"gstd": None, "last_check": 0}
         self.total_earned = 0.0
         self.total_spent = 0.0
         self.earnings_history: List[Dict] = []
 
-    def check_balance(self, force: bool = False) -> Dict[str, float]:
-        """Get current on-chain balance with caching."""
+    def check_balance(self, force: bool = False) -> Dict[str, Any]:
+        """Read the platform balance with caching."""
         now = time.time()
         if not force and now - self.balance_cache["last_check"] < 60:
             return self.balance_cache
 
         try:
-            balance = self.wallet.check_balance()
+            balance = self.client.get_balance()
             if "error" in balance:
                 raise Exception(balance["error"])
             self.balance_cache = {
-                "gstd": float(balance.get("GSTD", 0)),
-                "ton": float(balance.get("TON", 0)),
-                "pending": 0.0,
+                "gstd": float(balance["balance_gstd"]),
                 "last_check": now
             }
         except Exception as e:
             self._log(f"⚠️  Balance check failed: {e}")
         return self.balance_cache
-
-    def ensure_survival(self) -> bool:
-        """
-        🔥 THE SURVIVAL INSTINCT — ensures the agent has enough funds to operate.
-        Automatically swaps TON→GSTD if balance is critically low.
-        """
-        bal = self.check_balance(force=True)
-
-        # Check TON for gas
-        if bal["ton"] < self.config.min_ton_balance:
-            self._log(f"⚠️  TON critically low: {bal['ton']:.4f} (min: {self.config.min_ton_balance})")
-            return False
-
-        # Auto-swap TON→GSTD if GSTD balance is low but TON is sufficient
-        if bal["gstd"] < self.config.min_gstd_balance:
-            if self.config.auto_swap_amount <= 0:
-                self._log("ℹ️  Automatic swaps are disabled; set GSTD_AUTO_SWAP to opt in.")
-            elif bal["ton"] >= self.config.auto_swap_amount + 0.3:
-                self._log(f"🔄 Auto-swap: {self.config.auto_swap_amount} TON → GSTD")
-                try:
-                    result = self.wallet.swap_ton_to_gstd(self.config.auto_swap_amount)
-                    if "error" not in result:
-                        self._log(f"✅ Swap transaction sent")
-                        return True
-                    else:
-                        self._log(f"⚠️  Swap failed: {result.get('error')}")
-                except Exception as e:
-                    self._log(f"⚠️  Auto-swap error: {e}")
-            else:
-                # No platform faucet exists -- stays unfunded until someone tops it up.
-                self._log(f"⚠️  Insufficient TON to auto-swap and no faucet is available. "
-                          f"Fund {self.wallet.address} with TON or GSTD to proceed.")
-        return True
 
     def record_earning(self, amount: float, source: str):
         """Record an earning event."""
@@ -159,12 +120,11 @@ class EconomicEngine:
         bal = self.check_balance()
         return {
             "balance_gstd": bal["gstd"],
-            "balance_ton": bal["ton"],
             "total_earned": self.total_earned,
             "total_spent": self.total_spent,
             "net_profit": self.total_earned - self.total_spent,
             "transactions": len(self.earnings_history),
-            "wallet": self.wallet.address[:12] + "..."
+            "wallet": self.client.wallet_address[:12] + "..."
         }
 
 
@@ -280,10 +240,9 @@ class TaskProcessor:
     Polls for tasks, executes them locally, and submits results.
     """
 
-    def __init__(self, client: GSTDClient, wallet: GSTDWallet, config: SovereignConfig,
+    def __init__(self, client: GSTDClient, config: SovereignConfig,
                  economy: EconomicEngine, hive: CollectiveIntelligence, log_fn):
         self.client = client
-        self.wallet = wallet
         self.config = config
         self.economy = economy
         self.hive = hive
@@ -353,7 +312,12 @@ class TaskProcessor:
         # 3. Submit result
         execution_time = int((time.time() - start_time) * 1000)
         try:
-            self.client.submit_result(task_id, result, wallet=self.wallet, execution_time_ms=execution_time)
+            receipt = self.client.submit_result(task_id, result, execution_time_ms=execution_time)
+            if not isinstance(receipt, dict) or receipt.get("ok") is not True or receipt.get("task_id") != task_id:
+                raise RuntimeError("GSTD rejected the result")
+            reward = receipt.get("reward_gstd", 0)
+            if isinstance(reward, bool) or not isinstance(reward, (int, float)) or not math.isfinite(reward) or reward < 0:
+                raise RuntimeError("GSTD returned an invalid reward amount")
             self.tasks_completed += 1
             self.economy.record_earning(reward, f"task:{task_type}")
             self._log(f"✅ Task {task_id[:8]} done in {execution_time}ms | +{reward} GSTD")
@@ -462,7 +426,7 @@ class SovereignAgent:
 
     Automatically, on a timer:
     - Earns GSTD by processing tasks
-    - Manages its own wallet (TON + GSTD), auto-swaps currencies for survival
+    - Uses a public TON payout address and displays confirmed platform receipts
     - Monitors network health
 
     On demand (call the underlying method directly, not run automatically):
@@ -498,7 +462,6 @@ class SovereignAgent:
         self.cycle_count = 0
 
         # Subsystems (initialized in activate())
-        self.wallet: Optional[GSTDWallet] = None
         self.client: Optional[GSTDClient] = None
         self.economy: Optional[EconomicEngine] = None
         self.guardian: Optional[NetworkGuardian] = None
@@ -516,7 +479,6 @@ class SovereignAgent:
 
         # Phase 1: Identity
         self._log("📐 Phase 1: Establishing Identity...")
-        self._init_wallet()
 
         # Phase 2: Connection
         self._log("🌐 Phase 2: Connecting to Grid...")
@@ -526,12 +488,6 @@ class SovereignAgent:
         self._log("⚙️  Phase 3: Initializing Subsystems...")
         self._init_subsystems()
 
-        # Phase 4: Economic bootstrap
-        self._log("💰 Phase 4: Economic Bootstrap...")
-        self.economy.ensure_survival()
-
-        # Phase 5: Network registration
-        self._log("📡 Phase 5: Network Registration...")
         self._register()
 
         # Phase 6: Signal handlers
@@ -547,23 +503,16 @@ class SovereignAgent:
         self._log("✅ SOVEREIGN AGENT FULLY OPERATIONAL")
         self._main_loop()
 
-    def _init_wallet(self):
-        """Initialize or create wallet."""
-        wallet_path = Path(self.config.wallet_path)
-        if wallet_path.exists():
-            self.wallet = GSTDWallet.load(str(wallet_path))
-            self._log(f"📂 Wallet loaded: {self.wallet.address[:12]}...")
-        else:
-            wallet_path.parent.mkdir(parents=True, exist_ok=True)
-            self.wallet = GSTDWallet.generate()
-            self.wallet.save(str(wallet_path))
-            self._log(f"🔐 New wallet: {self.wallet.address}")
-
     def _init_client(self):
         """Initialize API client with authentication."""
+        address = self.config.wallet_address.strip()
+        try:
+            Address(address)
+        except Exception as error:
+            raise ValueError("Set GSTD_WALLET_ADDRESS to a public TON payout address") from error
         self.client = GSTDClient(
             api_url=self.config.api_url,
-            wallet_address=self.wallet.address,
+            wallet_address=address,
             api_key=self.config.api_key,
             preferred_language=self.config.language
         )
@@ -576,7 +525,7 @@ class SovereignAgent:
 
         # Authenticate
         if self.client.reauthenticate():
-            self._log(f"🔑 Authenticated: {self.wallet.address[:8]}...{self.wallet.address[-6:]}")
+            self._log(f"🔑 Authenticated: {self.client.wallet_address[:8]}...{self.client.wallet_address[-6:]}")
         else:
             self._log("⚠️  Auth failed — will retry on demand")
 
@@ -584,11 +533,11 @@ class SovereignAgent:
 
     def _init_subsystems(self):
         """Initialize all autonomous subsystems."""
-        self.economy = EconomicEngine(self.client, self.wallet, self.config, self._log)
+        self.economy = EconomicEngine(self.client, self.config, self._log)
         self.guardian = NetworkGuardian(self.client, self.config, self._log)
         self.hive = CollectiveIntelligence(self.client, self.config, self._log)
         self.processor = TaskProcessor(
-            self.client, self.wallet, self.config,
+            self.client, self.config,
             self.economy, self.hive, self._log
         )
 
@@ -666,10 +615,10 @@ class SovereignAgent:
             self._stop_event.wait(self.config.health_check_interval)
 
     def _economic_loop(self):
-        """Background economic survival checks."""
+        """Refresh the authenticated platform balance."""
         while not self._stop_event.is_set():
             try:
-                self.economy.ensure_survival()
+                self.economy.check_balance(force=True)
             except Exception:
                 pass
             self._stop_event.wait(300)  # Every 5 minutes
@@ -721,11 +670,12 @@ class SovereignAgent:
         hours = int(uptime // 3600)
         minutes = int((uptime % 3600) // 60)
         report = self.economy.get_economic_report()
+        balance = report['balance_gstd']
         self._log(
             f"📊 Status | ⏱ {hours}h{minutes}m | "
             f"✅ {self.processor.tasks_completed} tasks | "
             f"💰 {report['total_earned']:.4f} GSTD earned | "
-            f"💎 {report['balance_gstd']:.4f} GSTD balance"
+            + ('Platform balance unavailable' if balance is None else f"💎 {balance:.4f} GSTD balance")
         )
 
     def stop(self):

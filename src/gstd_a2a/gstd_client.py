@@ -123,7 +123,7 @@ class GSTDClient:
             "name": device_name,
             "specs": {
                 "type": "agent",
-                "capabilities": capabilities or ["text-generation", "data-processing"],
+                "capabilities": capabilities if capabilities is not None else [],
                 "referrer_id": referrer_id
             }
         }
@@ -204,7 +204,7 @@ class GSTDClient:
         return tasks
 
 
-    def submit_result(self, task_id, result_data, wallet=None, execution_time_ms=0):
+    def submit_result(self, task_id, result_data, wallet=None, execution_time_ms=0, model=None):
         """
         Submits the result of a task with cryptographic proof.
         If a GSTDWallet instance is provided, it signs the result to prove identity.
@@ -226,8 +226,11 @@ class GSTDClient:
             "node_id": self.node_id or self.wallet_address,
             "result": result_data,
             "proof": proof,
-            "execution_time_ms": int(execution_time_ms)
+            "execution_time_ms": int(execution_time_ms),
+            "latency_ms": int(execution_time_ms),
         }
+        if model is not None:
+            payload["model"] = model
 
         # A completed task's result carries a real GSTD reward -- a timeout here must not
         # silently drop it (the work is already done), so retry before giving up.
@@ -256,8 +259,6 @@ class GSTDClient:
             "wallet": self.wallet_address,
             "status": status,
             "timestamp": time.time(),
-            "battery": 100,
-            "signal": 100,
         }
         try:
             resp = requests.post(f"{self.api_url}/api/v1/nodes/heartbeat", json=payload, timeout=2, headers=self._get_headers())

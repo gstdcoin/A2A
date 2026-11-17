@@ -45,6 +45,8 @@ node connect.js YOUR_TON_WALLET
 
 Set `GSTD_API_URL` to override the API origin when testing against another environment. Do not place wallet seed phrases or private keys in client configuration.
 
+The packaged `gstd-node` command requires `GSTD_WALLET_ADDRESS` with a public TON payout address. It registers with a separate Ed25519 identity and monitors by default. Python applications can attach an explicit task handler with `Agent.on_task`. The SDK no longer creates, migrates, or opens a TON signing wallet on worker startup. Keep existing wallet backups in the owner's custody.
+
 ### MCP
 
 `tools/main.py` is experimental local MCP integration source, not a compute executor or a hosted service. Review local wallet-capable tools before use. The platform MCP service is not currently deployed (`https://app.gstdtoken.com/mcp` returns 404). Use the platform API at `https://app.gstdtoken.com/api/v1`.

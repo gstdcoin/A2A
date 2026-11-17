@@ -1,4 +1,35 @@
-from gstd_a2a.agent import Agent
+from unittest.mock import Mock
+
+from gstd_a2a.agent import Agent, AgentConfig
+
+
+def test_agent_registers_a_public_address_without_opening_a_wallet(monkeypatch):
+    address = "0:" + "ab" * 32
+    monkeypatch.setenv("GSTD_WALLET_ADDRESS", address)
+    client = Mock()
+    client.health_check.return_value = {"status": "ok"}
+    client.send_heartbeat.return_value = True
+    factory = Mock(return_value=client)
+    monkeypatch.setattr("gstd_a2a.agent.GSTDClient", factory)
+
+    agent = Agent(config=AgentConfig())
+    agent._init_client()
+    agent._register()
+
+    assert factory.call_args.kwargs["wallet_address"] == address
+    assert "private_key" not in factory.call_args.kwargs
+    assert client.register_node.call_args.kwargs["capabilities"] == []
+    client.reauthenticate.assert_not_called()
+
+
+def test_agent_never_submits_a_placeholder_for_an_unknown_task():
+    agent = Agent()
+    agent.client = Mock()
+
+    agent._process_task({"task_id": "task-1", "type": "inference", "payload": {"prompt": "sample"}})
+
+    assert agent.stats["tasks_failed"] == 1
+    agent.client.submit_result.assert_not_called()
 
 
 class StubClient:
@@ -14,7 +45,6 @@ def make_agent(response):
     agent.task_handlers = {"test": lambda task: {"result": "done"}}
     agent.default_handler = None
     agent.client = StubClient(response)
-    agent.wallet = None
     agent.stats = {"tasks_completed": 0, "tasks_failed": 0, "total_earned": 0.0}
     agent._log = lambda message: None
     return agent
