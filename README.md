@@ -1,5 +1,11 @@
 # GSTD A2A
 
+[![CI](https://github.com/gstdcoin/A2A/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/gstdcoin/A2A/actions/workflows/ci.yml)
+
+[Project map / Карта проекта](https://github.com/gstdcoin/ai/blob/main/docs/INDEX.md) · [Release evidence](https://github.com/gstdcoin/ai/blob/main/docs/READINESS.md) · [Repository maintenance](https://github.com/gstdcoin/ai/blob/main/docs/REPOSITORY_MAINTENANCE.md)
+
+Default branch: `master`.
+
 **Русский:** SDK и коннектор для разработчиков; для обычной вычислительной ноды устанавливайте gstdbot. [Карта проекта и инструкции](https://github.com/gstdcoin/ai/blob/main/docs/INDEX.md).
 
 Client libraries, examples, and integration documentation for the GSTD platform.
@@ -73,3 +79,15 @@ First-party SDK code and examples are offered under [Apache License 2.0](LICENSE
 `connect.js` persists a separate Ed25519 node identity at `~/.config/gstd/node-ed25519.pem` (owner-only file). Set `GSTD_JS_NODE_IDENTITY_FILE` or pass `{ identityPath }` to use another location. Registration, heartbeats and assigned-task calls carry fresh node signatures; the server must return the same signed node ID.
 
 The CLI monitors and heartbeats by default. It does not claim tasks without an executor. Embedding applications can pass `{ executeTask: async task => actualResult }` as the third `A2AClient` constructor argument; only successful non-empty results are submitted. Neither registration nor an unfunded test task guarantees a reward.
+
+## Developer checks
+
+The Python package supports Python 3.9+; the tested CI matrix includes 3.9, 3.11 and 3.12. Use Node.js 20 or 22 for JavaScript/MCP development:
+
+```sh
+python -m pip install -e ".[dev]"
+python -m pytest tests
+npm test
+```
+
+The bounded stdio MCP connector has its own package and lockfile in `gstd-agent-connector/`: run `npm ci`, `npm run build` and `npm test` there. Root JavaScript client tests and connector tests cover different entry points. Retired `swarm/` code remains historical material; use the canonical node for execution. See [contribution guidance](CONTRIBUTING.md) and the [ecosystem review queue](https://github.com/gstdcoin/ai/blob/main/docs/REPOSITORY_MAINTENANCE.md).
