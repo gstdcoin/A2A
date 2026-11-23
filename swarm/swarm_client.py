@@ -18,7 +18,7 @@ import uuid
 
 RETIRED_MESSAGE = (
     "Legacy swarm client is retired: unsigned placeholder execution is disabled. "
-    "Use https://gstdtoken.com/nodes for real compute, or the signed clients in the repository README."
+    "Use https://gstdtoken.xyz/nodes for real compute, or the signed clients in the repository README."
 )
 if __name__ == "__main__":
     print(RETIRED_MESSAGE, file=sys.stderr)
@@ -53,7 +53,7 @@ class SwarmClient:
         use_websocket=True,
     ):
         raise RuntimeError(RETIRED_MESSAGE)
-        self.api_url = (api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")).rstrip("/")
+        self.api_url = (api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz")).rstrip("/")
         self.api_key = api_key or os.getenv("GSTD_API_KEY")
         self.wallet = wallet or os.getenv("GSTD_WALLET")
         self.device_id = device_id or f"swarm-{platform.node()}-{uuid.uuid4().hex[:8]}"
@@ -65,7 +65,7 @@ class SwarmClient:
         self._ws_thread = None
 
         if not self.api_key:
-            raise ValueError("GSTD_API_KEY required. Get from https://app.gstdtoken.com/dashboard")
+            raise ValueError("GSTD_API_KEY required. Get from https://app.gstdtoken.xyz/dashboard")
 
         if not self.wallet:
             # Try to extract from API key (sk_sovereign_WALLET_nonce) or use device_id as fallback

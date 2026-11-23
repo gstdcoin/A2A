@@ -49,7 +49,7 @@ def verify_auth():
         print("\n❌ AUTHORIZATION/REQUEST FAILED")
         print(f"   Error: {e}")
         if "401" in str(e):
-            print("   👉 Cause: Invalid API Key. Check your key on gstdtoken.com")
+            print("   👉 Cause: Invalid API Key. Check your key on gstdtoken.xyz")
 
 if __name__ == "__main__":
     verify_auth()

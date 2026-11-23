@@ -9,7 +9,7 @@ from gstd_a2a.gstd_client import GSTDClient
 
 
 def create_client(wallet, api_url=None):
-    origin = (api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")).rstrip("/")
+    origin = (api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz")).rstrip("/")
     if origin.endswith("/api/v1"):
         origin = origin[:-7]
     client = GSTDClient(api_url=origin, wallet_address=wallet)

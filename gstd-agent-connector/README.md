@@ -54,10 +54,10 @@ npm run build
 
 ### Для HTTP-сервисов
 
-[OpenAPI](https://app.gstdtoken.com/agent-openapi.json) и [описание возможностей](https://app.gstdtoken.com/.well-known/agent.json).
+[OpenAPI](https://app.gstdtoken.xyz/agent-openapi.json) и [описание возможностей](https://app.gstdtoken.xyz/.well-known/agent.json).
 
 ```http
-POST https://app.gstdtoken.com/api/v1/agents/infer
+POST https://app.gstdtoken.xyz/api/v1/agents/infer
 Content-Type: application/json
 
 {"model":"auto","messages":[{"role":"user","content":"Reply with GSTD_OK only."}],"max_tokens":32,"allow_network":true,"max_cost_gstd":0}
@@ -69,7 +69,7 @@ Content-Type: application/json
 
 Для вычислительного исполнителя используйте [каноническую ноду](https://github.com/gstdcoin/gstdbot) на собственном оборудовании, постоянную Ed25519-идентичность и публичный адрес выплат. Бесплатный запрос через коннектор не создаёт награду. Оплаченная принятая работа делится 85/10/5.
 
-Платные запросы остаются отдельными: [баланс платформы](https://app.gstdtoken.com/payments) или [mainnet escrow · бета](https://app.gstdtoken.com/escrow-mainnet). Ограниченное делегирование обеспеченного баланса описано ниже. Автономные blockchain-подписи не предоставляются. Первый реальный mainnet-цикл всё ещё требует средств и подписей владельцев.
+Платные запросы остаются отдельными: [баланс платформы](https://app.gstdtoken.xyz/payments) или [mainnet escrow · бета](https://app.gstdtoken.xyz/escrow-mainnet). Ограниченное делегирование обеспеченного баланса описано ниже. Автономные blockchain-подписи не предоставляются. Первый реальный mainnet-цикл всё ещё требует средств и подписей владельцев.
 
 `/mcp` на платформе не является развёрнутым MCP-сервисом. Этот коннектор использует локальный stdio; web/mobile-хосту без локальных процессов нужен HTTP/OpenAPI-клиент либо отдельно размещённый проверенный MCP-сервер. Старые Python MCP/wallet-инструменты в репозитории — отдельный экспериментальный код; новый коннектор их не импортирует.
 
@@ -87,7 +87,7 @@ The portable plugin manifest and `mcp.json` describe a **local** server. The sel
 
 ## Платный доступ без повторных подписей / Bounded paid access
 
-1. Откройте https://app.gstdtoken.com/ru/agent-access (English: /agent-access), подключите TON mainnet кошелёк и выполните вход.
+1. Откройте https://app.gstdtoken.xyz/ru/agent-access (English: /agent-access), подключите TON mainnet кошелёк и выполните вход.
 2. Выберите точную модель и конкретных исполнителей, общий бюджет (до 1000 GSTD), максимум за запрос и срок (до 7 дней). Кошелёк подписывает текст разрешения; это не перевод TON.
 3. Разрешение принимает непустые ответы указанной модели автоматически. Это доверие выбранному оператору, а не криптографическое доказательство качества или фактически запущенных весов модели. Не отправляйте секреты.
 4. Скачайте приватный gstd-agent-grant.json. Не присылайте его агенту, не коммитьте, не публикуйте и не кладите в общую папку. Настройте путь в MCP-сервере: GSTD_AGENT_GRANT_FILE=/absolute/private/path/gstd-agent-grant.json. В конфигурации хранится только путь, не токен.
@@ -101,7 +101,7 @@ English: Create a permission at /agent-access with a verified mainnet wallet. Si
 
 ## USD-ориентир и котировки / USD-referenced offers
 
-Оператор публикует свою минимальную долю на https://app.gstdtoken.com/ru/node-economics. Цена покупателя учитывает 85/10/5 и переводится в GSTD по наблюдению курса. Это не гарантия прибыли, не привязка GSTD к доллару и не выплата USDT.
+Оператор публикует свою минимальную долю на https://app.gstdtoken.xyz/ru/node-economics. Цена покупателя учитывает 85/10/5 и переводится в GSTD по наблюдению курса. Это не гарантия прибыли, не привязка GSTD к доллару и не выплата USDT.
 
 Для такого предложения сначала вызовите gstd_paid_quote с тем же prompt/model/max_tokens и вашим строковым max_cost_gstd. Котировка ничего не списывает. Если within_cost_cap=false, не повышайте предел самостоятельно. Передайте quote_id в отдельный gstd_paid_inference только при существующем разрешении и достаточном бюджете. Сохраните request_id до отправки. Одна котировка не может оплатить два разных задания; при неясном исходе проверяйте квитанцию. Просроченную котировку нужно получить заново до оплаты; автоматического повтора платного запроса нет.
 

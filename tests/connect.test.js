@@ -15,7 +15,7 @@ function identityOptions(t) {
 }
 
 test('normalizes API origins and preserves an explicit API base', () => {
-    assert.equal(getApiBase('https://app.gstdtoken.com/'), 'https://app.gstdtoken.com/api/v1');
+    assert.equal(getApiBase('https://app.gstdtoken.xyz/'), 'https://app.gstdtoken.xyz/api/v1');
     assert.equal(getApiBase('https://example.test/api/v1/'), 'https://example.test/api/v1');
 });
 

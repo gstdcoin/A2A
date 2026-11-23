@@ -6,4 +6,4 @@ The practical starting point is local model inference, clear resource limits, si
 
 Independence and broad participation are goals. The current ecosystem still depends on a central platform, accounting service, custody owner and hosting; physical multi-node resilience has not been established. Source is available under the repository license, not as a promise that every device or application is already supported.
 
-Start with the [app](https://app.gstdtoken.com/chat), [node installation](https://gstdtoken.com/nodes) or [current protocol guide](PROTOCOL.md). An [older manifesto](archive/MANIFESTO_2026-10-28.md) is preserved as historical rhetoric, not a product or financial specification.
+Start with the [app](https://app.gstdtoken.xyz/chat), [node installation](https://gstdtoken.xyz/nodes) or [current protocol guide](PROTOCOL.md). An [older manifesto](archive/MANIFESTO_2026-10-28.md) is preserved as historical rhetoric, not a product or financial specification.

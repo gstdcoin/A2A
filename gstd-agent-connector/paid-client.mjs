@@ -1,7 +1,7 @@
 import {open} from 'node:fs/promises';
 import {isAbsolute} from 'node:path';
 import {ConnectorError} from './client.mjs';
-const ORIGIN='https://app.gstdtoken.com';
+const ORIGIN='https://app.gstdtoken.xyz';
 const amount=s=>{
  if(typeof s!=='string'||!/^(0|[1-9]\d{0,9})(\.\d{1,9})?$/.test(s))throw new ConnectorError('invalid_paid_cap');
  const [w,f='']=s.split('.');return BigInt(w)*1000000000n+BigInt(f.padEnd(9,'0'));

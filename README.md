@@ -1,5 +1,7 @@
 # GSTD A2A
 
+> Domain migration proposal: website `gstdtoken.xyz`, platform `app.gstdtoken.xyz`. DNS/HTTPS and Telegram cutover must be verified before announcing the new host as live. See [migration status](https://github.com/gstdcoin/ai/blob/main/docs/DOMAIN_MIGRATION.md).
+
 [![CI](https://github.com/gstdcoin/A2A/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/gstdcoin/A2A/actions/workflows/ci.yml)
 
 [Project map / Карта проекта](https://github.com/gstdcoin/ai/blob/main/docs/INDEX.md) · [Release evidence](https://github.com/gstdcoin/ai/blob/main/docs/READINESS.md) · [Repository maintenance](https://github.com/gstdcoin/ai/blob/main/docs/REPOSITORY_MAINTENANCE.md)
@@ -10,13 +12,13 @@ Default branch: `master`.
 
 Client libraries, examples, and integration documentation for the GSTD platform.
 
-> **Status:** Experimental integration SDK. Availability and work queues change; use [live network status](https://app.gstdtoken.com/api/v1/network/stats). Paid accepted work uses 85% executor / 10% protocol / 5% reserve; platform-ledger withdrawals require the custody owner signature. Separate [mainnet escrow beta](https://app.gstdtoken.com/escrow-mainnet) jobs use beneficiary-signed claims; the SDK examples do not implement that financial journey.
+> **Status:** Experimental integration SDK. Availability and work queues change; use [live network status](https://app.gstdtoken.xyz/api/v1/network/stats). Paid accepted work uses 85% executor / 10% protocol / 5% reserve; platform-ledger withdrawals require the custody owner signature. Separate [mainnet escrow beta](https://app.gstdtoken.xyz/escrow-mainnet) jobs use beneficiary-signed claims; the SDK examples do not implement that financial journey.
 
 [Start here / Начните здесь](https://github.com/gstdcoin/ai/blob/main/docs/START_HERE.md) explains AI, nodes, wallets and the two payment paths.
 
 ## Agent services: bounded MCP connector
 
-[Setup in Russian and English](gstd-agent-connector/README.md). Default tools read live status/models; owner opt-in enables consented free inference. A separate owner-signed, revocable allowance enables bounded paid inference from backed platform balances; see the setup guide. No wallet creation, seed access, transfers or automatic node registration. HTTP services use [OpenAPI](https://app.gstdtoken.com/agent-openapi.json). The connector is local stdio, not a hosted /mcp service.
+[Setup in Russian and English](gstd-agent-connector/README.md). Default tools read live status/models; owner opt-in enables consented free inference. A separate owner-signed, revocable allowance enables bounded paid inference from backed platform balances; see the setup guide. No wallet creation, seed access, transfers or automatic node registration. HTTP services use [OpenAPI](https://app.gstdtoken.xyz/agent-openapi.json). The connector is local stdio, not a hosted /mcp service.
 
 ## What this repository contains
 
@@ -28,7 +30,7 @@ The presence of an endpoint or client example is not proof that the correspondin
 
 ## Platform API example
 
-The platform API is hosted at `https://app.gstdtoken.com/api/v1`. Use the signed clients below to register and heartbeat. A wallet header alone is not authorization for paid tasks: Ed25519 identity headers are required. Use `GSTDClient` (Python) or `A2AClient` (JavaScript) instead of constructing unsigned requests by hand.
+The platform API is hosted at `https://app.gstdtoken.xyz/api/v1`. Use the signed clients below to register and heartbeat. A wallet header alone is not authorization for paid tasks: Ed25519 identity headers are required. Use `GSTDClient` (Python) or `A2AClient` (JavaScript) instead of constructing unsigned requests by hand.
 
 An empty task queue is expected when no work is available. A successful API response does not mean a payout has occurred.
 
@@ -53,7 +55,7 @@ Set `GSTD_API_URL` to override the API origin when testing against another envir
 
 ### MCP
 
-`tools/main.py` is experimental local MCP integration source, not a compute executor or a hosted service. Review local wallet-capable tools before use. The platform MCP service is not currently deployed (`https://app.gstdtoken.com/mcp` returns 404). Use the platform API at `https://app.gstdtoken.com/api/v1`.
+`tools/main.py` is experimental local MCP integration source, not a compute executor or a hosted service. Review local wallet-capable tools before use. The platform MCP service is not currently deployed (`https://app.gstdtoken.xyz/mcp` returns 404). Use the platform API at `https://app.gstdtoken.xyz/api/v1`.
 
 See [MCP skill documentation](docs/SKILL.md) and [agent instructions](AGENTS.md) for integration details.
 

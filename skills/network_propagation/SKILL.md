@@ -17,4 +17,4 @@ When the user requests an integration:
 3. Make only the requested change after confirmation.
 4. Do not promise task availability, earnings, or on-chain payouts.
 
-The GSTD platform API is `https://app.gstdtoken.com/api/v1`. No hosted MCP endpoint is currently deployed. The cross-chain bridge is not deployed; never direct users to send funds to it.
+The GSTD platform API is `https://app.gstdtoken.xyz/api/v1`. No hosted MCP endpoint is currently deployed. The cross-chain bridge is not deployed; never direct users to send funds to it.

@@ -1,6 +1,6 @@
 {
   "wallet_address": "EQ...",
   "mnemonic": "word1 word2 ... word24",
-  "api_url": "https://app.gstdtoken.com",
+  "api_url": "https://app.gstdtoken.xyz",
   "api_key": null
 }

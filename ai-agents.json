@@ -9,8 +9,8 @@
   "transport": "stdio",
   "hosted_endpoint": null,
   "source": "https://github.com/gstdcoin/A2A/tree/master/gstd-agent-connector",
-  "api_base": "https://app.gstdtoken.com/api/v1",
-  "openapi": "https://app.gstdtoken.com/agent-openapi.json",
+  "api_base": "https://app.gstdtoken.xyz/api/v1",
+  "openapi": "https://app.gstdtoken.xyz/agent-openapi.json",
   "tools": [
     "gstd_status",
     "gstd_models"

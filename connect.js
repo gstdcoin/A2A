@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-function getApiBase(value = process.env.GSTD_API_URL || 'https://app.gstdtoken.com') {
+function getApiBase(value = process.env.GSTD_API_URL || 'https://app.gstdtoken.xyz') {
     let base = String(value);
     while (base.endsWith('/')) base = base.slice(0, -1);
     return base.endsWith('/api/v1') ? base : `${base}/api/v1`;

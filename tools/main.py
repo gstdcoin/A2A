@@ -47,7 +47,7 @@ def get_client_and_wallet():
 
         client = GSTDClient(
             wallet_address=os.getenv("GSTD_WALLET_ADDRESS", config.get("wallet_address")),
-            api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.com"),
+            api_url=os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz"),
             api_key=final_key
         )
         

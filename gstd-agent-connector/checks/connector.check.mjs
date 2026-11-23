@@ -17,7 +17,7 @@ test('requires explicit consent, free ceiling, model policy and bounded attempts
  for(const [patch,code] of [[{allow_network:false},'network_consent_required'],[{max_cost_gstd:1},'zero_cost_limit_required'],[{model:'qwen2.5:7b'},'model_not_allowed']])await assert.rejects(c.infer(args(patch)),new RegExp(code));
  assert.equal(calls.length,0);
  const r=await c.infer(args());assert.equal(r.result,'fixture');assert.equal(r.cost_gstd,0);
- assert.equal(calls[0].url,'https://app.gstdtoken.com/api/v1/agents/infer');
+ assert.equal(calls[0].url,'https://app.gstdtoken.xyz/api/v1/agents/infer');
  assert.deepEqual(Object.keys(calls[0].init.headers).sort(),['Accept','Content-Type']);
  assert.equal(JSON.parse(calls[0].init.body).max_cost_gstd,0);
  await assert.rejects(c.infer(args()),/process_budget_exhausted/);assert.equal(calls.length,1);

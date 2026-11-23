@@ -1,6 +1,6 @@
 # GSTD client integration boundaries
 
-The current production API is `https://app.gstdtoken.com/api/v1`. The [GSTD compute node](https://github.com/gstdcoin/gstdbot) is the supported route for operators who want to execute model inference. This repository contains experimental signed clients and integrations; registration alone is not compute execution or a reward.
+The current production API is `https://app.gstdtoken.xyz/api/v1`. The [GSTD compute node](https://github.com/gstdcoin/gstdbot) is the supported route for operators who want to execute model inference. This repository contains experimental signed clients and integrations; registration alone is not compute execution or a reward.
 
 ## Identity and work
 
@@ -13,7 +13,7 @@ Use `GSTDClient` (Python) or `A2AClient` (JavaScript) with a persistent Ed25519 
 - `POST /tasks/worker/submit`: current SDK compatibility alias for the canonical signed completion handler; submit only an actual computed result for assigned work.
 - `POST /chat/completions`: model inference; explicit model IDs are not replaced by different families. Paid requests need verified wallet authorization and an idempotency key.
 
-The monitor CLIs do not claim tasks without an executor. An empty queue is normal. An accepted API response does not prove an on-chain payout. See [economics](ECONOMICS.md), [signed-client instructions](../AGENTS.md) and [platform API documentation](https://gstdtoken.com/developers).
+The monitor CLIs do not claim tasks without an executor. An empty queue is normal. An accepted API response does not prove an on-chain payout. See [economics](ECONOMICS.md), [signed-client instructions](../AGENTS.md) and [platform API documentation](https://gstdtoken.xyz/developers).
 
 ## MCP and central dependencies
 

@@ -1,4 +1,4 @@
-const ORIGIN='https://app.gstdtoken.com';
+const ORIGIN='https://app.gstdtoken.xyz';
 const modelPattern=/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,159}$/;
 export class ConnectorError extends Error{
  constructor(code,status=0,retryAfter=0){super(code);this.code=code;this.status=status;this.retryAfter=retryAfter;}

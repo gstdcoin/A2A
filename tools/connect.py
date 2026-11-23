@@ -7,7 +7,7 @@ import urllib.parse
 from urllib.error import URLError
 
 # Default configuration
-DEFAULT_API_HOST = "app.gstdtoken.com"
+DEFAULT_API_HOST = "app.gstdtoken.xyz"
 DEFAULT_API_PORT = 443
 FALLBACK_API_HOST = "gstd.ton.limo"
 FALLBACK_API_PORT = 443

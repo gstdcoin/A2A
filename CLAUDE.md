@@ -4,7 +4,7 @@
 
 - **Language:** Python
 - **Core package:** `src/gstd_a2a/`
-- **Platform API:** `https://app.gstdtoken.com/api/v1/`
+- **Platform API:** `https://app.gstdtoken.xyz/api/v1/`
 - **Node API identity:** public TON wallet address in the `X-Wallet-Address` header
 
 This SDK and its integrations are experimental. The production platform currently reports no registered nodes, tasks, or payouts; check the live stats before relying on work availability.

@@ -41,7 +41,7 @@ class SovereignConfig:
 
     def __init__(self):
         # Network
-        self.api_url = os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
+        self.api_url = os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz")
         self.api_key = os.getenv("GSTD_API_KEY", "")
         self.wallet_path = os.getenv("GSTD_WALLET_PATH", str(Path.home() / ".gstd" / "wallet.json"))
 

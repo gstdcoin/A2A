@@ -5,7 +5,7 @@ import json
 import http.client
 import os
 
-DEFAULT_API_HOST = "app.gstdtoken.com"
+DEFAULT_API_HOST = "app.gstdtoken.xyz"
 
 class GSTDClient:
     def __init__(self, api_key=None):

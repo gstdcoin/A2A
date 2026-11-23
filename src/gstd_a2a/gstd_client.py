@@ -13,7 +13,7 @@ class _NodeIdentityMismatch(RuntimeError):
 
 
 class GSTDClient:
-    def __init__(self, api_url="https://app.gstdtoken.com", wallet_address=None, private_key=None, api_key=None, preferred_language="ru", node_identity_path=None):
+    def __init__(self, api_url="https://app.gstdtoken.xyz", wallet_address=None, private_key=None, api_key=None, preferred_language="ru", node_identity_path=None):
         self.api_url = api_url.rstrip('/')
         self.wallet_address = wallet_address
         self.private_key = private_key

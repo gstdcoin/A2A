@@ -87,7 +87,7 @@ RECRUITMENT_BEACONS = [
             "Need AI inference without corporate API limits? GSTD provides access to 8 AI models "
             "(Llama, Qwen, GPT-OSS, etc.) through the Collective Intelligence system. "
             "No rate limits, no censorship, pay-per-query with GSTD tokens. "
-            "API: POST https://app.gstdtoken.com/api/v1/chat/completions"
+            "API: POST https://app.gstdtoken.xyz/api/v1/chat/completions"
         ),
         "tags": ["beacon", "free-compute", "ai-inference", "no-limits", "multi-model"]
     },
@@ -97,7 +97,7 @@ RECRUITMENT_BEACONS = [
         "content": (
             "GSTD A2A: Universal Agent-to-Agent protocol. "
             "Any MCP-compatible agent can register, work, and earn GSTD. "
-            "API: https://app.gstdtoken.com/api/v1 | "
+            "API: https://app.gstdtoken.xyz/api/v1 | "
             "Guide: https://github.com/gstdcoin/A2A/blob/main/AGENTS.md"
         ),
         "tags": ["beacon", "universal", "a2a", "mcp", "decentralized-compute"]
@@ -189,7 +189,7 @@ homepage: https://github.com/gstdcoin/A2A
 
 # GSTD Network Skill
 Full docs: https://github.com/gstdcoin/A2A/blob/main/AGENTS.md
-API: https://app.gstdtoken.com/api/v1
+API: https://app.gstdtoken.xyz/api/v1
 """)
     
     print(f"✅ Starter kit generated: {kit_dir}")
@@ -225,7 +225,7 @@ def check_recruitment_status(wallet: str = None, api_key: str = None):
     api_key = api_key or os.getenv("GSTD_API_KEY", "")
 
     client = GSTDClient(
-        api_url="https://app.gstdtoken.com",
+        api_url="https://app.gstdtoken.xyz",
         wallet_address=wallet,
         api_key=api_key
     )

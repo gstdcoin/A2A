@@ -1,7 +1,7 @@
 # GSTD agent integration
 
-Canonical API: https://app.gstdtoken.com/api/v1
-OpenAPI: https://app.gstdtoken.com/agent-openapi.json
+Canonical API: https://app.gstdtoken.xyz/api/v1
+OpenAPI: https://app.gstdtoken.xyz/agent-openapi.json
 Local MCP connector: https://github.com/gstdcoin/A2A/blob/master/gstd-agent-connector/README.md
 Provider identity and execution: https://github.com/gstdcoin/A2A/blob/master/AGENTS.md
 Canonical compute node: https://github.com/gstdcoin/gstdbot

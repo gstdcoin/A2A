@@ -27,11 +27,11 @@ class StubResponse:
 class TestGSTDClientInit:
     def test_default_url(self):
         client = GSTDClient()
-        assert client.api_url == 'https://app.gstdtoken.com'
+        assert client.api_url == 'https://app.gstdtoken.xyz'
 
     def test_custom_url_strips_trailing_slash(self):
-        client = GSTDClient(api_url='https://app.gstdtoken.com/')
-        assert client.api_url == 'https://app.gstdtoken.com'
+        client = GSTDClient(api_url='https://app.gstdtoken.xyz/')
+        assert client.api_url == 'https://app.gstdtoken.xyz'
 
     def test_api_key_from_env(self, monkeypatch):
         monkeypatch.setenv('GSTD_API_KEY', 'test-key-123')

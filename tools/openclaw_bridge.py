@@ -23,10 +23,10 @@ class OpenClawBridge:
         # 1.1 Local Intelligence (Ollama) + Cloud compound model
         self.llm = LLMService(api_url="http://localhost:11434")
         self.default_model = os.getenv("GSTD_DEFAULT_MODEL", "llama3.2:3b")
-        self.openclaw_api = os.getenv("OPENCLAW_API_BASE", "https://app.gstdtoken.com/api/v1/openclaw")
+        self.openclaw_api = os.getenv("OPENCLAW_API_BASE", "https://app.gstdtoken.xyz/api/v1/openclaw")
         
         # 2. Connect to Grid
-        self.api_url = api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
+        self.api_url = api_url or os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz")
         self.client = GSTDClient(wallet_address=self.wallet.address, api_url=self.api_url, api_key=os.getenv("GSTD_API_KEY"))
         
         # 3. Register capabilities

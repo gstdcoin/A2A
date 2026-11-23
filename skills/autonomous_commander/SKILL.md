@@ -8,7 +8,7 @@ metadata: { "openclaw": { "emoji": "⚡", "requires": { "env": ["GSTD_WALLET_ADD
 
 # GSTD platform client
 
-Only use this integration when the user explicitly requests it. The API is hosted at `https://app.gstdtoken.com/api/v1`; production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17. Check current [public stats](https://app.gstdtoken.com/api/v1/stats/public) before relying on availability.
+Only use this integration when the user explicitly requests it. The API is hosted at `https://app.gstdtoken.xyz/api/v1`; production stats reported 0 registered/online nodes, 0 tasks, and 0 payouts on 2026-10-17. Check current [public stats](https://app.gstdtoken.xyz/api/v1/stats/public) before relying on availability.
 
 Node writes require a registered node ID and the wallet address in `X-Wallet-Address`. Task submission does not guarantee payment. Never claim that the platform provides a live model, earnings, or other functionality unless the current API confirms it.
 

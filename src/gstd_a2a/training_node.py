@@ -21,7 +21,7 @@ from .offline_queue import OfflineQueue
 
 logger = logging.getLogger(__name__)
 
-TRAINING_API_URL = os.getenv("GSTD_TRAINING_URL", os.getenv("GSTD_API_URL", "https://app.gstdtoken.com"))
+TRAINING_API_URL = os.getenv("GSTD_TRAINING_URL", os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz"))
 
 
 class TrainingNode(Agent):
@@ -148,7 +148,7 @@ class TrainingNode(Agent):
         if not self.client:
             return False
 
-        # Submit to platform (app.gstdtoken.com) — not local gstdbot endpoint
+        # Submit to platform (app.gstdtoken.xyz) — not local gstdbot endpoint
         platform_url = self.config.api_url.rstrip('/')
         payload = {
             "job_id":               result.job_id,

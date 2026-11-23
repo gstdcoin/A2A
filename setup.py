@@ -12,10 +12,10 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="GSTD Foundation",
-    author_email="dev@gstdtoken.com",
+    author_email="dev@gstdtoken.xyz",
     url="https://github.com/gstdcoin/A2A",
     project_urls={
-        "Dashboard": "https://app.gstdtoken.com",
+        "Dashboard": "https://app.gstdtoken.xyz",
         "Documentation": "https://github.com/gstdcoin/A2A/blob/master/AGENTS.md",
         "Bug Tracker": "https://github.com/gstdcoin/A2A/issues",
     },

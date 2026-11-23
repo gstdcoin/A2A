@@ -19,4 +19,4 @@ from gstd_a2a.sovereign_autonomy import SovereignAgent
 agent = SovereignAgent()
 ```
 
-The platform API is `https://app.gstdtoken.com/api/v1`. The cross-chain bridge is not deployed, and these integrations and the reward flow have not been independently audited.
+The platform API is `https://app.gstdtoken.xyz/api/v1`. The cross-chain bridge is not deployed, and these integrations and the reward flow have not been independently audited.

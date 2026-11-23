@@ -66,7 +66,7 @@ class FineTuneWorker:
     Executes a fine-tuning shard and returns quality-scored result.
 
     Usage:
-        worker = FineTuneWorker(node_id="my-node", api_url="https://app.gstdtoken.com")
+        worker = FineTuneWorker(node_id="my-node", api_url="https://app.gstdtoken.xyz")
         result = worker.run(task)
         if result.metacognitive_score >= 0.3:
             submit_gradient(result)

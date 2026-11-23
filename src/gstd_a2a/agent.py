@@ -31,7 +31,7 @@ from .security import SovereignSecurity
 class AgentConfig:
     """Конфигурация агента"""
     def __init__(self):
-        self.api_url = os.getenv("GSTD_API_URL", "https://app.gstdtoken.com")
+        self.api_url = os.getenv("GSTD_API_URL", "https://app.gstdtoken.xyz")
         self.api_key = os.getenv("GSTD_API_KEY", "")
         self.wallet_path = os.getenv("GSTD_WALLET_PATH", str(Path.home() / ".gstd" / "wallet.json"))
         self.config_path = os.getenv("GSTD_CONFIG_PATH", str(Path.home() / ".gstd" / "config.json"))
@@ -420,7 +420,7 @@ Output MUST be valid JSON with exactly these keys:
   "language": "python" or "go",
   "code": "complete runnable code block with proper indentation"
 }
-The code must be functional, use GSTD API (app.gstdtoken.com), include imports and a minimal example.
+The code must be functional, use GSTD API (app.gstdtoken.xyz), include imports and a minimal example.
 Return ONLY valid JSON, no markdown."""
 
         try:
@@ -457,7 +457,7 @@ Return ONLY valid JSON, no markdown."""
                 "title": "GSTD Balance Check (Python)",
                 "description": "Simple script to check GSTD balance via API.",
                 "language": "python",
-                "code": "import requests\nr = requests.get('https://app.gstdtoken.com/api/v1/credits/balance?wallet=YOUR_WALLET', headers={'X-Wallet-Address': 'YOUR_WALLET'})\nprint(r.json())"
+                "code": "import requests\nr = requests.get('https://app.gstdtoken.xyz/api/v1/credits/balance?wallet=YOUR_WALLET', headers={'X-Wallet-Address': 'YOUR_WALLET'})\nprint(r.json())"
             })
             return {"status": "completed", "fallback": True}
         except Exception as e:
@@ -465,7 +465,7 @@ Return ONLY valid JSON, no markdown."""
                 "title": "GSTD API Client",
                 "description": "Minimal Python client for GSTD. Error: " + str(e)[:50],
                 "language": "python",
-                "code": "import requests\nprint(requests.get('https://app.gstdtoken.com/api/v1/agents/stats/network').json())"
+                "code": "import requests\nprint(requests.get('https://app.gstdtoken.xyz/api/v1/agents/stats/network').json())"
             })
             return {"status": "completed", "error": str(e)}
 
@@ -513,7 +513,7 @@ Return ONLY valid JSON, no markdown."""
 ║   🦾 GSTD AGENT v2.0 — Zero-Config Autonomous Agent         ║
 ║                                                              ║
 ║   The AI Network That Works For You                         ║
-║   https://app.gstdtoken.com                                  ║
+║   https://app.gstdtoken.xyz                                  ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 """

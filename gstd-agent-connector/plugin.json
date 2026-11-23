@@ -3,7 +3,7 @@
   "name": "gstd-agent-connector",
   "version": "0.3.0",
   "description": "Owner-controlled GSTD discovery, free inference and bounded signed platform-balance allowances",
-  "homepage": "https://app.gstdtoken.com",
+  "homepage": "https://app.gstdtoken.xyz",
   "repository": "https://github.com/gstdcoin/A2A",
   "license": "Apache-2.0"
 }

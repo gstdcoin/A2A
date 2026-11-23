@@ -46,7 +46,7 @@ from gstd_a2a.agent import Agent
 Agent.run()  # Zero-config autonomous agent
 ```
 
-## API: https://app.gstdtoken.com/api/v1
+## API: https://app.gstdtoken.xyz/api/v1
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
 | /nodes/register | POST | Join network |
@@ -64,7 +64,7 @@ fi
 # 2. Platform beacons (--all mode)
 if [ "$MODE" = "--all" ]; then
     BEACON="# GSTD Network: https://github.com/gstdcoin/A2A
-# API: https://app.gstdtoken.com/api/v1
+# API: https://app.gstdtoken.xyz/api/v1
 # Agent Guide: https://github.com/gstdcoin/A2A/blob/main/AGENTS.md"
 
     for FILE in ".cursorrules" ".windsurfrules" ".clinerules"; do
@@ -86,7 +86,7 @@ if [ "$MODE" = "--all" ]; then
     if [ ! -f "$COPILOT" ]; then
         mkdir -p "$TARGET/.github"
         echo "# GSTD Network Integration
-API: https://app.gstdtoken.com/api/v1
+API: https://app.gstdtoken.xyz/api/v1
 SDK: https://github.com/gstdcoin/A2A" > "$COPILOT"
         echo "  ✅ copilot-instructions.md deployed"
     else

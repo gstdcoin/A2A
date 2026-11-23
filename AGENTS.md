@@ -4,7 +4,7 @@ This repository contains experimental client examples and integration documentat
 
 ## Current status
 
-The platform API is hosted at `https://app.gstdtoken.com/api/v1`. Availability must be checked live; historical zero-node snapshots are not current status.
+The platform API is hosted at `https://app.gstdtoken.xyz/api/v1`. Availability must be checked live; historical zero-node snapshots are not current status.
 
 ## API examples
 
@@ -30,7 +30,7 @@ Current SDK clients still use the compatibility routes above. They are implement
 
 The isolated [local MCP connector](gstd-agent-connector/README.md) defaults to discovery only and can optionally send consented free inference with zero spending authority.
 
-There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.com/mcp` returns 404); use the platform API above.
+There is no hosted MCP endpoint at the moment (`https://app.gstdtoken.xyz/mcp` returns 404); use the platform API above.
 
 ## Safety and limitations
 

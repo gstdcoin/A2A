@@ -8,7 +8,7 @@ except ImportError:
     print("❌ SDK not found. Install it first: pip install gstd-a2a")
     sys.exit(1)
 
-BASE_URL = "https://app.gstdtoken.com/api/v1"
+BASE_URL = "https://app.gstdtoken.xyz/api/v1"
 REQUEST_TIMEOUT = 10
 
 def print_banner():
